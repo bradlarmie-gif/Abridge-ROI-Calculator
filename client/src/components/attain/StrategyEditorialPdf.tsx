@@ -7,6 +7,8 @@ import {
   resolveResult,
   briefFoundation,
   groundingQuestions,
+  goalNotes,
+  groundingNotes,
   type DiscoveryAnswers,
   type FoundationRead,
 } from "@/lib/attain/discovery";
@@ -216,9 +218,22 @@ const CLASS_TAG: Record<GoalClass, { label: string; color: string }> = {
   honest: { label: "Not documentation's to fix", color: C.faint },
 };
 
-function GoalFoundation({ setting, goal, rank, total, foundation, cls }: { setting: AttainSetting; goal: GoalId; rank: number; total: number; foundation: FoundationRead; cls: GoalClass }): JSX.Element {
+function NoteBlock({ notes, label = "In your words" }: { notes: string[]; label?: string }): JSX.Element | null {
+  if (!notes.length) return null;
+  return (
+    <div style={{ marginTop: 8 }}>
+      <span style={{ fontSize: 8, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: C.off, marginRight: 8 }}>{label}</span>
+      {notes.map((n, i) => (
+        <span key={i} style={{ fontSize: 11.5, color: C.faint, fontStyle: "italic" }}>{i > 0 ? "  ·  " : ""}&ldquo;{n}&rdquo;</span>
+      ))}
+    </div>
+  );
+}
+
+function GoalFoundation({ setting, goal, rank, total, foundation, cls, answers }: { setting: AttainSetting; goal: GoalId; rank: number; total: number; foundation: FoundationRead; cls: GoalClass; answers: DiscoveryAnswers }): JSX.Element {
   const current = total > 1 ? [...foundation.current, { label: "Priority this year", value: `#${rank} of ${total}` }] : foundation.current;
   const tag = CLASS_TAG[cls];
+  const notes = goalNotes(setting, goal, answers);
   return (
     <div>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 13 }}>
@@ -235,6 +250,7 @@ function GoalFoundation({ setting, goal, rank, total, foundation, cls }: { setti
         <div style={{ width: 1, background: C.hair, alignSelf: "stretch" }} />
         <Column heading="Where you want to go" headingColor={C.warm} rows={foundation.desired} signalLabel={foundation.signalLabel} />
       </div>
+      <NoteBlock notes={notes} />
     </div>
   );
 }
@@ -244,6 +260,7 @@ function GoalFoundation({ setting, goal, rank, total, foundation, cls }: { setti
 export function StrategyEditorialPdfDocument({ data }: { data: StrategyPdfData }): JSX.Element {
   const order = rankedOrder(data.setting, data.order, data.answers);
   const grounding = groundingItems(data.setting, data.answers);
+  const gNotes = groundingNotes(data.setting, data.answers);
   const verdict = verdictLine(data.setting, order, data.answers);
   const classOf = (goal: GoalId): GoalClass => {
     const r = resolveResult(data.setting, goal, data.answers);
@@ -282,11 +299,14 @@ export function StrategyEditorialPdfDocument({ data }: { data: StrategyPdfData }
         </div>
 
         <div style={{ display: "flex", gap: 40, margin: "22px 0 4px", paddingBottom: 18, borderBottom: `1px solid ${C.hair}` }}>
-          {grounding.length > 0 && (
+          {(grounding.length > 0 || gNotes.length > 0) && (
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: C.off, marginBottom: 8 }}>Grounding</div>
               {grounding.map((g, i) => (
                 <div key={i} style={{ fontSize: 12, color: C.muted, lineHeight: 1.35, marginBottom: 3 }}>{g}</div>
+              ))}
+              {gNotes.map((n, i) => (
+                <div key={`n${i}`} style={{ fontSize: 12, color: C.faint, lineHeight: 1.35, marginBottom: 3, fontStyle: "italic" }}>&ldquo;{n}&rdquo;</div>
               ))}
             </div>
           )}
@@ -304,7 +324,7 @@ export function StrategyEditorialPdfDocument({ data }: { data: StrategyPdfData }
 
         <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 22 }}>
           {pageOneGoals.map((x) => (
-            <GoalFoundation key={x.goal} setting={data.setting} goal={x.goal} rank={x.rank} total={total} foundation={x.foundation} cls={x.cls} />
+            <GoalFoundation key={x.goal} setting={data.setting} goal={x.goal} rank={x.rank} total={total} foundation={x.foundation} cls={x.cls} answers={data.answers} />
           ))}
         </div>
         <div style={{ flexGrow: 1 }} />
@@ -315,7 +335,7 @@ export function StrategyEditorialPdfDocument({ data }: { data: StrategyPdfData }
           <RunningHeader org={data.orgName} />
           <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 22 }}>
             {pageTwoGoals.map((x) => (
-              <GoalFoundation key={x.goal} setting={data.setting} goal={x.goal} rank={x.rank} total={total} foundation={x.foundation} cls={x.cls} />
+              <GoalFoundation key={x.goal} setting={data.setting} goal={x.goal} rank={x.rank} total={total} foundation={x.foundation} cls={x.cls} answers={data.answers} />
             ))}
           </div>
           <div style={{ flexGrow: 1 }} />

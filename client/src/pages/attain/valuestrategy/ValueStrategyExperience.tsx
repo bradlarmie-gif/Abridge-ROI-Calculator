@@ -7,6 +7,8 @@ import {
   resolveResult,
   briefFoundation,
   groundingQuestions,
+  goalNotes,
+  groundingNotes,
   BRIEF,
   type DiscoveryAnswers,
   type GroundingQuestion,
@@ -224,6 +226,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     } else {
       selected = answers[`_ground:${q.id}`];
       onPick = (id) => answerGround(q.id, id);
+      onContinue = () => advanceFromGround();
     }
   } else if (pos.kind === "triage") {
     stepEyebrow = "First, your priorities";
@@ -250,8 +253,31 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
     } else {
       selected = answers[`${goal}:${pos.qid}`];
       onPick = (id) => answerGoal(id);
+      onContinue = () => continueGoal();
     }
   }
+
+  // Every question (goal + grounding, not triage) gets a subtle free-text "add your
+  // own" note. It's captured as a concept for us to consider — it shows in the brief
+  // and the PDF, but it pins no lever, so it never enters the ROI build.
+  const customKey =
+    pos.kind === "goal" ? `_note:${order[pos.goalIdx]}:${pos.qid}` :
+    pos.kind === "ground" ? `_note:_ground:${ground[pos.idx].id}` :
+    null;
+  const noteVal = customKey ? (answers[customKey] ?? "") : "";
+  const hasNote = !!noteVal.trim();
+  const setNote = (v: string) => {
+    if (!customKey) return;
+    const next = { ...answers };
+    if (v.trim()) next[customKey] = v; else delete next[customKey];
+    persist(next);
+  };
+  const showContinue = multiSelect || rankMode || hasNote;
+  const continueBlocked = rankMode
+    ? rankCount < authoredAll.length
+    : multiSelect
+      ? (selectedIds.length === 0 && !hasNote)
+      : false;
 
   const contextLabel =
     pos.kind === "goal"
@@ -306,31 +332,35 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
               );
             })}
           </div>
-          {(multiSelect || rankMode) && (() => {
-            // Rank mode requires EVERY selected goal ranked — so no goal the partner
-            // didn't order gets stamped "#N priority" in the brief.
-            const blocked = rankMode ? rankCount < authoredAll.length : selectedIds.length === 0;
-            const remaining = authoredAll.length - rankCount;
-            return (
-              <div className="mt-7 flex items-center gap-5">
-                <button
-                  type="button"
-                  onClick={onContinue}
-                  disabled={blocked}
-                  data-testid={rankMode ? "triage-continue" : "ground-continue"}
-                  className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors ${blocked ? "bg-[#EFE9E1] text-[#B4A896] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#D02700] cursor-pointer"}`}
-                >
-                  Continue <ArrowRight className="w-4 h-4" strokeWidth={2} />
-                </button>
-                {rankMode && blocked && rankCount > 0 && (
-                  <span className="text-[13px] text-[#B4A896]">Rank {remaining} more to continue</span>
-                )}
-                {rankMode && rankCount > 0 && (
-                  <button type="button" onClick={resetRank} data-testid="triage-reset" className="text-[13px] text-[#B4A896] hover:text-[#8C8073] transition-colors">Reset</button>
-                )}
-              </div>
-            );
-          })()}
+          {customKey && (
+            <input
+              type="text"
+              value={noteVal}
+              onChange={(e) => setNote(e.target.value)}
+              data-testid="discovery-note-input"
+              placeholder="Add your own, in their words (a note for us, not the ROI)"
+              className="mt-5 w-full bg-transparent border-b border-[#EDE8E1] focus:border-[#C4B9A8] py-2.5 text-[15px] text-[#1A1A1A] placeholder:text-[#C4B9A8] placeholder:italic outline-none transition-colors"
+            />
+          )}
+          {showContinue && (
+            <div className="mt-7 flex items-center gap-5">
+              <button
+                type="button"
+                onClick={onContinue}
+                disabled={continueBlocked}
+                data-testid={rankMode ? "triage-continue" : "ground-continue"}
+                className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors ${continueBlocked ? "bg-[#EFE9E1] text-[#B4A896] cursor-not-allowed" : "bg-[#EA2C00] text-white hover:bg-[#D02700] cursor-pointer"}`}
+              >
+                Continue <ArrowRight className="w-4 h-4" strokeWidth={2} />
+              </button>
+              {rankMode && continueBlocked && rankCount > 0 && (
+                <span className="text-[13px] text-[#B4A896]">Rank {authoredAll.length - rankCount} more to continue</span>
+              )}
+              {rankMode && rankCount > 0 && (
+                <button type="button" onClick={resetRank} data-testid="triage-reset" className="text-[13px] text-[#B4A896] hover:text-[#8C8073] transition-colors">Reset</button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* vertical hairline */}
@@ -351,7 +381,7 @@ export default ValueStrategyExperience;
 // headline, and upcoming goals show faint — so the rail stays short and doubles
 // as "where am I in the walk."
 type LedgerState = "context" | "done" | "active" | "upcoming";
-interface LedgerGroup { label: string; items: string[]; state: LedgerState }
+interface LedgerGroup { label: string; items: string[]; notes: string[]; state: LedgerState }
 
 function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order: GoalId[], answers: DiscoveryAnswers, activeIdx: number): LedgerGroup[] {
   const groups: LedgerGroup[] = [];
@@ -364,19 +394,20 @@ function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order:
       if (opt) groundItems.push(opt.capture);
     }
   }
-  if (groundItems.length) groups.push({ label: "Grounding", items: groundItems, state: "context" });
+  const gNotes = groundingNotes(setting, answers);
+  if (groundItems.length || gNotes.length) groups.push({ label: "Grounding", items: groundItems, notes: gNotes, state: "context" });
 
   order.forEach((goal, i) => {
     const res = resolveResult(setting, goal, answers);
     const items = res?.narrative ?? [];
     const state: LedgerState = i < activeIdx ? "done" : i === activeIdx ? "active" : "upcoming";
-    groups.push({ label: goalDisplayLabel(setting, goal), items, state });
+    groups.push({ label: goalDisplayLabel(setting, goal), items, notes: goalNotes(setting, goal, answers), state });
   });
   return groups;
 }
 
 function Ledger({ groups }: { groups: LedgerGroup[] }) {
-  const answered = groups.some((g) => g.items.length);
+  const answered = groups.some((g) => g.items.length || g.notes.length);
   return (
     <div className="lg:pt-1">
       <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#8C8073]">What we're hearing</div>
@@ -418,9 +449,10 @@ function Ledger({ groups }: { groups: LedgerGroup[] }) {
                         </li>
                       ))}
                     </ul>
-                  ) : (
+                  ) : g.notes.length === 0 ? (
                     <p className="text-[13px] text-[#C4B9A8] italic leading-snug pl-[14px]">Building as you answer.</p>
-                  )}
+                  ) : null}
+                  <NoteLines notes={g.notes} pad />
                 </div>
               );
             }
@@ -436,12 +468,26 @@ function Ledger({ groups }: { groups: LedgerGroup[] }) {
                     </li>
                   ))}
                 </ul>
+                <NoteLines notes={g.notes} />
               </div>
             );
           })}
         </div>
       )}
     </div>
+  );
+}
+
+// Free-text notes in the customer's own words — shown in the ledger under their
+// section. Quiet italic, quoted, so they read as asides to consider, not counted picks.
+function NoteLines({ notes, pad }: { notes: string[]; pad?: boolean }) {
+  if (!notes.length) return null;
+  return (
+    <ul className={`space-y-1.5 mt-2 ${pad ? "pl-[14px]" : ""}`}>
+      {notes.map((n, i) => (
+        <li key={i} className="text-[13px] leading-snug text-[#8C8073] italic">&ldquo;{n}&rdquo;</li>
+      ))}
+    </ul>
   );
 }
 
@@ -477,6 +523,7 @@ function Brief({
   const active = order.includes(selected) ? selected : order[0];
   const activeFoundation = briefFoundation(setting, active, settingLabel, answers);
   const downloadWriteup = () => { try { window.open("?strategypdf=1&print=1", "_blank"); } catch { /* ignore */ } };
+  const gNotes = groundingNotes(setting, answers);
 
   return (
     <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-8 md:py-12">
@@ -533,6 +580,17 @@ function Brief({
         </div>
       )}
 
+      {gNotes.length > 0 && (
+        <div className="mt-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#B4A896] mb-3">In your words · on the ground</p>
+          <ul className="space-y-2 max-w-[880px]">
+            {gNotes.map((n, i) => (
+              <li key={i} className="text-[15px] leading-snug text-[#5A5248] italic">&ldquo;{n}&rdquo;</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* the selected goal read */}
       <div className="mt-8">
         <GoalBrief setting={setting} settingLabel={settingLabel} goal={active} answers={answers} rank={order.indexOf(active) + 1} total={order.length} />
@@ -569,7 +627,22 @@ function GoalBrief({
     ? { label: "Priority this year", value: `#${rank} of ${total}` }
     : (triedFoundationRow(setting, answers) ?? { label: "", value: "" });
   const current = thirdRow.label ? [...foundation.current, thirdRow] : foundation.current;
-  return <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={{ ...foundation, current }} />;
+  const notes = goalNotes(setting, goal, answers);
+  return (
+    <>
+      <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={{ ...foundation, current }} />
+      {notes.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-[#EAE4DB] max-w-[880px]">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#B4A896] mb-3">In your words · a note for us, not the ROI</p>
+          <ul className="space-y-2">
+            {notes.map((n, i) => (
+              <li key={i} className="text-[15px] leading-snug text-[#5A5248] italic">&ldquo;{n}&rdquo;</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
 }
 
 // The "already in place" row for single-goal briefs: what they told us is already

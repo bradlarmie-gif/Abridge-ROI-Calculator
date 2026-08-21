@@ -1082,3 +1082,21 @@ export function groundingQuestions(setting: AttainSetting): GroundingQuestion[] 
   ];
 }
 
+// ── free-text "add your own" notes (concepts to consider; never counted) ──────
+// Stored as `_note:${goal}:${qid}` and `_note:_ground:${qid}`. These reflect in
+// the brief, the ledger, and the PDF, but pin no lever, so they never enter the ROI.
+export function goalNotes(setting: AttainSetting, goal: GoalId, answers: DiscoveryAnswers): string[] {
+  const script = getScript(setting, goal);
+  if (!script) return [];
+  return Object.keys(script.questions)
+    .map((qid) => answers[`_note:${goal}:${qid}`])
+    .filter((v): v is string => !!v && !!v.trim())
+    .map((v) => v.trim());
+}
+export function groundingNotes(setting: AttainSetting, answers: DiscoveryAnswers): string[] {
+  return groundingQuestions(setting)
+    .map((q) => answers[`_note:_ground:${q.id}`])
+    .filter((v): v is string => !!v && !!v.trim())
+    .map((v) => v.trim());
+}
+
