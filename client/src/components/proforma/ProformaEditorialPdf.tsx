@@ -169,11 +169,14 @@ function fmtMoney(n: number): string {
   return `${sign}$${Math.round(a)}`;
 }
 
-/** Always 2-decimal millions, e.g. "$0.55M", "$2.65M" — case-level figures. */
+/** Case-level figures. 2-decimal millions at/above $1M ("$2.65M"), but $K below
+ * it ("$189K", not "$0.19M") to stay legible and match the on-screen app. */
 function fmtM(n: number): string {
   const a = Math.abs(n);
   const sign = n < 0 ? "-" : "";
-  return `${sign}$${(a / 1e6).toFixed(2)}M`;
+  if (a >= 1e6) return `${sign}$${(a / 1e6).toFixed(2)}M`;
+  if (a >= 1e3) return `${sign}$${Math.round(a / 1e3)}K`;
+  return `${sign}$${Math.round(a)}`;
 }
 
 /** Parenthesized cost, e.g. "($0.80M)". */
@@ -691,7 +694,7 @@ function HowValueInner({ data }: { data: ProformaPdfData }): JSX.Element {
           <tr>
             <td>Cumulative net</td>
             {years.map((y, i) => <td className="num" key={i}>{fmtM(y.cumulativeNet)}</td>)}
-            <td className="num" style={{ color: "var(--off)" }}>n/a</td>
+            <td className="num" style={{ color: "var(--off)" }}>—</td>
           </tr>
           <tr>
             <td>Return on investment</td>
