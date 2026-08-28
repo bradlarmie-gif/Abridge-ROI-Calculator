@@ -4,10 +4,19 @@ Repo-specific companion to the general `audit` skill. Read this first on a deep 
 
 ## What this app is
 
-One path, no salesperson: landing screen → care setting → goals → your numbers →
-what changes → your number → a PDF the practice can forward. The reader is a
-**physician or a small group practice sizing Abridge for themselves.** They have
-no Abridge rep and no impact-analysis data pull. Every figure is one they typed.
+No salesperson. The flow forks on **who is asking**, because that decides the
+question, and headcount does not:
+
+- **One provider** (often someone whose organisation makes them pay for Abridge
+  out of their own pocket) gets ONE screen: their week, their coding, what they
+  would do with the time back, and what they pay. Everything moves live. They
+  are paying, so this walk does answer the money question, in their terms.
+  `pages/forecast/SoloRoi.tsx`.
+- **A practice** gets the five-step walk: care setting, goals, your numbers,
+  what changes, your number, and a PDF they can forward.
+
+Either way there is no Abridge rep and no impact-analysis data pull, and every
+figure is one they typed.
 
 That audience is the source of most of the defect classes below.
 
@@ -17,7 +26,7 @@ That audience is the source of most of the defect classes below.
 npx tsc --noEmit                # types
 npx vitest run                  # 117 tests
 npm run build                   # tsx script/build.ts
-npx playwright test             # 12 e2e, desktop + iPhone 12
+npx playwright test             # 28 e2e, desktop + iPhone 12
 node scripts/layout-smoke.mjs   # needs the dev server on :5210
 node scripts/visual-sweep.mjs   # then REVIEW the gallery, do not just run it
 ```
@@ -44,6 +53,7 @@ not seen fail is not a guard.
 | `roiCalculatorNoRawNumber` | raw `type="number"` inputs that cannot be cleared |
 | `quickRoiPdfReconciliation` | PDF total drifting from the engine; raw float leaks in rendered HTML |
 | `layout-smoke` | overflow, wrapped headers, clipped input values, PDF bleed/NaN, scroll not resetting between steps |
+| e2e typing guards | characters dropped or focus lost while typing; the tab count disagreeing with the cards on screen; a solo practice offered team-scale levers |
 
 **`scanFiles` silently skips files it cannot read.** A guardrail pointed at a
 deleted path passes while checking nothing, which is exactly how the previous
@@ -67,6 +77,13 @@ rendered text of every screen in every setting and finding zero matches.
 - **Entrance transitions cause false positives.** A screenshot taken before the
   stagger settles shows a Continue button in a pale state that looks disabled.
   Wait ~2s, or assert with `isDisabled()`, before reporting it.
+- **An input must never be unmounted by the state it drives.** The price field
+  sat inside a `priced ? (...) : (...)` ternary, so the first digit flipped the
+  branch, React tore down the subtree, and a price of "2" against $396K printed
+  a 76,953x return. Same class: a deferred select-on-focus landing after the
+  first keystroke ate the first character of every numeric field. Neither is
+  visible in a screenshot. **Type into every field, one character at a time,
+  before calling an input screen clean.**
 - **Hiding a driver must also stop it counting.** The payer-model answer and the
   ED dependency both hide cards; each has an effect that switches the hidden
   driver off, or a card the practice cannot see keeps adding dollars.

@@ -63,28 +63,43 @@ for (const vp of VIEWPORTS) {
     });
 
     /**
-     * The individual was told to use Abridge by someone else. A return multiple
-     * is not their question, and putting one in front of them is where the tool
-     * would start selling at them.
+     * One provider working out their own return, on one screen. They are the
+     * one paying, so this walk DOES answer the money question, but it has to
+     * be theirs: hours off their notes, wRVUs on their own visits, against
+     * what comes out of their own pocket. And the trade-off has to be visible,
+     * because the same hour cannot be both an earlier finish and another patient.
      */
-    test("the individual walk never shows a price or a return", async ({ page }) => {
+    test("one provider gets their own return on a single screen", async ({ page }) => {
       await page.goto("/");
       await page.getByTestId("button-enter-app").click();
       await page.getByTestId("audience-me").click();
-      await page.getByText("Outpatient", { exact: true }).first().click();
 
-      const q = page.locator("input");
-      await expect(q, "the individual walk should ask three things, not five").toHaveCount(3);
-      await q.nth(0).fill("3000");
-      await q.nth(1).fill("7");
-      await q.nth(2).fill("4");
-      await page.getByRole("button", { name: /see what i get back/i }).click();
+      const f = page.locator("input:not([type=range])");
+      await expect(f, "the individual walk is one screen, not a wizard").toHaveCount(8);
+      await f.nth(0).fill("70");     // patients a week
+      await f.nth(1).fill("6.3");    // note now
+      await f.nth(2).fill("5.2");    // note with Abridge
+      await f.nth(3).fill("1.95");   // wRVU now
+      await f.nth(4).fill("2.03");   // wRVU with fuller notes
+      await f.nth(6).fill("20");     // visit length
+      await f.nth(7).fill("3000");   // what they pay
 
-      await expect(page.getByText(/hours a year/)).toBeVisible();
-      await expect(page.getByText(/back on a working day/)).toBeVisible();
-      const body = await page.locator("body").innerText();
-      expect(body, "the individual walk must not price or sell").not.toMatch(/×|what Abridge costs you|left over each year|not yet counted/);
-      expect(body, "no dollar figure belongs on this screen").not.toMatch(/\$[\d]/);
+      const body = () => page.locator("body").innerText();
+      await expect(page.getByText(/hours back\./)).toBeVisible();
+
+      // the slider spends the reclaimed hours; hours kept must fall as it moves
+      const slider = page.locator('input[type=range]');
+      await expect(slider).toBeEnabled();
+      const before = (await body()).match(/([\d,]+) hrs/)?.[1];
+      await slider.fill(await slider.getAttribute("max") ?? "1");
+      const after = (await body()).match(/([\d,]+) hrs/)?.[1];
+      expect(Number(after?.replace(/,/g, "")), "spending the time on patients should reduce the hours kept")
+        .toBeLessThan(Number(before?.replace(/,/g, "")));
+
+      // and the money question is answered, in their terms
+      const t = await body();
+      expect(t, "the provider paying needs their own return").toMatch(/left over, after paying for it|short, at that price/);
+      expect(t).toMatch(/× what you pay|does not cover what you pay/);
     });
 
     test("every care setting offers its own goals, and cannot be skipped", async ({ page }) => {
