@@ -107,7 +107,7 @@ export default function MethodologyContinuum({ onBack, onHome, onNavigate }: Pro
                               <span className="w-9 h-9 rounded-full border border-[#DCD3C6] flex items-center justify-center">
                                 <span className="w-[7px] h-[7px] rounded-full bg-[#B4A896]" />
                               </span>
-                              <span className="text-[10px] font-bold tracking-[0.06em] uppercase text-[#A0937F]">Proof</span>
+                              <span className="text-[10px] font-bold tracking-[0.06em] uppercase text-[#A0937F]">Tracked</span>
                             </>
                           )}
                         </div>

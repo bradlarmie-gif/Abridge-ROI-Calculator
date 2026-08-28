@@ -659,10 +659,11 @@ export default function App() {
               />
             )}
 
-            {/* Planning — resumes the saved strategy straight into Plan → Progress. */}
+            {/* Planning — opens on the partner "who it's for" step (never auto-assumes
+                the last partner), so you pick or switch the partner + care setting first;
+                settings with saved work are badged there to resume. */}
             {currentView === "planning" && (
               <AttainFlowV2
-                autoResume
                 chapters={["plan", "progress"]}
                 onHome={() => navigateTo("hub")}
                 onBackToJourney={() => navigateTo("planning-hub")}
