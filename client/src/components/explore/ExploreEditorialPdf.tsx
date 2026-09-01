@@ -469,7 +469,7 @@ function PitchPage({ data }: { data: ExplorePDFData }): JSX.Element {
 
       {/* Content block, vertically centered between the header and footer so the
           whitespace reads as balanced editorial air, not a cavernous mid-page void. */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 28, paddingBottom: 28 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", paddingTop: 44, paddingBottom: 20 }}>
         <div>
           <div style={sEyebrow}>The value on the table</div>
           <h2
@@ -485,24 +485,26 @@ function PitchPage({ data }: { data: ExplorePDFData }): JSX.Element {
         </div>
 
         {/* Hairline + stat trio */}
-        <div style={{ ...sRule, margin: "30px 0 22px" }} />
-        <div style={{ display: "flex", gap: 56 }}>
-          {[
-            { v: fmtShort(data.totalAnnualValue), k: "Annual value", coral: true },
-            { v: fmtShort(data.valuePerProvider), k: isNursing ? "Per bed" : "Per provider", coral: false },
-            { v: data.totalHoursSaved.toLocaleString("en-US"), k: "Clinician hours returned", coral: false },
-          ].map((s, i) => (
-            <div key={i}>
-              <div className="font-abridge" style={{ fontSize: 34, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>
-                {s.v}
+        <div>
+          <div style={{ ...sRule, marginBottom: 22 }} />
+          <div style={{ display: "flex", gap: 56 }}>
+            {[
+              { v: fmtShort(data.totalAnnualValue), k: "Annual value", coral: true },
+              { v: fmtShort(data.valuePerProvider), k: isNursing ? "Per bed" : "Per provider", coral: false },
+              { v: data.totalHoursSaved.toLocaleString("en-US"), k: "Clinician hours returned", coral: false },
+            ].map((s, i) => (
+              <div key={i}>
+                <div className="font-abridge" style={{ fontSize: 34, lineHeight: 1, color: s.coral ? C.coral : C.ink }}>
+                  {s.v}
+                </div>
+                <div style={{ ...sLbl, marginTop: 7 }}>{s.k}</div>
               </div>
-              <div style={{ ...sLbl, marginTop: 7 }}>{s.k}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Table of contents */}
-        <div style={{ marginTop: 46 }}>
+        <div>
           <div style={{ ...sLbl, marginBottom: 6 }}>Inside this assessment</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
             {toc.map((r) => (

@@ -18,7 +18,12 @@ export const PROFORMA_PDF_STORAGE_KEY = "abridge:proforma-pdf";
 
 // Per-setting display colors (descending emphasis). Matches the mock:
 // setting 1 = coral, setting 2 = soft pink, then warmer neutrals.
-export const PF_SETTING_COLORS = ["#EA2C00", "#F4A48C", "#F0704E", "#AFA491"] as const;
+// Care SETTINGS get a warm-NEUTRAL ramp, deliberately outside the coral domain
+// family (Capacity #EA2C00 / Workforce #F26A45 / Revenue #F7A488 / Quality
+// #CDBBA6). Reusing coral made "Outpatient" read as "Capacity" and "Emergency"
+// as "Revenue" on the same page — two taxonomies wearing one set of hues. Neutrals
+// keep settings clearly a different axis from the money domains.
+export const PF_SETTING_COLORS = ["#4A3F35", "#A99A87", "#C9BCA9", "#E0D6C8"] as const;
 
 // Domain accent colors (mock --rev / --cap / --wf / --off).
 const DOMAIN_COLOR = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
@@ -404,17 +409,19 @@ function CoverInner({ data }: { data: ProformaPdfData }): JSX.Element {
         </span>
         <span className="lbl">Financial Proforma</span>
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div className="eyebrow">The {data.termYears}-year case</div>
-        <h1 className="abr" style={{ fontSize: 56, lineHeight: 1.02, marginTop: 16, maxWidth: 640 }}>
-          {data.termNet >= 0
-            ? `A ${fmtM(data.termNet)} case, paid back in ${data.paybackMonth != null ? `${numWord(data.paybackMonth)} months` : "term"}.`
-            : `A ${termYrsWord(data.termYears)} case that does not clear its cost yet.`}
-        </h1>
-        <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.5, marginTop: 20, maxWidth: 530 }}>
-          {settingCount === 1 ? "One care setting" : `${cap(numWord(settingCount))} care settings`}, modeled on {data.org}'s own volume and economics over a {data.termYears}-year term. Not a benchmark, and not a list price.
-        </p>
-        <div style={{ display: "flex", gap: 48, marginTop: 38, paddingTop: 24, borderTop: "1px solid var(--hair)" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", paddingTop: 56, paddingBottom: 16 }}>
+        <div>
+          <div className="eyebrow">The {data.termYears}-year case</div>
+          <h1 className="abr" style={{ fontSize: 56, lineHeight: 1.02, marginTop: 16, maxWidth: 640 }}>
+            {data.termNet >= 0
+              ? `A ${fmtM(data.termNet)} case, paid back in ${data.paybackMonth != null ? `${numWord(data.paybackMonth)} months` : "term"}.`
+              : `A ${termYrsWord(data.termYears)} case that does not clear its cost yet.`}
+          </h1>
+          <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.5, marginTop: 20, maxWidth: 530 }}>
+            {settingCount === 1 ? "One care setting" : `${cap(numWord(settingCount))} care settings`}, modeled on {data.org}'s own volume and economics over a {data.termYears}-year term. Not a benchmark, and not a list price.
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 48, paddingTop: 24, borderTop: "1px solid var(--hair)" }}>
           <div className="stat">
             <div className="v coral" style={{ fontSize: 32 }}>{fmtM(data.termNet)}</div>
             <div className="k">{cap(numWord(data.termYears))}-year net value</div>
@@ -428,23 +435,23 @@ function CoverInner({ data }: { data: ProformaPdfData }): JSX.Element {
             <div className="k">Payback</div>
           </div>
         </div>
+        <div>
+          <div className="lbl" style={{ marginBottom: 11 }}>Inside this model</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 40px" }}>
+            {chapters.map(([no, title]) => (
+              <div
+                key={no}
+                style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--label)", borderBottom: "1px solid var(--soft)", paddingBottom: 7 }}
+              >
+                <span className="abr" style={{ color: "var(--off)" }}>{no}</span> {title}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div>
-        <div className="lbl" style={{ marginBottom: 11 }}>Inside this model</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 40px" }}>
-          {chapters.map(([no, title]) => (
-            <div
-              key={no}
-              style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--label)", borderBottom: "1px solid var(--soft)", paddingBottom: 7 }}
-            >
-              <span className="abr" style={{ color: "var(--off)" }}>{no}</span> {title}
-            </div>
-          ))}
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 22, fontSize: 11, color: "var(--faint)" }}>
-          <span>Prepared with your team · {data.org} · {data.date}</span>
-          <span>Confidential</span>
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20, fontSize: 11, color: "var(--faint)" }}>
+        <span>Prepared with your team · {data.org} · {data.date}</span>
+        <span>Confidential</span>
       </div>
     </>
   );
@@ -608,7 +615,9 @@ function StackedBar({ data }: { data: ProformaPdfData }): JSX.Element {
           </g>
         );
       })}
-      <text x="880" y="114" fontSize="9" fill="var(--muted)" textAnchor="end">investment</text>
+      {/* The dashed per-bar line is explained by the legend below ("— Investment");
+          the old free-floating "investment" caption sat at a fixed height,
+          disconnected from every line it named, so it's dropped. */}
     </svg>
   );
 }
