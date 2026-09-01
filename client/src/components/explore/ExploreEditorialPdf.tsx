@@ -578,15 +578,22 @@ function RampChart({ data }: { data: ExplorePDFData }): JSX.Element {
         <line x1="20" y1="84" x2="332" y2="84" stroke="#EFE9E1" />
         <line x1="20" y1="150" x2="332" y2="150" stroke={C.hair} />
         {marker && (
-          <line
-            x1="20"
-            y1={marker.y}
-            x2="332"
-            y2={marker.y}
-            stroke="#9C8E7E"
-            strokeWidth="1.2"
-            strokeDasharray="5 4"
-          />
+          <>
+            <line
+              x1="20"
+              y1={marker.y}
+              x2="332"
+              y2={marker.y}
+              stroke="#9C8E7E"
+              strokeWidth="1.2"
+              strokeDasharray="5 4"
+            />
+            {/* Label the dashed line so it reads as the cost it represents. Sits
+                just above the line at the right, where the curve is well overhead. */}
+            <text x="332" y={marker.y - 5} fontFamily="Manrope" fontSize="8.5" fill="#9C8E7E" textAnchor="end">
+              recurring cost
+            </text>
+          </>
         )}
         <path d="M20,150 C120,148 210,112 332,24 L332,150 Z" fill="#EA2C00" fillOpacity="0.08" />
         <path d="M20,150 C120,148 210,112 332,24" fill="none" stroke={C.coral} strokeWidth="2.5" />
@@ -603,17 +610,18 @@ function RampChart({ data }: { data: ExplorePDFData }): JSX.Element {
               strokeDasharray="3 3"
             />
             <circle cx={marker.x} cy={marker.y} r="4.5" fill="#fff" stroke={C.coral} strokeWidth="2.5" />
-            {/* Anchor the label so it can never overflow the chart box: when
-                the crossover lands early (marker to the left) the label extends
-                RIGHT into open space; when late, it extends LEFT. */}
+            {/* Sit the label in the open wedge UP-LEFT of the marker — above the
+                cost line, where the (rising, up-right) curve never reaches — so it
+                can't collide with the curve. End-anchored and clamped so it never
+                overflows the left edge on an early crossover. */}
             <text
-              x={marker.x >= 180 ? marker.x - 10 : marker.x + 8}
-              y={marker.y - 8}
+              x={Math.max(marker.x - 8, 112)}
+              y={marker.y - 13}
               fontFamily="Manrope"
               fontSize="10"
               fontWeight="700"
               fill="#B02200"
-              textAnchor={marker.x >= 180 ? "end" : "start"}
+              textAnchor="end"
             >
               clears the cost · Mo {month}
             </text>

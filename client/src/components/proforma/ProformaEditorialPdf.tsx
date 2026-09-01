@@ -323,11 +323,14 @@ function Sheet({
   );
 }
 
-function RunningHeader({ label, num }: { label: string; num: string }): JSX.Element {
+// The single page indicator lives in the footer ("… N of {total}"), matching
+// Explore. We intentionally drop the top-right section index here so a reader
+// never sees two competing page numbers on one sheet (e.g. "01" vs "3 of 8").
+// `num` is kept on the prop so call sites don't churn; it is deliberately unused.
+function RunningHeader({ label }: { label: string; num?: string }): JSX.Element {
   return (
     <div className="rhead">
       <span className="l">{label}</span>
-      <span className="n">{num}</span>
     </div>
   );
 }
