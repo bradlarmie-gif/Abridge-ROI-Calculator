@@ -63,6 +63,7 @@ const DRIVER_DESC: Record<string, string> = {
 // setting it actually appears in.
 const DRIVER_DESC_BY_SETTING: Record<string, string> = {
   "ed:wrvu": "Complete ED notes support the E/M level the visit actually warranted, so the acuity already delivered is coded and billed accurately.",
+  "ed:providerWellbeing": "Emergency clinicians are among the hardest roles to staff; a lighter charting load after unpredictable shifts eases the burnout that drives their turnover.",
 };
 
 const SIGNALS: Record<string, string[]> = {
