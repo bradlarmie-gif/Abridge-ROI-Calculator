@@ -353,6 +353,58 @@ for (const vp of VIEWPORTS) {
       expect(multiple, "return multiple is not believable").toBeLessThan(50);
     });
 
+    /**
+     * The what-changes step used to be a form: switches, no number on screen,
+     * and the total revealed two clicks later. The running total is what makes
+     * it a build rather than a questionnaire, so it has to accumulate across
+     * domains AND stay pinned while they work. `overflow-x: hidden` on body
+     * silently broke the pin once; `clip` fixed it, and nothing about that is
+     * visible in a screenshot.
+     */
+    test("the running total accumulates and stays pinned", async ({ page }) => {
+      await enterCalculator(page);
+      await page.getByText("Outpatient", { exact: true }).first().click();
+      await pickAllGoals(page);
+      const acct = page.locator("input");
+      for (const [i, v] of [["Riverbend"], ["40"], ["30"], ["3200"], ["80"]].entries()) {
+        await acct.nth(i).fill(v[0]);
+      }
+      await page.getByRole("button", { name: /next: what changes/i }).click();
+
+      const bar = page.getByTestId("running-total");
+      await expect(bar).toContainText("Nothing counted yet");
+
+      // read the total itself, not a regex over the whole bar: the ledger lines
+      // beside it are also dollars and the first match is not always the total
+      const figure = page.getByTestId("running-total-figure");
+      const money = async () => {
+        const m = (await figure.innerText()).match(/\$([\d.]+)([KM])?/);
+        if (!m) return 0;
+        return Number(m[1]) * (m[2] === "M" ? 1000 : m[2] === "K" ? 1 : 0.001);
+      };
+      // the figure counts up, so poll rather than reading mid-animation
+      await page.locator('button[role="switch"]').first().click();
+      await expect
+        .poll(money, { message: "switching one on should put a number in the running total" })
+        .toBeGreaterThan(0);
+      const one = await money();
+
+      // a driver in a DIFFERENT domain must add to the same total
+      await page.getByRole("button", { name: /^Workforce/ }).click();
+      await expect(page.getByText("Retention (burnout)")).toBeVisible();
+      await page.locator('button[role="switch"]').first().click();
+      await expect(bar).toContainText("Retention (burnout)");
+      await expect
+        .poll(money, { message: "the total must accumulate across domains, not reset per tab" })
+        .toBeGreaterThan(one);
+
+      // and it must still be on screen once they scroll down to work
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const top = await bar.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+      expect(top, `running total scrolled away (top ${top}px); it must pin under the header`).toBeLessThan(120);
+      expect(top).toBeGreaterThan(0);
+    });
+
     test("a full run produces a dollar answer", async ({ page }) => {
       await enterCalculator(page);
       await page.getByText("Outpatient", { exact: true }).first().click();

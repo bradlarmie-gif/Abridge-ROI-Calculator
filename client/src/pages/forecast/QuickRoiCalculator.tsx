@@ -421,7 +421,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
     const dollar = cards
       .filter((dr) => enabled[dr.id])
       .reduce((s, dr) => s + (today.valueById[dr.id] ?? 0), 0);
-    if (dollar > 0) return fmtShort(dollar);
+    if (dollar > 0) return "";
     // Capacity is a signal, never a toggle: it shows hours, or says it is waiting
     // on the minutes. Everything else says how many cards are still off. One
     // vocabulary, so two null states are never ambiguous side by side.
@@ -432,6 +432,13 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
     return cards.length > 0 ? `${cards.length} to switch on` : "Nothing on";
   };
   const activeDomain = domains[Math.min(liftTab, Math.max(0, domains.length - 1))];
+  // the running total is across every chosen domain, not just the open tab
+  const chosenDrivers = useMemo(() => domains.flatMap((d) => visibleDrivers(d)), [domains, visibleDrivers]);
+  const countedLines = chosenDrivers
+    .filter((dr) => enabled[dr.id] && (today.valueById[dr.id] ?? 0) > 0)
+    .map((dr) => ({ title: dr.title, value: today.valueById[dr.id] ?? 0 }));
+  const countedTotal = countedLines.reduce((sum, l) => sum + l.value, 0);
+  const onCount = chosenDrivers.filter((dr) => enabled[dr.id]).length;
 
   // Export the one-pager: stash a snapshot of the inputs and open the HTML print
   // route (?quickroipdf=1&print=1). The PDF recomputes from these same inputs
@@ -581,15 +588,19 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
       {step === 2 && (
         <StepShell title="So, what would actually change?" sub={`Turn on only the things you believe would move in your ${orgWord}, and set each one yourself. Anything left off counts as zero.`}>
+          <RunningTotal total={countedTotal} hours={hoursReclaimed} lines={countedLines}
+            onCount={onCount} ofCount={chosenDrivers.length} />
           {/* section tabs — navigate between the domains */}
-          <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
+          <div className="mt-7 flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
             {domains.map((dom, i) => {
               const sum = tabSummary(dom);
-              const isNull = sum === "Off" || sum === "—";
+              const counted = sum === "";
               return (
               <button key={dom} onClick={() => setLiftTab(i)} className="relative flex items-baseline gap-2 pb-3 -mb-px outline-none group">
                 <span className={`text-[13px] font-bold tracking-[0.01em] transition-colors ${i === liftTab ? "text-[#1A1A1A]" : "text-[#A69A88] group-hover:text-[#5E534A]"}`}>{dom}</span>
-                <span className={`font-abridge text-[14px] transition-colors ${i === liftTab && !isNull ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{sum}</span>
+                {counted
+                  ? <span aria-label="counted" className="w-1.5 h-1.5 rounded-full bg-[#EA2C00] self-center" />
+                  : <span className="text-[12.5px] text-[#C9BDAD]">{sum}</span>}
                 {i === liftTab && <span className="absolute left-0 right-0 bottom-[-1px] h-[2px] bg-[#EA2C00]" />}
               </button>
               );
@@ -625,6 +636,67 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
           targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct} showUtilDial={!isNursing}
           price={price} setPrice={setPrice} onBack={() => setStep(2)} onExport={onExportPdf} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * The running total, pinned while they work.
+ *
+ * The "what changes" step used to be a form: three rows with switches, no
+ * number anywhere on screen, and the answer revealed two clicks later. Nothing
+ * accumulated, so there was no reason to feel you were building anything.
+ *
+ * This sticks under the header and climbs as each driver comes on, with the
+ * lines that are counted listed beside it. The point is that the figure on the
+ * answer step should be a confirmation of something they watched assemble, not
+ * a reveal.
+ *
+ * Deliberately not a coral zero when nothing is on: an empty running total is a
+ * prompt, not a result, so it stays muted until there is something real in it.
+ */
+function RunningTotal({ total, hours, lines, onCount, ofCount }: {
+  total: number; hours: number;
+  lines: { title: string; value: number }[];
+  onCount: number; ofCount: number;
+}) {
+  const shown = useCountUp(total);
+  const live = total > 0 || hours > 0;
+  return (
+    <div data-testid="running-total" className="sticky top-14 sm:top-16 z-30 -mx-5 sm:-mx-8 px-5 sm:px-8 bg-[#FDFCFA] border-b border-[#E8E2DA] pt-4 pb-4">
+      <div className="flex items-baseline justify-between gap-4">
+        <span className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]">So far</span>
+        <span className="text-[12px] text-[#A69A88] tabular-nums whitespace-nowrap">{onCount} of {ofCount} on</span>
+      </div>
+      {live ? (
+        <>
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3">
+            <span data-testid="running-total-figure" className={`font-abridge text-[34px] sm:text-[40px] leading-none ${total > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>
+              {fmtShort(shown)}
+            </span>
+            <span className="text-[14px] text-[#9A8C7A]">a year</span>
+            {hours > 0 && (
+              <span className="text-[13px] text-[#8C8073]">
+                and <span className="font-abridge text-[16px] text-[#1A1A1A]">{fmtInt(hours)}</span> hours back
+              </span>
+            )}
+          </div>
+          {lines.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-0.5">
+              {lines.map((l) => (
+                <span key={l.title} className="text-[12px] text-[#A69A88]">
+                  {l.title} <span className="font-abridge text-[13px] text-[#5E534A]">{fmtShort(l.value)}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="mt-1.5">
+          <div className="font-abridge text-[24px] leading-none text-[#C9BDAD]">Nothing counted yet</div>
+          <div className="text-[12.5px] text-[#A69A88] mt-1.5">Switch something on and it starts adding up here.</div>
+        </div>
       )}
     </div>
   );
