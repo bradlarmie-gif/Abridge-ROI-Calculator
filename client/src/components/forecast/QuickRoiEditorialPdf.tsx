@@ -232,7 +232,7 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </div>
       <div style={{ flexGrow: 1 }} />
       <div style={{ marginTop: 16 }}>
-        <div style={{ ...sLbl, marginBottom: 6 }}>Inside this one-pager</div>
+        <div style={{ ...sLbl, marginBottom: 6 }}>Inside this brief</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 44 }}>
           {[{ n: "01", t: "The numbers, itemized" }, { n: "02", t: "The upside, if they expand" }].map((r) => (
             <div key={r.n} style={{ display: "flex", gap: 14, alignItems: "baseline", padding: "12px 0", borderTop: `1px solid ${C.hair}` }}>
@@ -257,7 +257,10 @@ function PitchPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
 // ───────────────────────── Page 3 · What Abridge is worth ─────────────────────────
 // A ramp of coral shades for the composition bar — darkest = biggest driver, so
 // the eye reads the makeup by weight. Coral because this bar IS the money.
-const CORAL_RAMP = ["#EA2C00", "#F0562F", "#F4785B", "#F89A82", "#FBBBA9", "#F6D3C6", "#EFE0D6"];
+// Kept confidently coral through the first several steps so a 3rd/4th driver dot
+// never washes out into a pale peach that reads as "tracked, not counted" on this
+// all-counted money page. The very light tail is only for many-driver edge cases.
+const CORAL_RAMP = ["#EA2C00", "#F0562F", "#F26A45", "#F5896B", "#F9AC97", "#F6D3C6", "#EFE0D6"];
 
 function NumbersPage({ data }: { data: QuickRoiPdfData }): JSX.Element {
   const m = buildQuickRoiPdfModel(data);
@@ -379,8 +382,7 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
       </div>
 
       {/* the stretch, spelled out — the two levers that grow the volume */}
-      <div style={{ flexGrow: 1 }} />
-      <div style={{ marginTop: 24 }}>
+      <div style={{ marginTop: 30 }}>
         <div style={sLbl}>The stretch, spelled out</div>
         <div style={{ marginTop: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "18px 0", borderTop: `1px solid ${C.hair}` }}>
@@ -410,11 +412,9 @@ function UpsidePage({ data }: { data: QuickRoiPdfData }): JSX.Element {
         </div>
       </div>
 
-      <div style={{ flexGrow: 1 }} />
-      <div style={{ ...sRule, margin: "32px 0 0" }} />
+      <div style={{ ...sRule, margin: "34px 0 0" }} />
 
       {/* the return */}
-      <div style={{ flexGrow: 1 }} />
       <div style={{ marginTop: 26 }}>
         <div style={sEyebrow}>The return, on today's case</div>
         {priced ? (

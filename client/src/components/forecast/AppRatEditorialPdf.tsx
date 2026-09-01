@@ -475,13 +475,17 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
       )}
       {nodes.map((n) => <circle key={n.id} cx={n.x} cy={n.y} r={5} fill={C.coral} stroke="#fff" strokeWidth={2.5} />)}
       <text x={x0 - 8} y={yf(FULL) + 4} textAnchor="end" fontSize={10} fontWeight={700} fill={C.faint}>{fmtShort(FULL)}</text>
-      <text x={x0 - 8} y={(yTop + yBase) / 2 + 3} textAnchor="end" fontSize={10} fill={C.off}>{fmtShort(FULL / 2)}</text>
+      {/* Round the mid gridline to a clean figure — raw FULL/2 printed odd ticks
+          like "$499K" that read as a glitch next to the $998K top. */}
+      <text x={x0 - 8} y={(yTop + yBase) / 2 + 3} textAnchor="end" fontSize={10} fill={C.off}>{fmtShort(Math.round(FULL / 2 / 50000) * 50000)}</text>
       <text x={x0 - 8} y={yBase + 3} textAnchor="end" fontSize={10} fill={C.off}>$0</text>
       {marks.map((m) => (
         <text key={m} x={xf(m)} y={yBase + 18} textAnchor={m === 0 ? "start" : m === axisMax ? "end" : "middle"} fontSize={9} fill={C.faint}>{m === 0 ? "now" : renewalDateLabel(m)}</text>
       ))}
       <text x={x1} y={yTop - 14} textAnchor="end" fontSize={9} fontWeight={700} fill={C.coral}>{fmtShort(FULL)} / yr · full run-rate</text>
-      {showYear1 && <text x={y1x + 5} y={Math.max(y1y - 14, yTop + 13)} fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>}
+      {/* Anchor the Year-1 callout to the LEFT of its step, over the open lower
+          plateau, so it clears the step riser and the Sep-'27 guide line. */}
+      {showYear1 && <text x={y1x - 8} y={Math.max(y1y - 13, yTop + 13)} textAnchor="end" fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>}
     </svg>
   );
 }
