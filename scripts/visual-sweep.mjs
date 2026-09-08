@@ -109,6 +109,48 @@ async function driveCalculator(page, setting, { stopAt = "answer" } = {}) {
   return `${setting} — the answer`;
 }
 
+/**
+ * The other walk: one provider working out their own return.
+ *
+ * The sweep did not photograph this screen at all for the whole of its life,
+ * which meant a rebuild of it (a pinned total, a pay-model gate, a reordered
+ * page) could ship without a single eyeball on the result. Three states,
+ * because how they are paid changes what the page says: unanswered, paid on
+ * productivity, and on a flat salary.
+ */
+async function driveSolo(page, { pay = null } = {}) {
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(500);
+  await page.getByRole("button", { name: /estimate my value|calculate your roi/i }).first().click({ timeout: 6000 });
+  await page.waitForTimeout(400);
+  await page.getByTestId("audience-me").click({ timeout: 6000 });
+  await page.waitForTimeout(500);
+  if (pay === null) return "one provider — empty, before the pay question";
+
+  await page.getByTestId(`pay-${pay}`).click({ timeout: 6000 });
+  await page.waitForTimeout(300);
+  const fill = async (id, v) => {
+    await page.getByTestId(id).fill(v, { timeout: 4000 }).catch(() => {});
+  };
+  await fill("f-cost", "3000");
+  await fill("f-per-week", "70");
+  await fill("f-note-now", "9");
+  await fill("f-note-with", "6");
+  await fill("f-wrvu-now", "1.9");
+  await fill("f-wrvu-with", "2");
+  await fill("f-visit-mins", "20");
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.waitForTimeout(300);
+  // spend some of the reclaimed time, so both sides of the trade-off are shown
+  const slider = page.locator("input[type=range]");
+  if (await slider.count()) {
+    const max = Number((await slider.getAttribute("max")) ?? "1");
+    await slider.fill(String(Math.max(1, Math.round(max / 2))), { timeout: 3000 }).catch(() => {});
+  }
+  await page.waitForTimeout(800);
+  return `one provider — ${pay === "salary" ? "on a flat salary" : "paid on productivity"}, filled`;
+}
+
 function audit() {
   const out = { overflow: 0, overlaps: [], escaped: [], svgLabels: [] };
   out.overflow = document.documentElement.scrollWidth - window.innerWidth;
@@ -206,6 +248,10 @@ for (const s of ["outpatient", "ed", "inpatient", "nursing"]) {
   await scene(browser, `calc-4-lift-${s}`, (p) => driveCalculator(p, s, { stopAt: "lift" }), { height: 1800 });
   await scene(browser, `calc-5-answer-${s}`, (p) => driveCalculator(p, s), { height: 1600 });
 }
+
+await scene(browser, "solo-1-empty", (p) => driveSolo(p), { height: 1600 });
+await scene(browser, "solo-2-productivity", (p) => driveSolo(p, { pay: "productivity" }), { height: 2000 });
+await scene(browser, "solo-3-salary", (p) => driveSolo(p, { pay: "salary" }), { height: 2000 });
 
 // ── B. PDFs, one screenshot PER PAGE (so each page gets its own eyeball) ──────
 const PDF_ROUTES = [

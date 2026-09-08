@@ -48,12 +48,14 @@ not seen fail is not a guard.
 
 | Guard | Catches |
 |---|---|
-| `quickRoiCopyGuardrails` | em dashes, guarantee/causal absolutes, **rep vocabulary** (partner, impact analysis, data pull), **realization jargon**, **harm-prevention claims** |
+| `quickRoiCopyGuardrails` | em dashes, guarantee/causal absolutes, **rep vocabulary** (partner, impact analysis, data pull), **realization jargon**, **harm-prevention claims**, **vendor benchmark claims** ("what we typically see"), **inputs pre-anchored with an invented figure** |
+| `soloModel` | dollars attributed to a provider who cannot receive them; the same hour spent twice; a return multiple on someone else's money |
 | `settingDomainFit` | a noun hardcoded for one setting and reused on the other three |
 | `roiCalculatorNoRawNumber` | raw `type="number"` inputs that cannot be cleared |
 | `quickRoiPdfReconciliation` | PDF total drifting from the engine; raw float leaks in rendered HTML |
 | `layout-smoke` | overflow, wrapped headers, clipped input values, PDF bleed/NaN, scroll not resetting between steps |
 | e2e typing guards | characters dropped or focus lost while typing; the tab count disagreeing with the cards on screen; a solo practice offered team-scale levers |
+| e2e one-provider guards | a field arriving pre-filled; money shown before the pay question; the pin scrolling away; a salaried reader shown a multiple or a figure "in your pocket" |
 
 **`scanFiles` silently skips files it cannot read.** A guardrail pointed at a
 deleted path passes while checking nothing, which is exactly how the previous
@@ -62,6 +64,35 @@ per-tool guardrails rotted. Every guard here asserts its files exist first.
 **Not scanned on purpose:** `lib/exploreDrivers.ts`. It reads like copy but only
 its driver ids and quadrant mapping are consumed; verified by dumping the
 rendered text of every screen in every setting and finding zero matches.
+
+## Defect classes this repo keeps producing
+
+- **A figure nobody measured, sitting in an input.** `placeholder="6.3"` then
+  `placeholder="5.2"` on "how long does a note take now" and "and with
+  Abridge" put a 1.1-minute saving on screen as a finding, and it was the
+  anchor for the largest number on the page. A placeholder may describe the
+  shape of the answer ("e.g., 70"); it may never assert one. Guarded.
+- **A caveat applied to half the money.** The one-provider screen said plainly
+  that a coding lift only reaches a doctor paid on productivity, then put up
+  dollars from "extra patients a week" with no such caveat and rolled both into
+  one total and one multiple. Both have the same fate. When a disclosure
+  applies to a mechanism, check every driver that shares that mechanism, not
+  the one you were looking at.
+- **The same figure three times.** The practice path's per-tab dollar summaries
+  and the one-provider verdict panel both restated what the pinned total was
+  already showing. Rule: **the pin carries what is accumulating, the panel at
+  the bottom carries only the judgment on it.** A figure earns one home.
+- **A zero posing as an answer.** "0 hrs a year still yours" next to a coral
+  dash, on an untouched screen. Empty states say what is missing; they do not
+  render arithmetic on nothing. See the no-fake-data rule.
+- **A guard that never looked at the file.** `SoloRoi.tsx` was absent from the
+  copy guardrail's `FILES` for its whole life, which is how a vendor benchmark
+  claim reached the screen. When you add a screen, add it to the guard in the
+  same commit.
+- **The sweep cannot see what it does not visit.** `visual-sweep.mjs` never
+  drove the one-provider walk, so a full rebuild of that screen could ship with
+  no eyeball on the result. Three states are now captured, because how they are
+  paid changes what the page says.
 
 ## Known traps in this repo
 

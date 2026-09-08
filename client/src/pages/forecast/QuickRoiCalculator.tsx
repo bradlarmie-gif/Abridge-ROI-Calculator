@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { ArrowRight, ChevronDown, Download } from "lucide-react";
 import { QUICK_ROI_PDF_STORAGE_KEY } from "@/components/forecast/QuickRoiEditorialPdf";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { useCountUp } from "@/hooks/useCountUp";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import SoloRoi from "./SoloRoi";
 import {
@@ -65,26 +66,6 @@ const fmtShort = (n: number) => {
   if (a >= 1e3) return `${sign}$${Math.round(a / 1e3)}K`;
   return `${sign}$${Math.round(a)}`;
 };
-
-function useCountUp(value: number, ms = 550): number {
-  const [shown, setShown] = useState(value);
-  const fromRef = useRef(value);
-  const rafRef = useRef<number>();
-  useEffect(() => {
-    const from = fromRef.current;
-    const start = performance.now();
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / ms);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setShown(from + (value - from) * eased);
-      if (p < 1) rafRef.current = requestAnimationFrame(tick);
-      else fromRef.current = value;
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [value, ms]);
-  return shown;
-}
 
 const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]";
 const STEPS = ["Your goals", "Your numbers", "What changes", "Your number"];

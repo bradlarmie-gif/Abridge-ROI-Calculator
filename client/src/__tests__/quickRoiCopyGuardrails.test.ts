@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { scanFiles, formatHits, type Rule } from "./support/copyGuardrail";
@@ -26,6 +26,11 @@ const CLIENT_SRC = join(here, "..");
 const FILES: string[] = [
   "pages/SplashScreen.tsx",
   "pages/forecast/QuickRoiCalculator.tsx",
+  // The one-provider walk. It was missing from this list for its whole life,
+  // which is exactly how "the faded number is what we typically see" reached
+  // the screen: a benchmark claim in a vendor's voice, on the one page whose
+  // reader has nobody in the room to take that claim from.
+  "pages/forecast/SoloRoi.tsx",
   "components/forecast/QuickRoiEditorialPdf.tsx",
   "components/forecast/QuickRoiEditorialPdfRoute.tsx",
   "components/UnifiedHeader.tsx",
@@ -69,6 +74,25 @@ const AUDIENCE_RULES: Rule[] = [
    * actor. "preventable"/"avoidable" as a standing clinical descriptor is fine.
    */
   { name: "prevention-claim", hit: (c) => /\bprevent(ion|ions|ed|ing)\b/i.test(c) },
+  /**
+   * Benchmark claims in a vendor's voice.
+   *
+   * "we count 75% of it" is fine and is used throughout: that is the house
+   * explaining its own method, and the reader can argue with it. "the faded
+   * number is what we typically see" is a different act. It asserts a result
+   * from data the reader cannot see, on a page built precisely because there
+   * is no rep present to be asked "see where?". Every figure on this tool is
+   * one the reader typed or one that is publicly sourced (the Medicare rate).
+   * So: state a method in the first person all you like, never a result.
+   */
+  {
+    name: "vendor-benchmark-claim",
+    hit: (c) =>
+      /\bwe\s+(typically\s+|usually\s+|generally\s+|often\s+|commonly\s+|normally\s+)?(see|find|observe|measure|deliver|achieve)\b/i.test(c) ||
+      /\bin our (experience|data|numbers)\b/i.test(c) ||
+      /\b(on|across) average,? we\b/i.test(c) ||
+      /\bour (customers|clients|users|practices|providers)\b/i.test(c),
+  },
 ];
 
 describe("ROI Calculator COPY guardrails", () => {
@@ -90,5 +114,54 @@ describe("ROI Calculator COPY guardrails", () => {
     // rule can sit in the list doing nothing, which is what happened here.
     const hits = scanFiles(CLIENT_SRC, FILES, AUDIENCE_RULES).filter((h) => names.has(h.rule));
     expect(hits.length, `Rep-facing vocabulary in self-service copy (${hits.length}):\n${formatHits(hits)}`).toBe(0);
+  });
+
+  /**
+   * Negative control. Every rule here exists because something real got past
+   * the list, so the list itself has to be shown to still bite: feed each
+   * audience rule the copy it was written for and require a hit. A rule that
+   * matches nothing is worse than no rule, because it reads like coverage.
+   */
+  it("each audience rule still catches the copy it was written for", () => {
+    const cases: Record<string, string> = {
+      "rep-vocabulary": 'hint="read this off the impact analysis your partner sent"',
+      "realization-jargon": "× 75% realization",
+      "prevention-claim": 'label="Prevention attributable to timely docs"',
+      "vendor-benchmark-claim": 'hint="your estimate; the faded number is what we typically see"',
+    };
+    expect(Object.keys(cases).sort(), "a rule was added or renamed without a control")
+      .toEqual(AUDIENCE_RULES.map((r) => r.name).sort());
+    for (const rule of AUDIENCE_RULES) {
+      expect(rule.hit(cases[rule.name]), `the ${rule.name} rule no longer catches its own case`).toBe(true);
+    }
+    // and the house methodology voice is deliberately still allowed
+    const vendor = AUDIENCE_RULES.find((r) => r.name === "vendor-benchmark-claim")!;
+    expect(vendor.hit("coding education and CDI move this too, so we count 75% of it")).toBe(false);
+  });
+
+  /**
+   * No invented figure may sit in an input.
+   *
+   * `placeholder="6.3"` then `placeholder="5.2"` on "how long does a note take
+   * now" and "and with Abridge" put a 1.1-minute saving on screen as though it
+   * were a finding. Nobody measured it, and it is the anchor for the largest
+   * number on the page. An "e.g., 70" is a different thing: it shows the shape
+   * of the answer they are being asked for. So a placeholder may describe the
+   * answer, but it may never assert one.
+   */
+  it("no input is pre-anchored with an invented figure", () => {
+    const NUMERIC_FIELD_FILES = ["pages/forecast/SoloRoi.tsx", "pages/forecast/QuickRoiCalculator.tsx"];
+    const bare: string[] = [];
+    for (const rel of NUMERIC_FIELD_FILES) {
+      const content = readFileSync(join(CLIENT_SRC, rel), "utf8");
+      content.split("\n").forEach((line, i) => {
+        for (const m of line.matchAll(/placeholder=(?:"([^"]*)"|\{"([^"]*)"\})/g)) {
+          const v = (m[1] ?? m[2] ?? "").trim();
+          // a bare number, with or without separators: an assertion, not an example
+          if (/^[\d.,]+$/.test(v)) bare.push(`  ${rel}:${i + 1}  →  placeholder="${v}"`);
+        }
+      });
+    }
+    expect(bare.length, `Placeholders asserting a figure nobody measured (${bare.length}):\n${bare.join("\n")}`).toBe(0);
   });
 });

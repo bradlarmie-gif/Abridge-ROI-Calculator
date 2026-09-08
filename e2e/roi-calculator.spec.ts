@@ -69,37 +69,117 @@ for (const vp of VIEWPORTS) {
      * what comes out of their own pocket. And the trade-off has to be visible,
      * because the same hour cannot be both an earlier finish and another patient.
      */
-    test("one provider gets their own return on a single screen", async ({ page }) => {
+    test("one provider paid on productivity watches their own return build", async ({ page }) => {
       await page.goto("/");
       await page.getByTestId("button-enter-app").click();
       await page.getByTestId("audience-me").click();
 
-      const f = page.locator("input:not([type=range])");
-      await expect(f, "the individual walk is one screen, not a wizard").toHaveCount(8);
-      await f.nth(0).fill("70");     // patients a week
-      await f.nth(1).fill("6.3");    // note now
-      await f.nth(2).fill("5.2");    // note with Abridge
-      await f.nth(3).fill("1.95");   // wRVU now
-      await f.nth(4).fill("2.03");   // wRVU with fuller notes
-      await f.nth(6).fill("20");     // visit length
-      await f.nth(7).fill("3000");   // what they pay
+      // nothing invented: no field arrives carrying a figure
+      const pin = page.getByTestId("solo-pin");
+      await expect(pin).toContainText("Nothing to show yet");
+      for (const id of ["f-note-now", "f-note-with"]) {
+        await expect(page.getByTestId(id), `${id} must not be pre-filled`).toHaveValue("");
+      }
 
-      const body = () => page.locator("body").innerText();
+      await page.getByTestId("f-per-week").fill("70");
+      await page.getByTestId("f-note-now").fill("9");
+      await page.getByTestId("f-note-with").fill("6");
       await expect(page.getByText(/hours back\./)).toBeVisible();
 
+      // the hours are theirs either way, but no dollars are attributed to
+      // anyone until they have said how they are paid
+      await expect(pin).toContainText("hrs");
+      await expect(pin, "money before the pay question means money with no owner").not.toContainText("$");
+      await expect(page.getByTestId("f-wrvu-now")).toHaveCount(0);
+
+      await page.getByTestId("pay-productivity").click();
+      for (const id of ["f-wrvu-now", "f-wrvu-with"]) {
+        await expect(page.getByTestId(id), `${id} must not be pre-filled`).toHaveValue("");
+      }
+      await page.getByTestId("f-wrvu-now").fill("1.9");
+      await page.getByTestId("f-wrvu-with").fill("2");
+      await page.getByTestId("f-visit-mins").fill("20");
+      await page.getByTestId("f-cost").fill("3000");
+
+      // the pin carries the money as it builds, not just the answer at the end
+      const figure = page.getByTestId("solo-pin-figure");
+      const money = async () => {
+        const m = (await figure.innerText()).match(/\$([\d.]+)([KM])?/);
+        return m ? Number(m[1]) * (m[2] === "M" ? 1000 : m[2] === "K" ? 1 : 0.001) : 0;
+      };
+      await expect.poll(money, { message: "their own coding lift should show in the pin" }).toBeGreaterThan(0);
+
       // the slider spends the reclaimed hours; hours kept must fall as it moves
-      const slider = page.locator('input[type=range]');
+      const body = () => page.locator("body").innerText();
+      const slider = page.locator("input[type=range]");
       await expect(slider).toBeEnabled();
       const before = (await body()).match(/([\d,]+) hrs/)?.[1];
-      await slider.fill(await slider.getAttribute("max") ?? "1");
+      const beforeMoney = await money();
+      await slider.fill((await slider.getAttribute("max")) ?? "1");
       const after = (await body()).match(/([\d,]+) hrs/)?.[1];
       expect(Number(after?.replace(/,/g, "")), "spending the time on patients should reduce the hours kept")
         .toBeLessThan(Number(before?.replace(/,/g, "")));
+      await expect
+        .poll(money, { message: "and the money should rise as the hours are spent seeing patients" })
+        .toBeGreaterThan(beforeMoney);
 
       // and the money question is answered, in their terms
       const t = await body();
       expect(t, "the provider paying needs their own return").toMatch(/left over, after paying for it|short, at that price/);
-      expect(t).toMatch(/× what you pay|does not cover what you pay/);
+      expect(t, "and a return they can weigh against the price").toMatch(/\d(\.\d)?×|does not cover what you pay/);
+      // the price they typed is shown back to them, not rounded to "$3K"
+      expect(t, "a figure they entered must not be rounded back at them").toContain("$3,000");
+
+      // the pin has to still be there once they have scrolled down to work
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      const top = await pin.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+      expect(top, `the pin scrolled away (top ${top}px); it must stay under the header`).toBeLessThan(120);
+      expect(top).toBeGreaterThan(0);
+      await expectNoHorizontalOverflow(page, "one provider");
+    });
+
+    /**
+     * The honesty gate.
+     *
+     * A coding lift and an extra patient have the same fate: on a flat salary
+     * both are revenue for whoever employs the doctor. The screen used to
+     * caveat the first and say nothing about the second, then roll both into
+     * one total and one multiple, so a salaried reader watched money climb
+     * that could never reach them. This is the one page whose entire argument
+     * is that it tells them the truth, so this walk must never show a salaried
+     * doctor a return on money that is not theirs.
+     */
+    test("a salaried provider is never shown their employer's money as their own return", async ({ page }) => {
+      await page.goto("/");
+      await page.getByTestId("button-enter-app").click();
+      await page.getByTestId("audience-me").click();
+
+      await page.getByTestId("pay-salary").click();
+      await page.getByTestId("f-per-week").fill("70");
+      await page.getByTestId("f-note-now").fill("9");
+      await page.getByTestId("f-note-with").fill("6");
+      await page.getByTestId("f-wrvu-now").fill("1.9");
+      await page.getByTestId("f-wrvu-with").fill("2");
+      await page.getByTestId("f-visit-mins").fill("20");
+      await page.getByTestId("f-cost").fill("3000");
+      const slider = page.locator("input[type=range]");
+      await slider.fill((await slider.getAttribute("max")) ?? "1");
+
+      // what they get leads, and it is the time
+      await expect(page.getByTestId("solo-pin-figure")).toContainText("hrs");
+
+      const t = await page.locator("body").innerText();
+      expect(t, "the money has to be named as their employer's").toContain("to whoever employs you");
+      expect(t, "a multiple would divide their employer's money by their own")
+        .not.toMatch(/\d(\.\d)?×/);
+      expect(t, "nothing is left over for someone none of it reaches")
+        .not.toContain("left over, after paying for it");
+      expect(t).toContain("out of your own pocket");
+      // the one tile that reads the money model directly: for a salaried
+      // reader what this leaves in their pocket can only be what they paid out
+      await expect(page.getByTestId("solo-net"), "a salaried reader cannot be left up on the year")
+        .toHaveText(/^-\$/);
+      await expectNoHorizontalOverflow(page, "one provider, salaried");
     });
 
     test("every care setting offers its own goals, and cannot be skipped", async ({ page }) => {
