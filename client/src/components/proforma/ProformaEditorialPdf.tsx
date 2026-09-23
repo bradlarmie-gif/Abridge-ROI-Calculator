@@ -1079,9 +1079,10 @@ function ClosingInner({ data, num }: { data: ProformaPdfData; num: string }): JS
           <div className="abr" style={{ fontSize: 20, color: "var(--ink)", lineHeight: 1.3 }}>{data.handoff}</div>
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderTop: "1px solid var(--hair)", paddingTop: 16 }}>
+      {/* No wordmark here: the page already emits the running footer below this
+          block, which put ABRIDGE twice inside a 20px band. */}
+      <div style={{ borderTop: "1px solid var(--hair)", paddingTop: 16 }}>
         <div style={{ fontSize: 11, color: "var(--faint)" }}>Prepared for {data.org} · {data.date} · Confidential</div>
-        <span className="abr" style={{ fontSize: 20, color: "var(--coral)" }}>ABRIDGE</span>
       </div>
     </>
   );

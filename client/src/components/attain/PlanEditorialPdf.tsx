@@ -239,10 +239,19 @@ function StepRow({ step, last }: { step: PlanStep; last: boolean }): JSX.Element
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5, flexShrink: 0 }}>
         <SourceChip source={step.source} />
-        <div style={{ fontSize: 10.5, color: C.off, whiteSpace: "nowrap" }}>
-          {step.baseline || "—"} <span style={{ color: "#C9BDAD" }}>&rarr;</span>{" "}
-          {step.target ? <span style={{ color: C.coral, fontWeight: 700 }}>{step.target}</span> : "target"}
-        </div>
+        {/* Only render the baseline -> target rail when there is something in it.
+            It used to print "— → target" whenever both were unset, which is every
+            metric on a plan that has not had its numbers filled in yet: 21 rows
+            of the literal word "target" across three pages of a document headed
+            THE COMMITMENT. A blank reads as "to be set"; the word "target" reads
+            as unfinished software. The page footnote already says baselines and
+            dates get added as the plan is built out. */}
+        {(step.baseline || step.target) && (
+          <div style={{ fontSize: 10.5, color: C.off, whiteSpace: "nowrap" }}>
+            {step.baseline || "—"} <span style={{ color: "#C9BDAD" }}>&rarr;</span>{" "}
+            {step.target ? <span style={{ color: C.coral, fontWeight: 700 }}>{step.target}</span> : "target"}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -250,7 +259,13 @@ function StepRow({ step, last }: { step: PlanStep; last: boolean }): JSX.Element
 
 function OwnerCard({ owner }: { owner: PlanOwner }): JSX.Element {
   const hasFragile = owner.steps.some((s) => s.fragile);
+  const title = owner.person || owner.role;
   const label = owner.isAbridge ? "Abridge + your champion" : hasFragile ? "Make-or-break owner" : "Owner";
+  // For an Abridge-owned outcome the role IS "Abridge + your champion", so the
+  // eyebrow and the title rendered the same words twice, 20px apart, as the
+  // first thing on three consecutive pages. Drop the eyebrow when it is just
+  // repeating the title.
+  const showLabel = label.trim().toLowerCase() !== title.trim().toLowerCase();
   return (
     <div style={{ border: `1px solid ${C.hair}`, borderRadius: 14, background: C.card, padding: "14px 18px" }}>
       <div
@@ -265,19 +280,21 @@ function OwnerCard({ owner }: { owner: PlanOwner }): JSX.Element {
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 9.5,
-              fontWeight: 800,
-              letterSpacing: ".1em",
-              textTransform: "uppercase",
-              color: hasFragile && !owner.isAbridge ? C.fragile : C.faint,
-              marginBottom: 3,
-            }}
-          >
-            {label}
-          </div>
-          <div className="font-abridge" style={{ fontSize: 16, color: C.ink, lineHeight: 1.2 }}>{owner.person || owner.role}</div>
+          {showLabel && (
+            <div
+              style={{
+                fontSize: 9.5,
+                fontWeight: 800,
+                letterSpacing: ".1em",
+                textTransform: "uppercase",
+                color: hasFragile && !owner.isAbridge ? C.fragile : C.faint,
+                marginBottom: 3,
+              }}
+            >
+              {label}
+            </div>
+          )}
+          <div className="font-abridge" style={{ fontSize: 16, color: C.ink, lineHeight: 1.2 }}>{title}</div>
         </div>
         <span style={{ fontSize: 10.5, color: C.off, whiteSpace: "nowrap" }}>
           {owner.steps.length} {owner.steps.length === 1 ? "metric" : "metrics"}
@@ -408,9 +425,11 @@ function ClosingPage({ data, plans, pgnum }: { data: PlanPdfData; plans: Outcome
           This is the deal after the deal: the promise, made real and tracked against your own numbers.
         </p>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 16 }}>
+      {/* No wordmark here. <Page> already emits the running footer, so this block
+          put ABRIDGE twice inside a 20px band at the foot of the closing page.
+          Keep the prepared-for line, which the running footer does not carry. */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 16 }}>
         <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Prepared with your team · {data.orgName} · {data.date}</span>
-        <span className="font-abridge" style={{ fontSize: 20, color: C.coral }}>ABRIDGE</span>
       </div>
     </Page>
   );
