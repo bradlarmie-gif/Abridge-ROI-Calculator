@@ -1203,7 +1203,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
           center and the live scoreboard as the right-side action. */}
       <UnifiedHeader
         pathType="forecast"
-        pathLabel="Financial"
+        pathLabel="The Numbers"
         onBack={onBack}
         onHome={onHome}
         centerContent={

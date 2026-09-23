@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { BackgroundShape } from "@/components/BackgroundShape";
 
@@ -20,6 +18,7 @@ export function HubPage({
   onHome,
   showBack = true,
   watermark = true,
+  centered = false,
 }: {
   pageName: string;
   header: ReactNode;
@@ -33,17 +32,34 @@ export function HubPage({
   // The faint half-visible "A" watermark behind the hub landings. On by default
   // for every hub (home + Strategy / Financial / Planning).
   watermark?: boolean;
+  /**
+   * Centre the content in the viewport instead of stacking it under the header.
+   * The home hub is a short left-aligned list, so top-anchoring dumped all the
+   * leftover height into one corner and it read as a hole rather than as air.
+   * Lifted 48px above true centre: the eye reads a block's mass as lower than it
+   * measures, so dead-centre looks a touch low.
+   */
+  centered?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-[#FFFFFF] relative overflow-hidden">
       {watermark && <BackgroundShape />}
       <UnifiedHeader pathType="forecast" pathLabel={pageName} onHome={onHome} showBack={showBack} />
-      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10">
+      <div
+        className={
+          centered
+            ? "max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10 md:min-h-screen md:flex md:flex-col md:justify-center md:pb-[calc(2rem+48px)]"
+            : "max-w-6xl mx-auto px-4 md:px-6 pt-[88px] md:pt-[96px] pb-8 relative z-10"
+        }
+      >
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-12 md:mb-16"
+          /* Left-aligned on every hub: all four now lead with the row list, and a
+             centred header over a left-aligned list leaves the two on different
+             axes, which reads as a mistake rather than a choice. */
+          className={centered ? "mb-10 md:mb-12" : "mb-10 md:mb-14"}
         >
           {header}
         </motion.section>
@@ -67,22 +83,43 @@ export function HubHeader({ eyebrow, title }: { eyebrow: string; title: string }
   );
 }
 
-export function HubCard({
-  icon: Icon,
+export function HubList({
+  children,
+  wide = false,
+  className = "",
+}: {
+  children: ReactNode;
+  /**
+   * Rows that carry a description need a longer measure. At the home hub's 470px
+   * a three-line description wraps to four and the list runs off the fold, so the
+   * sub-hubs (which keep their descriptions) set this.
+   */
+  wide?: boolean;
+  className?: string;
+}) {
+  return <div className={`${wide ? "max-w-[660px]" : "max-w-[470px]"} ${className}`}>{children}</div>;
+}
+
+export function HubRow({
+  index,
   tagline,
   title,
   description,
-  cta,
   onClick,
   testId,
   delay = 0.15,
   comingSoon = false,
 }: {
-  icon: LucideIcon;
+  /** 1-based position; rendered as the 01 / 02 / 03 rail. */
+  index: number;
   tagline: string;
   title: string;
-  description: string;
-  cta: string;
+  /**
+   * Optional. The home hub omits it: "Run the numbers" over "Financial" already
+   * says it, and a paragraph underneath was the page explaining itself twice.
+   * Sub-hub entries keep it, because "App Rationalization" does not self-explain.
+   */
+  description?: string;
   onClick: () => void;
   testId?: string;
   delay?: number;
@@ -97,53 +134,64 @@ export function HubCard({
   };
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-      whileHover={comingSoon ? undefined : { y: -4 }}
       role={comingSoon ? undefined : "button"}
       tabIndex={comingSoon ? undefined : 0}
       onKeyDown={handleKey}
       onClick={comingSoon ? undefined : onClick}
       data-testid={testId}
       aria-disabled={comingSoon || undefined}
-      className={`group relative flex flex-col rounded-xl p-7 min-h-[236px] transition-all duration-300 ease-out ${
+      className={`group flex ${description ? "items-start" : "items-center"} gap-6 sm:gap-7 rounded-xl py-6 sm:py-7 pl-3 pr-4 transition-colors duration-200 ${
         comingSoon
-          ? "bg-[#F5F0EB]/60 cursor-default"
-          : "cursor-pointer bg-[#F5F0EB] hover:bg-[#EDE7E0] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
+          ? "cursor-default"
+          : "cursor-pointer hover:bg-[#FAF7F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
       }`}
     >
-      <div className={`w-11 h-11 rounded-full bg-white flex items-center justify-center mb-4 ${comingSoon ? "opacity-60" : ""}`}>
-        <Icon className="w-[22px] h-[22px] text-[#EA2C00]" />
-      </div>
-      <div className="flex items-center gap-2 mb-1.5">
-        <p className="text-[13px] text-[#EA2C00] font-medium">{tagline}</p>
-        {comingSoon && (
-          <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-[#EEE7DD] rounded-full px-2 py-0.5">Coming soon</span>
+      {/* No dividers: three static rules turned the list into a table. The hover
+          wash and the arrow carry the affordance instead. */}
+      <span
+        aria-hidden="true"
+        className={`font-abridge text-[15px] tracking-[0.06em] w-9 flex-none ${
+          description ? "mt-[26px]" : ""
+        } ${comingSoon ? "text-[#DED7CD]" : "text-[#CFC5B7] group-hover:text-[#EA2C00]"}`}
+      >
+        {String(index).padStart(2, "0")}
+      </span>
+      <span className="flex-1 min-w-0">
+        <span className="flex items-center gap-2">
+          <span className={`block text-[12.5px] font-bold ${comingSoon ? "text-[#B5AC9F]" : "text-[#EA2C00]"}`}>{tagline}</span>
+          {comingSoon && (
+            <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-[#EEE7DD] rounded-full px-2 py-0.5">
+              Coming soon
+            </span>
+          )}
+        </span>
+        {/* 600, not 700. Manrope is a variable face here (200..800), so this is a
+            real weight rather than a synthesised one. At 700 the names sat heavier
+            than the headline above them and the row read as shouting. */}
+        <span className={`block text-[26px] sm:text-[30px] font-semibold leading-[1.08] tracking-[-0.018em] mt-0.5 ${comingSoon ? "text-[#9A9086]" : "text-[#1A1A1A]"}`}>
+          {title}
+        </span>
+        {description && (
+          <span className={`block text-[13.5px] leading-relaxed mt-2 ${comingSoon ? "text-[#A79E92]" : "text-[#666666]"}`}>
+            {description}
+          </span>
         )}
-      </div>
-      {/* reserve two lines so a title that wraps (e.g. "App Rationalization") keeps
-          the body/CTA aligned with its single-line neighbors across a card row */}
-      <h3 className={`text-[22px] font-bold leading-[1.15] min-h-[2.3em] mb-2 ${comingSoon ? "text-[#8A8073]" : "text-[#1A1A1A]"}`}>{title}</h3>
-      <p className={`text-[13.5px] leading-relaxed flex-1 mb-5 ${comingSoon ? "text-[#9A9086]" : "text-[#666666]"}`}>{description}</p>
-      {comingSoon ? (
-        <div className="w-full text-center rounded-md border border-[#E0D9CE] text-[#9A9086] text-[14px] font-semibold py-2.5 select-none" data-testid={testId ? `${testId}-comingsoon` : undefined}>
-          Coming soon
-        </div>
-      ) : (
-        <Button
-          className="w-full bg-[#EA2C00] text-white border-[#EA2C00]"
-          size="lg"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick();
-          }}
-          data-testid={testId ? `${testId}-button` : undefined}
-        >
-          {cta}
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
-      )}
+      </span>
+      <span
+        aria-hidden="true"
+        className={`flex-none w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+          description ? "mt-[11px]" : ""
+        } ${
+          comingSoon
+            ? "border-[#EFE9E0] text-[#DED7CD]"
+            : "border-[#E8E2DA] text-[#D6CCBE] opacity-60 group-hover:opacity-100 group-hover:bg-[#EA2C00] group-hover:border-[#EA2C00] group-hover:text-white"
+        }`}
+      >
+        <ChevronRight className="w-4 h-4" />
+      </span>
     </motion.div>
   );
 }
@@ -154,7 +202,7 @@ export function HubDisclaimer() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4, delay: 0.5 }}
-      className="text-center pt-10 md:pt-14 pb-2"
+      className="pt-10 md:pt-14 pb-2"
     >
       <p className="text-[12px] text-[#999999]">
         Estimates are for planning purposes. Results should be validated with your organization&apos;s data.

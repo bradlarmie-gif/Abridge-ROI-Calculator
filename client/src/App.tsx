@@ -667,7 +667,7 @@ export default function App() {
                 chapters={["plan", "progress"]}
                 onHome={() => navigateTo("hub")}
                 onBackToJourney={() => navigateTo("planning-hub")}
-                flowLabel="Planning"
+                flowLabel="The Plan"
                 experienceLabel="Build the plan"
               />
             )}
@@ -835,7 +835,7 @@ export default function App() {
               <QuickRoiCalculator
                 onBack={() => navigateTo(hubMode ? "financial-hub" : "forecast-mode")}
                 onHome={() => navigateTo(hubMode ? "hub" : "journey")}
-                pathLabel={hubMode ? "Financial" : undefined}
+                pathLabel={hubMode ? "The Numbers" : undefined}
               />
             )}
 
@@ -843,7 +843,7 @@ export default function App() {
               <AppRationalizationFlow
                 onBack={() => navigateTo(hubMode ? "financial-hub" : "forecast-mode")}
                 onHome={() => navigateTo(hubMode ? "hub" : "journey")}
-                pathLabel={hubMode ? "Financial" : undefined}
+                pathLabel={hubMode ? "The Numbers" : undefined}
               />
             )}
 

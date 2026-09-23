@@ -146,7 +146,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate,
     <div style={{ background: T.page, minHeight: "100vh", color: T.ink, fontFamily: "Manrope, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       <UnifiedHeader
         pathType="forecast"
-        pathLabel="Financial"
+        pathLabel="The Numbers"
         showBack={false}
         onHome={onHome}
         centerContent={<ChapterNav active="present" onNavigate={onNavigate} />}

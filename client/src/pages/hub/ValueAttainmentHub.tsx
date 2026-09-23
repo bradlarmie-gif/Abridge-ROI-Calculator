@@ -1,5 +1,4 @@
-import { Target, LineChart, ClipboardCheck } from "lucide-react";
-import { HubPage, HubCard, HubDisclaimer } from "./hubKit";
+import { HubPage, HubList, HubRow, HubDisclaimer } from "./hubKit";
 
 interface ValueAttainmentHubProps {
   onSelectStrategy: () => void;
@@ -12,10 +11,11 @@ export default function ValueAttainmentHub({ onSelectStrategy, onSelectFinancial
     <HubPage
       pageName="Value Attainment"
       showBack={false}
+      centered
       header={
         <>
           <h1
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-black px-2 font-abridge uppercase"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-black font-abridge uppercase"
             style={{ letterSpacing: "0.025em" }}
           >
             The value of
@@ -23,45 +23,45 @@ export default function ValueAttainmentHub({ onSelectStrategy, onSelectFinancial
               Abridge
             </span>
           </h1>
-          <p className="mt-8 md:mt-10 text-xs uppercase text-[#999999] font-medium" style={{ letterSpacing: "3px" }}>
-            Where do you want to start?
+          {/* Was an all-caps "WHERE DO YOU WANT TO START?" eyebrow. A left-aligned
+              list already reads as a set of choices, so the label was scaffolding;
+              this says the one thing the eyebrow did not — that you can enter
+              anywhere, rather than at the top. */}
+          <p className="mt-6 md:mt-7 text-[15px] leading-relaxed text-[#666666] max-w-[430px]">
+            Three ways in. Start wherever the conversation is.
           </p>
         </>
       }
       footer={<HubDisclaimer />}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
-        <HubCard
-          icon={Target}
+      {/* No descriptions here. The coral line over each name already says what it
+          is, and a paragraph under it repeated the same thing at greater length. */}
+      <HubList>
+        <HubRow
+          index={1}
           tagline="Start with the why"
-          title="Strategy"
-          description="The value story and the value attainment strategy: the outcomes you're chasing and why they matter."
-          cta="Open Strategy"
+          title="The Case"
           onClick={onSelectStrategy}
           testId="hub-card-strategy"
           delay={0.15}
         />
-        <HubCard
-          icon={LineChart}
-          tagline="Run the numbers"
-          title="Financial"
-          description="ROI from a data pull, a new-deal proforma, app rationalization, or an exploration of the value in real numbers."
-          cta="Open Financial"
+        <HubRow
+          index={2}
+          tagline="Put it in dollars"
+          title="The Numbers"
           onClick={onSelectFinancial}
           testId="hub-card-financial"
           delay={0.22}
         />
-        <HubCard
-          icon={ClipboardCheck}
+        <HubRow
+          index={3}
           tagline="Make it happen"
-          title="Planning"
-          description="Turn the strategy into an owned, step-by-step plan, then track attainment against it over time."
-          cta="Open Planning"
+          title="The Plan"
           onClick={onSelectPlanning}
           testId="hub-card-planning"
           delay={0.29}
         />
-      </div>
+      </HubList>
     </HubPage>
   );
 }
