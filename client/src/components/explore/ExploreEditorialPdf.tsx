@@ -52,10 +52,6 @@ function fmtNum(n: number): string {
   return `${Math.round(n)}`;
 }
 
-function titleCase(w: string): string {
-  return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-}
-
 // ───────────────────────── Proof-layer resolution ─────────────────────────
 // Which domain(s) are the NON-FINANCIAL proof layer is a property of the
 // setting, read from the SAME source the live model recap uses (PROOF_LAYER):
@@ -109,36 +105,6 @@ export function parseChain(summary?: string): ChainTile[] {
       const pre = m[1].replace(/[:\s]+$/, "").trim();
       return { p: pre || undefined, n: m[2], u: m[3].trim() };
     });
-}
-
-// ───────────────────────── Haircut extractor ─────────────────────────
-// Scans every included driver's calcSummary for discount tokens; dedupes
-// by the matched word; up to 4 cells.
-
-interface Haircut {
-  value: string;
-  label: string;
-}
-
-function extractHaircuts(data: ExplorePDFData): Haircut[] {
-  const seen = new Set<string>();
-  const out: Haircut[] = [];
-  for (const q of data.quadrants) {
-    for (const d of q.drivers) {
-      if (!d.isIncluded || !d.calcSummary) continue;
-      const re =
-        /(\d+(?:\.\d+)?)%\s*(realization|attribution|conversion|survives|attributed|holds|prevention|reduction|impact|defend)/gi;
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(d.calcSummary)) !== null) {
-        const word = m[2].toLowerCase();
-        if (seen.has(word)) continue;
-        seen.add(word);
-        out.push({ value: `${m[1]}%`, label: titleCase(m[2]) });
-        if (out.length >= 4) return out;
-      }
-    }
-  }
-  return out;
 }
 
 // ───────────────────────── Ramp geometry ─────────────────────────
@@ -648,7 +614,6 @@ function RampChart({ data }: { data: ExplorePDFData }): JSX.Element {
 function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
   const sorted = [...data.quadrants].sort((a, b) => b.annualTotal - a.annualTotal);
   const max = Math.max(...data.quadrants.map((q) => q.annualTotal), 1);
-  const haircuts = extractHaircuts(data);
 
   const isNursing = data.careSetting === "nursing";
   const providerCell =
@@ -743,20 +708,6 @@ function NumberPage({ data }: { data: ExplorePDFData }): JSX.Element {
         </div>
         <RampChart data={data} />
       </div>
-
-      {haircuts.length > 0 && (
-        <>
-          <div style={{ ...sLbl, marginTop: 28, marginBottom: 9 }}>
-            The haircuts that keep it honest
-          </div>
-          <StatBand cells={haircuts.map((h) => ({ v: h.value, k: h.label }))} />
-          <p style={{ fontSize: 12, color: C.faint, lineHeight: 1.5, marginTop: 11, maxWidth: 680 }}>
-            Every dollar is discounted before it's counted, only the share that realistically
-            survives adoption, coding review, and audit. These are the levers you set with us, and
-            can tighten any time.
-          </p>
-        </>
-      )}
 
       <Footer
         note={`Counted once, valued at margin, never charges. ${joinAnd(proofDomains)} ${proofDomains.length > 1 ? "are" : "is"} tracked, not counted, and never added to the dollar total.`}
