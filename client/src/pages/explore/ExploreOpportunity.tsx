@@ -129,13 +129,18 @@ export default function ExploreOpportunity({ state, updateState, onNext, onBack,
   }, [updateState, state.numberOfProviders]);
 
   const handleTotalEncountersChange = useCallback((numValue: number) => {
+    // Always write what they typed. This used to be gated on `numValue >= 1000`,
+    // which meant any total under a thousand updated the box and NOTHING else:
+    // the field showed 800 while the whole model still ran on the previous
+    // value (or on zero, leaving every revenue driver greyed out behind
+    // "Enter annual discharges" next to a box that plainly showed a number).
+    // Small programs have small volumes, and a corrected-down figure is the
+    // most dangerous case, because the screen and the math silently disagree.
     setTotalEncountersInput(numValue);
-    if (numValue >= 1000) {
-      setUsingTotalInput(true);
-      const newPerProvider = state.numberOfProviders > 0 ? Math.round(numValue / state.numberOfProviders) : 0;
-      setEncountersPerProvider(newPerProvider);
-      updateState({ annualEncounters: numValue, encountersPerProvider: newPerProvider });
-    }
+    setUsingTotalInput(true);
+    const newPerProvider = state.numberOfProviders > 0 ? Math.round(numValue / state.numberOfProviders) : 0;
+    setEncountersPerProvider(newPerProvider);
+    updateState({ annualEncounters: numValue, encountersPerProvider: newPerProvider });
   }, [updateState, state.numberOfProviders]);
 
   const handleUtilizationChange = useCallback((value: number) => {
