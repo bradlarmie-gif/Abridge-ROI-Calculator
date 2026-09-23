@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "layout:smoke": "node scripts/layout-smoke.mjs",
-    "visual:sweep": "node scripts/visual-sweep.mjs"
+    "visual:sweep": "node scripts/visual-sweep.mjs",
+    "sweep:interaction": "node scripts/interaction-sweep.mjs",
+    "fuzz:pdf": "node scripts/explore-pdf-nobleed/fuzz.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.2.8",

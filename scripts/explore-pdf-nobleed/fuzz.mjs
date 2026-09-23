@@ -13,7 +13,10 @@ const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
 const BASE = import.meta.dirname;
-const URL = "http://localhost:5173/?explorepdf=1";
+// Port is configurable: the harness was pinned to :5173 while the documented dev
+// port for this repo is :5199, so it silently connected to nothing.
+const PDF_BASE = process.env.PDF_FUZZ_BASE ?? "http://localhost:5199";
+const URL = `${PDF_BASE}/?explorepdf=1`;
 const KEY = "abridge:explore-pdf";
 const PAGE_W = 816;
 const PAGE_H = 1056;

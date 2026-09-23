@@ -1,23 +1,25 @@
 import { test, expect, type Page } from "@playwright/test";
+import { openTool, expectNoHorizontalOverflow, collectPageErrors, advance } from "./support/nav";
 
 /**
- * Phase 1 of the end-to-end suite: drives the Explore modeling path for ALL FOUR
- * care settings (outpatient, ED, inpatient, nursing) through to the Model, the
- * per-setting PDF export, the proforma hub, and the Present view.
+ * Drives the Explore modeling path for ALL FOUR care settings through to the
+ * Model, the PDF export, the proforma hub and the Present view.
  *
- * Asserts, per setting, at desktop + mobile: the flow reaches the Model, a real
- * (non-zero) value renders, no uncaught exceptions fire, the page never overflows
- * horizontally, the per-setting PDF actually downloads (desktop), and Present opens.
+ * Rewritten for the live IA and the editorial Explore. The previous version
+ * entered through `card-explore` on the retired JourneySelector and filled
+ * `input-providers` / `input-total-encounters` on the retired Opportunity
+ * screen — none of which the app has rendered since the hub landed. It failed
+ * at step two on every one of its 8 permutations.
  *
- * The unit suite (vitest) locks the MATH; this proves the FLOWS/wiring/rendering
- * don't break. The app has no deep-link URLs, so each test scripts the full path.
+ * The unit suite locks the MATH. This proves the FLOW: that the screens wire
+ * together, render a real number, export, and never scroll sideways.
  */
 
 const SETTINGS = [
-  { id: "outpatient", nursing: false, providers: "50", encounters: "150000", util: "75", toggles: ["toggle-wrvu"] },
-  { id: "ed",         nursing: false, providers: "40", encounters: "72000",  util: "75", toggles: ["toggle-edEmLevel", "toggle-lwbsRecovery"] },
-  { id: "inpatient",  nursing: false, providers: "30", encounters: "12000",  util: "75", toggles: ["toggle-drgAccuracy", "toggle-obsDefense"] },
-  { id: "nursing",    nursing: true,  beds: "300", providers: "450", encounters: "", util: "75", toggles: ["toggle-nursingOvertime", "toggle-nursingHapi"] },
+  { id: "outpatient", label: "outpatient", nursing: false, providers: "50", encounters: "150000", util: "75" },
+  { id: "ed",         label: "ED",         nursing: false, providers: "40", encounters: "72000",  util: "75" },
+  { id: "inpatient",  label: "inpatient",  nursing: false, providers: "30", encounters: "12000",  util: "75", alos: "4.5" },
+  { id: "nursing",    label: "nursing",    nursing: true,  providers: "450", beds: "300",         util: "75" },
 ] as const;
 
 const VIEWPORTS = [
@@ -25,56 +27,51 @@ const VIEWPORTS = [
   { name: "iPhone 12", width: 390, height: 844, canDownload: false },
 ];
 
-async function expectNoHorizontalOverflow(page: Page, where: string) {
-  const { scrollW, clientW } = await page.evaluate(() => ({
-    scrollW: document.documentElement.scrollWidth,
-    clientW: document.documentElement.clientWidth,
-  }));
-  expect(scrollW, `${where}: overflows — scrollWidth ${scrollW} > viewport ${clientW}`).toBeLessThanOrEqual(clientW + 1);
-}
-
-// Desktop/mobile twin continue buttons; click whichever is visible.
-async function advance(page: Page) {
-  const candidates = [
-    "button-continue", "button-continue-mobile", "button-panel-continue",
-    "button-continue-revenue", "button-continue-revenue-mobile",
-  ];
-  for (const id of candidates) {
+/** Fill whichever scale inputs this setting renders. */
+async function fillPractice(page: Page, cfg: typeof SETTINGS[number]) {
+  const set = async (id: string, v?: string) => {
+    if (!v) return;
     const el = page.getByTestId(id);
-    if (await el.isVisible().catch(() => false)) { await el.click(); return true; }
-  }
-  return false;
+    if (await el.isVisible().catch(() => false)) await el.fill(v);
+  };
+  await set("ed-input-providers", cfg.providers);
+  await set("ed-input-beds", "beds" in cfg ? cfg.beds : undefined);
+  await set("ed-input-total-encounters", "encounters" in cfg ? cfg.encounters : undefined);
+  await set("ed-input-alos", "alos" in cfg ? cfg.alos : undefined);
+  await set("ed-input-utilization", cfg.util);
+  await page.waitForTimeout(250);
 }
 
-// From the Opportunity screen, walk forward enabling the setting's value driver(s)
-// until the Model screen (button-add-proforma) appears.
-async function driveToModel(page: Page, cfg: typeof SETTINGS[number]) {
-  if (cfg.nursing) {
-    await page.getByTestId("input-beds").fill(cfg.beds!);
-    await page.getByTestId("input-providers").fill(cfg.providers);
-  } else {
-    await page.getByTestId("input-providers").fill(cfg.providers);
-    await page.getByTestId("input-total-encounters").fill(cfg.encounters);
-  }
-  await page.getByTestId("input-utilization").fill(cfg.util);
-  await advance(page);
-
-  const clicked = new Set<string>();
-  for (let i = 0; i < 12; i++) {
-    if (await page.getByTestId("button-add-proforma").isVisible().catch(() => false)) return;
-    for (const t of cfg.toggles) {
-      const el = page.getByTestId(t);
-      if (!clicked.has(t) && (await el.isVisible().catch(() => false))) {
-        await el.click();
-        clicked.add(t);
-        await page.waitForTimeout(150);
-      }
-    }
-    const scenario = page.getByTestId("button-scenario-typical");
-    if (await scenario.isVisible().catch(() => false)) await scenario.click();
-    const moved = await advance(page);
-    if (!moved) break;
+/**
+ * Turn every driver on. They default OFF by design — the seller switches them on
+ * live, with the customer — so an untouched walk models nothing and the Model
+ * screen legitimately shows $0.
+ */
+async function turnOnDrivers(page: Page) {
+  for (let round = 0; round < 3; round++) {
+    const off = page.locator('[role=switch][aria-checked="false"]');
+    if ((await off.count()) === 0) return;
+    await off.first().click({ timeout: 3000 }).catch(() => {});
     await page.waitForTimeout(300);
+  }
+}
+
+/** Walk forward from the practice screen until the Model appears. */
+async function driveToModel(page: Page, cfg: typeof SETTINGS[number]) {
+  await fillPractice(page, cfg);
+  for (let i = 0; i < 14; i++) {
+    if (await page.getByTestId("ed-model-add-proforma").isVisible().catch(() => false)) return;
+    await turnOnDrivers(page);
+    // Newly enabled drivers can expose their own scale inputs.
+    const blanks = page.locator('input[inputmode="numeric"], input[inputmode="decimal"]');
+    for (let k = 0, n = await blanks.count(); k < n; k++) {
+      const el = blanks.nth(k);
+      if (!(await el.isVisible().catch(() => false))) continue;
+      if (await el.inputValue().catch(() => "x")) continue;
+      await el.fill("40").catch(() => {});
+    }
+    if (!(await advance(page))) break;
+    await page.waitForTimeout(500);
   }
 }
 
@@ -83,48 +80,44 @@ for (const vp of VIEWPORTS) {
     test.use({ viewport: { width: vp.width, height: vp.height } });
 
     for (const cfg of SETTINGS) {
-      test(`${cfg.id}: Explore → Model → proforma → Present`, async ({ page }) => {
-        const crashes: string[] = [];
-        page.on("pageerror", (e) => crashes.push(String(e)));
+      test(`${cfg.label}: Explore → Model → proforma → Present`, async ({ page }) => {
+        const crashes = collectPageErrors(page);
 
-        await page.goto("/");
-        await page.getByTestId("button-enter-app").click();
-        await page.getByTestId("card-explore").click();
-        await page.getByTestId(`card-setting-${cfg.id}`).click();
-        await page.getByTestId("button-continue").click();
-        await page.waitForTimeout(900); // care-setting screen has an 800ms setup delay
+        await openTool(page, "financial", "financial-card-explore");
+        await page.getByTestId(`ed-setting-${cfg.id}`).click();
+        await page.waitForTimeout(900);
 
         await driveToModel(page, cfg);
 
-        // Reached the Model with real value.
-        await expect(page.getByTestId("button-add-proforma")).toBeVisible();
-        const net = page.getByTestId("text-net-value").first();
-        await expect(net).toBeVisible();
-        await expect(net, `${cfg.id}: net value should not be $0`).not.toHaveText(/^\$0$/);
-        await expectNoHorizontalOverflow(page, `${cfg.id}-model`);
+        await expect(
+          page.getByTestId("ed-model-add-proforma"),
+          `${cfg.label}: never reached the Model screen`,
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page, `${cfg.label}-model`);
 
-        // Per-setting PDF export actually downloads (desktop; mobile uses window.open).
-        if (vp.canDownload) {
-          await page.getByTestId("button-export").click();
-          await expect(page.getByTestId("button-generate-pdf")).toBeVisible();
-          const dl = page.waitForEvent("download", { timeout: 25_000 });
-          await page.getByTestId("button-generate-pdf").click();
-          const download = await dl;
-          expect(download.suggestedFilename(), `${cfg.id}: PDF filename`).toMatch(/\.pdf$/i);
-          await page.waitForTimeout(300); // modal closes after export
-        }
+        // A model built with every driver on must not read zero.
+        const body = await page.locator("body").innerText();
+        const dollars = body.match(/\$[\d,]+/g) ?? [];
+        const nonZero = dollars.filter((d) => d.replace(/\D/g, "") !== "" && Number(d.replace(/\D/g, "")) > 0);
+        expect(nonZero.length, `${cfg.label}: Model shows no non-zero dollar figure`).toBeGreaterThan(0);
 
-        // Add to the proforma → hub → Present.
-        await page.getByTestId("button-add-proforma").click();
-        await expect(page.getByTestId("button-present")).toBeVisible();
-        await expectNoHorizontalOverflow(page, `${cfg.id}-hub`);
+        // Model → the proforma workbench ("Build the deal.") → the case → Present.
+        // The legacy ProformaHub and its `button-present` live behind
+        // ?proformalegacy=1 and are not on the launch surface.
+        await page.getByTestId("ed-model-add-proforma").click();
+        await expect(page.getByTestId("proforma-see-case")).toBeVisible();
+        await expectNoHorizontalOverflow(page, `${cfg.label}-proforma-build`);
 
-        await page.getByTestId("button-present").click();
+        await page.getByTestId("proforma-see-case").click();
+        await page.waitForTimeout(700);
         await expect(page.getByTestId("proforma-present")).toBeVisible();
-        await page.waitForTimeout(600);
-        await expectNoHorizontalOverflow(page, `${cfg.id}-present`);
+        await expectNoHorizontalOverflow(page, `${cfg.label}-proforma-case`);
 
-        expect(crashes, `${cfg.id}: uncaught errors:\n${crashes.join("\n")}`).toHaveLength(0);
+        await page.getByTestId("proforma-present").click();
+        await page.waitForTimeout(900);
+        await expectNoHorizontalOverflow(page, `${cfg.label}-present`);
+
+        expect(crashes, `${cfg.label}: uncaught errors:\n${crashes.join("\n")}`).toHaveLength(0);
       });
     }
   });

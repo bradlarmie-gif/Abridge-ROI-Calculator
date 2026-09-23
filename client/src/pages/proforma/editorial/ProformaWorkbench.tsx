@@ -1332,7 +1332,7 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32 }}>
           <span style={{ fontSize: 13, color: T.faint }}>{settings.length} settings · {fmt(yearlyValue)}/yr modeled so far</span>
-          <button onClick={() => onNavigate?.("case")} style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 26px", borderRadius: 12, cursor: "pointer" }}>
+          <button data-testid="proforma-see-case" onClick={() => onNavigate?.("case")} style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 26px", borderRadius: 12, cursor: "pointer" }}>
             See the {termYears}-year case →
           </button>
         </div>

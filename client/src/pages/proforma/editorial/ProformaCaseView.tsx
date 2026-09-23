@@ -275,8 +275,8 @@ export default function ProformaCaseView({ settings, config, onNavigate, onHome 
 
         {/* NAV */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32 }}>
-          <button onClick={() => onNavigate("build")} style={{ background: "none", border: "none", color: T.faint, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>← Back to build</button>
-          <button onClick={() => onNavigate("present")} style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 26px", borderRadius: 12, cursor: "pointer" }}>Present the case →</button>
+          <button data-testid="proforma-back-to-build" onClick={() => onNavigate("build")} style={{ background: "none", border: "none", color: T.faint, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>← Back to build</button>
+          <button data-testid="proforma-present" onClick={() => onNavigate("present")} style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 26px", borderRadius: 12, cursor: "pointer" }}>Present the case →</button>
         </div>
       </div>
     </div>
