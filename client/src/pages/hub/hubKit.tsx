@@ -64,7 +64,24 @@ export function HubPage({
           {header}
         </motion.section>
         {children}
-        {footer}
+        {/* On phone the disclaimer stays in flow: the viewport is short enough
+            that pinning it risks overlapping the last row. */}
+        <div className="md:hidden">{footer}</div>
+      </div>
+      {/*
+        Pinned bottom-left from md up, OUTSIDE the centred column.
+
+        It used to sit inside that column, so it was vertically centred along
+        with the hero and the list — which floated a legal line into the middle
+        of the page with a few hundred px of nothing under it, at the same left
+        indent and nearly the same size as the content. It read as part of the
+        composition rather than as the furniture it is.
+
+        Same left gutter as the content so it still lines up, just smaller,
+        fainter, and out of the way.
+      */}
+      <div className="hidden md:block absolute bottom-0 left-0 right-0 z-10 pointer-events-none">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 pb-6">{footer}</div>
       </div>
     </div>
   );
@@ -126,9 +143,15 @@ export function HubRow({
   delay = 0.15,
   comingSoon = false,
 }: {
-  /** 1-based position; rendered as the 01 / 02 / 03 rail. */
-  index: number;
-  tagline: string;
+  /**
+   * 1-based position, rendered as the 01 / 02 / 03 rail. OMIT IT when the
+   * options are peers rather than a sequence — the ROI calculator's care-setting
+   * picker is four equivalent choices, and numbering them would imply you should
+   * start with outpatient.
+   */
+  index?: number;
+  /** Optional: the coral line above the title, where there is one to write. */
+  tagline?: string;
   title: string;
   /**
    * Optional. The home hub omits it: "Run the numbers" over "Financial" already
@@ -176,17 +199,19 @@ export function HubRow({
     >
       {/* No dividers: three static rules turned the list into a table. The hover
           wash and the arrow carry the affordance instead. */}
-      <span
-        aria-hidden="true"
-        className={`font-abridge text-[15px] tracking-[0.06em] w-9 flex-none ${
-          description ? "mt-[22px]" : ""
-        } ${comingSoon ? "text-[#DED7CD]" : "text-[#CFC5B7] group-hover:text-[#EA2C00]"}`}
-      >
-        {String(index).padStart(2, "0")}
-      </span>
+      {index != null && (
+        <span
+          aria-hidden="true"
+          className={`font-abridge text-[15px] tracking-[0.06em] w-9 flex-none ${
+            description ? "mt-[22px]" : ""
+          } ${comingSoon ? "text-[#DED7CD]" : "text-[#CFC5B7] group-hover:text-[#EA2C00]"}`}
+        >
+          {String(index).padStart(2, "0")}
+        </span>
+      )}
       <span className="flex-1 min-w-0">
-        <span className="flex items-center gap-2">
-          <span className={`block text-[12.5px] font-bold ${comingSoon ? "text-[#B5AC9F]" : "text-[#EA2C00]"}`}>{tagline}</span>
+        <span className={`flex items-center gap-2 ${tagline || comingSoon ? "" : "hidden"}`}>
+          {tagline && <span className={`block text-[12.5px] font-bold ${comingSoon ? "text-[#B5AC9F]" : "text-[#EA2C00]"}`}>{tagline}</span>}
           {comingSoon && (
             <span className="text-[10px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-[#EEE7DD] rounded-full px-2 py-0.5">
               Coming soon
@@ -231,9 +256,9 @@ export function HubDisclaimer() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4, delay: 0.5 }}
-      className="pt-10 md:pt-14 pb-2"
+      className="pt-10 md:pt-0 pb-2 md:pb-0"
     >
-      <p className="text-[12px] text-[#999999]">
+      <p className="text-[12px] md:text-[10.5px] text-[#999999] md:text-[#B8B2AA] md:leading-[1.5]">
         Estimates are for planning purposes. Results should be validated with your organization&apos;s data.
       </p>
     </motion.footer>

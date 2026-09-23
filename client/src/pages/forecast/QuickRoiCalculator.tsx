@@ -17,6 +17,7 @@ import {
   runRoi,
 } from "./roiEngine";
 import { stashAndOpenPdf, PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
+import { HubList, HubRow } from "@/pages/hub/hubKit";
 
 /**
  * ROI Calculator — a guided, editorial three-step flow that turns an Abridge
@@ -130,17 +131,35 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
       <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
         Three quick steps, straight from the impact analysis. First, which care setting?
       </p>
-      <div className="mt-12 border-t border-[#E8E2DA] max-w-[680px]">
-        {(Object.keys(SETTING_META) as SettingKey[]).map((k) => (
-          <button key={k} onClick={() => onPick(k)}
-            className="group w-full text-left flex items-center justify-between gap-6 py-[22px] border-b border-[#E8E2DA] hover:pl-2 transition-all">
-            <div>
-              <div className="font-abridge text-[24px] text-[#1A1A1A] group-hover:text-[#EA2C00] transition-colors leading-tight">{SETTING_META[k].label}</div>
-              <div className="text-[13.5px] text-[#A69A88] mt-[3px]">{SETTING_META[k].blurb}</div>
-            </div>
-            <ArrowRight className="w-5 h-5 text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1 transition-all flex-shrink-0" />
-          </button>
-        ))}
+      {/*
+        The same row primitive the hubs use, not a lookalike.
+
+        This screen does the same job as a hub list — pick one of four — and the
+        user arrives here one click after one. It was built from different parts,
+        so the two read as different products: this list had hairline dividers
+        (which the hub deliberately dropped: "three static rules turned the list
+        into a table"), a bare arrow instead of the circled chevron, and a
+        nudge-right hover instead of the row wash.
+
+        Sharing HubRow means they cannot drift apart again. What is NOT shared is
+        deliberate: no 01/02/03 rail, because four care settings are peers and
+        numbering them would imply you should start with outpatient; and the
+        page keeps its own sentence-case question rather than a hub's uppercase
+        section title, because it is asking something.
+      */}
+      <div className="mt-10">
+        <HubList wide>
+          {(Object.keys(SETTING_META) as SettingKey[]).map((k, i) => (
+            <HubRow
+              key={k}
+              title={SETTING_META[k].label}
+              description={SETTING_META[k].blurb}
+              onClick={() => onPick(k)}
+              testId={`roi-setting-${k}`}
+              delay={0.08 + i * 0.05}
+            />
+          ))}
+        </HubList>
       </div>
     </div>
   );
