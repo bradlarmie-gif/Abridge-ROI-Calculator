@@ -47,7 +47,7 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           index={2}
           tagline="The risk gap"
           title="Care Signals"
-          description="How a flagged condition gets addressed and evidenced in the room, not a chart review after it."
+          description="How a flagged condition gets addressed and evidenced in the room."
           onClick={onSelectCareSignals}
           testId="strategy-card-care-signals"
           delay={0.22}

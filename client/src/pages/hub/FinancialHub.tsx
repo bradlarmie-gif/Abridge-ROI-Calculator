@@ -21,7 +21,7 @@ export default function FinancialHub({
         <HubRow
           tagline="Before a data pull"
           title="Value Model"
-          description="Model what ambient documentation could unlock, in real numbers, care setting by care setting, from your own figures before any data pull."
+          description="What the value could be, from your own figures, before any data pull."
           onClick={onSelectExplore}
           index={1}
           testId="financial-card-explore"
@@ -30,7 +30,7 @@ export default function FinancialHub({
         <HubRow
           tagline="From a data pull"
           title="ROI Calculator"
-          description="Turn an impact-analysis pull into dollars for a partner, then show the headroom if they expand adoption and use."
+          description="An impact-analysis pull turned into dollars, plus the headroom if adoption grows."
           onClick={onSelectRoiCalculator}
           index={2}
           testId="financial-card-roi-calculator"
@@ -39,7 +39,7 @@ export default function FinancialHub({
         <HubRow
           tagline="Enterprise adoption"
           title="Proforma"
-          description="Model the ROI of a full deployment. Add care settings, configure volumes and pricing, and share a financial proposal."
+          description="A full deployment: care settings, volumes, pricing, and a proposal to share."
           onClick={onSelectNewDeal}
           index={3}
           testId="financial-card-new-deal"
@@ -48,7 +48,7 @@ export default function FinancialHub({
         <HubRow
           tagline="Consolidation"
           title="App Rationalization"
-          description="Show their current tool stack and how much of it Abridge can take on, by capability, so the consolidation is clear."
+          description="Their current tool stack, and how much of it Abridge can take on."
           onClick={onSelectAppRationalization}
           index={4}
           testId="financial-card-app-rationalization"
