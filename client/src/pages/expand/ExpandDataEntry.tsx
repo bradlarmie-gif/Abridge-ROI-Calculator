@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditableNumberInput } from "@/components/ui/editable-number-input";
+import { NullableNumberField } from "@/components/NumberField";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { TermTooltip, TERMS } from "@/components/TermTooltip";
 import type { 
@@ -367,13 +368,10 @@ function QuickEntry({
           <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block">
             BEFORE ABRIDGE
           </span>
-          <input
-            type="number"
-            inputMode="decimal"
-            step={step}
+          <NullableNumberField
             placeholder="—"
-            value={before ?? ""}
-            onChange={(e) => onBeforeChange(e.target.value ? Number(e.target.value) : null)}
+            value={before}
+            onValueChange={onBeforeChange}
             className="w-full px-4 py-3 text-xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] transition-shadow"
             data-testid={`input-${testIdPrefix}-before`}
           />
@@ -385,13 +383,10 @@ function QuickEntry({
           <span className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase block">
             AFTER ABRIDGE
           </span>
-          <input
-            type="number"
-            inputMode="decimal"
-            step={step}
+          <NullableNumberField
             placeholder="—"
-            value={after ?? ""}
-            onChange={(e) => onAfterChange(e.target.value ? Number(e.target.value) : null)}
+            value={after}
+            onValueChange={onAfterChange}
             className="w-full px-4 py-3 text-xl font-bold text-center border border-neutral-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#EA2C00] transition-shadow"
             data-testid={`input-${testIdPrefix}-after`}
           />
@@ -711,14 +706,10 @@ function TrendEntry({
             </div>
           </div>
           <div className="relative">
-            <input
-              type="number"
-              inputMode="decimal"
-              step="0.01"
+            <NullableNumberField
               placeholder="—"
-              value={baseline ?? ""}
-              onChange={(e) => {
-                const val = e.target.value ? Number(e.target.value) : null;
+              value={baseline}
+              onValueChange={(val) => {
                 onBaselineChange(val);
                 handleCellChange("baseline", val);
               }}
@@ -770,14 +761,10 @@ function TrendEntry({
                   </div>
                 </div>
                 <div className="relative">
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
+                  <NullableNumberField
                     placeholder="—"
-                    value={monthlyData[i] ?? ""}
-                    onChange={(e) => {
-                      const val = e.target.value ? Number(e.target.value) : null;
+                    value={monthlyData[i] ?? null}
+                    onValueChange={(val) => {
                       onMonthChange(i, val);
                       handleCellChange(`m${i}`, val);
                     }}

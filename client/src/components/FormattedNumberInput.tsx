@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
+import { selectAllOnFocus } from "@/lib/selectOnFocus";
 
 interface FormattedNumberInputProps {
   value: number | '';
@@ -49,9 +50,13 @@ export function FormattedNumberInput({
   const [displayValue, setDisplayValue] = useState(() => value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Focus tracked in a ref as well as state: state lags a render, and the
+  // resync effect below can run before it commits, overwriting a draft the
+  // user is mid-way through typing.
+  const focusedRef = useRef(false);
 
   useEffect(() => {
-    if (isFocused) return;
+    if (focusedRef.current || isFocused) return;
     const currentParsed = parseFormattedNumber(displayValue);
     if (currentParsed !== numValue) {
       setDisplayValue(value === '' || value === 0 ? '' : formatWithCommas(numValue, decimals));
@@ -103,6 +108,7 @@ export function FormattedNumberInput({
   }, [onChange]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    focusedRef.current = false;
     setIsFocused(false);
     const parsed = parseFormattedNumber(displayValue);
     setDisplayValue(parsed === 0 ? '' : formatWithCommas(parsed, decimals));
@@ -115,10 +121,9 @@ export function FormattedNumberInput({
   }, [displayValue, decimals, onBlurValue, externalOnBlur]);
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    focusedRef.current = true;
     setIsFocused(true);
-    setTimeout(() => {
-      e.target.select();
-    }, 0);
+    selectAllOnFocus(e.target);
     if (externalOnFocus) {
       externalOnFocus(e);
     }

@@ -4,6 +4,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState, type TimePathScenario } from "../ExploreFlow";
 import { useCountUp } from "@/lib/useCountUp";
 import { quickFillChip } from "./quickFillChip";
+import { NumberField } from "@/components/NumberField";
 
 interface EdTimeSavingsProps {
   state: ExploreState;
@@ -31,11 +32,9 @@ const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[
 function NumBox({ value, onChange, suffix, step = 0.5, testId }: { value: number; onChange: (n: number) => void; suffix: string; step?: number; testId?: string }) {
   return (
     <span className="flex items-baseline justify-end gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap w-[120px]">
-      <input
-        type="number"
-        value={value || ""}
-        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-        step={step}
+      <NumberField
+        value={value}
+        onValueChange={onChange}
         data-testid={testId}
         className="max-w-full [field-sizing:content] text-right font-abridge text-[30px] text-[#1A1A1A] tabular-nums bg-transparent border-0 p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       />
@@ -220,11 +219,9 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
               <div className="mt-8">
                 <div className="text-[15px] text-[#3A342E] leading-[1.7]">
                   <b className="font-bold text-[#1A1A1A]">{fmt(eligibleEncounters)}</b> admissions on Abridge a year, at a{" "}
-                  <input
-                    type="number"
-                    value={state.inpatientAlos || ""}
-                    onChange={(e) => setAlos(parseFloat(e.target.value) || 0)}
-                    step={0.1}
+                  <NumberField
+                    value={state.inpatientAlos}
+                    onValueChange={setAlos}
                     data-testid="ed-input-alos-inline"
                     style={{ width: `${Math.max(2, String(state.inpatientAlos || "").length)}ch` }}
                     className="font-abridge text-[16px] text-[#EA2C00] tabular-nums text-center bg-transparent border-0 border-b-2 border-[#EA2C00] p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"

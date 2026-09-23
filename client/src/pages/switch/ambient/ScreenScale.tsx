@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssessment, assessmentActions } from "@/lib/assessment";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { selectWhenSettled } from "@/lib/selectOnFocus";
 
 interface ScreenScaleProps {
   onNext: () => void;
@@ -35,8 +36,9 @@ export default function ScreenScale({ onNext, onBack }: ScreenScaleProps) {
   // Focus the inline input when editing starts
   useEffect(() => {
     if (editingEncounters) {
-      setEditEncountersRaw(annualEncounters > 0 ? annualEncounters.toLocaleString() : '');
-      setTimeout(() => encountersInputRef.current?.select(), 30);
+      const staged = annualEncounters > 0 ? annualEncounters.toLocaleString() : '';
+      setEditEncountersRaw(staged);
+      selectWhenSettled(encountersInputRef.current, staged);
     }
   }, [editingEncounters]);
 

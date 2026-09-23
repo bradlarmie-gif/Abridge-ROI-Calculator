@@ -8,6 +8,7 @@ import {
   calculateScribeGap,
   formatCurrency,
 } from "@/lib/scribeGapCalculator";
+import { selectAllOnFocus } from "@/lib/selectOnFocus";
 
 interface ScribeAssessmentProps {
   inputs: ScribeInputs;
@@ -439,7 +440,7 @@ function InputField({
         inputMode="numeric"
         value={displayValue}
         onChange={handleChange}
-        onFocus={(e) => setTimeout(() => e.target.select(), 0)}
+        onFocus={(e) => selectAllOnFocus(e.target)}
         onBlur={() => setDisplayValue(formatDisplay(parseFormatted(displayValue)))}
         className="w-full text-right text-lg font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0"
         placeholder="0"

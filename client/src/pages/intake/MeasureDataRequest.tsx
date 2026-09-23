@@ -5,6 +5,7 @@ import { type MeasureDataRequestResponse, type DataFormPreseed, type DataRequest
 import { generateDataRequestPDF, type DataRequestPDFData } from "@/lib/data-request-pdf-generator";
 import { OUTPATIENT_METRICS, ED_METRICS, INPATIENT_METRICS, NURSING_METRICS, type MetricDefinition } from "@/lib/measureCareSettings";
 import type { MeasureCareSetting } from "@/lib/measureCalculator";
+import { NullableNumberField } from "@/components/NumberField";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
 const SETTING_LABELS: Record<MeasureCareSetting, string> = {
@@ -73,10 +74,17 @@ const defaultDeployment: DeploymentSnapshot = {
   abridgeEncounters: 0,
 };
 
+/**
+ * Nullable, comma-grouped metric box.
+ *
+ * Was a bespoke input that only reformatted on blur, so a six-figure figure sat
+ * bare the whole time it was being typed. Now a thin wrapper over the shared
+ * field, which groups live and keeps the caret beside the digit you typed.
+ */
 function MetricInput({
   value,
   onCommit,
-  placeholder = "—",
+  placeholder = "\u2014",
   className = "",
   "data-testid": testId,
 }: {
@@ -86,64 +94,11 @@ function MetricInput({
   className?: string;
   "data-testid"?: string;
 }) {
-  const [display, setDisplay] = useState(() => {
-    if (value === null || value === undefined) return '';
-    return value.toLocaleString('en-US');
-  });
-  const [focused, setFocused] = useState(false);
-
-  useEffect(() => {
-    if (!focused) {
-      if (value === null || value === undefined) {
-        setDisplay('');
-      } else {
-        setDisplay(value.toLocaleString('en-US'));
-      }
-    }
-  }, [value, focused]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    setDisplay(raw);
-    const cleaned = raw.replace(/,/g, '');
-    if (cleaned === '' || cleaned === '-' || cleaned === '.') {
-      onCommit(null);
-    } else {
-      const n = parseFloat(cleaned);
-      if (!isNaN(n)) onCommit(n);
-    }
-  };
-
-  const handleBlur = () => {
-    setFocused(false);
-    const cleaned = display.replace(/,/g, '');
-    if (cleaned === '') {
-      setDisplay('');
-      onCommit(null);
-    } else {
-      const n = parseFloat(cleaned);
-      if (!isNaN(n)) {
-        setDisplay(n.toLocaleString('en-US'));
-        onCommit(n);
-      } else {
-        setDisplay('');
-        onCommit(null);
-      }
-    }
-  };
-
   return (
-    <input
-      type="text"
-      inputMode="decimal"
-      value={focused ? display : (value === null ? '' : value.toLocaleString('en-US'))}
+    <NullableNumberField
+      value={value}
+      onValueChange={onCommit}
       placeholder={placeholder}
-      onChange={handleChange}
-      onFocus={() => {
-        setFocused(true);
-        setDisplay(value === null ? '' : String(value));
-      }}
-      onBlur={handleBlur}
       className={className}
       data-testid={testId}
     />
@@ -276,13 +231,11 @@ function MetricRow({ metric, checked, entry, onToggle, onUpdate }: {
                   {MONTH_LABELS.map((month, i) => (
                     <div key={month} className="flex flex-col items-center gap-1">
                       <span className="text-[9px] text-[#AAAAAA] uppercase">{month}</span>
-                      <input
-                        type="number" min={0} step="any"
-                        value={entry?.monthlyData?.[i] ?? ""}
-                        placeholder="—"
-                        onChange={(e) => {
+                      <MetricInput
+                        value={entry?.monthlyData?.[i] ?? null}
+                        onCommit={(v) => {
                           const newData = [...(entry?.monthlyData ?? new Array(12).fill(null))];
-                          newData[i] = e.target.value === "" ? null : Number(e.target.value);
+                          newData[i] = v;
                           onUpdate({ monthlyData: newData });
                         }}
                         className="w-11 bg-[#F5F0EB] border-0 rounded-md px-1 h-8 text-xs text-center text-[#1A1A1A] placeholder:text-[#DDDDDD] focus:outline-none focus:ring-1 focus:ring-[#EA2C00]/30"
@@ -514,11 +467,11 @@ export default function MeasureDataRequest({ preseed, storageFingerprint }: { pr
                     {deployment.monthsOnAbridge}
                   </div>
                 ) : (
-                  <input
-                    type="number" min={0} step={1} inputMode="numeric" pattern="[0-9]*"
-                    value={deployment.monthsOnAbridge || ''}
+                  <NullableNumberField
+                    decimal={false}
+                    value={deployment.monthsOnAbridge || null}
                     placeholder="—"
-                    onChange={(e) => updateDeployment({ monthsOnAbridge: e.target.value === '' ? 0 : Number(e.target.value) })}
+                    onValueChange={(v) => updateDeployment({ monthsOnAbridge: v ?? 0 })}
                     className="w-full bg-[#F5F0EB] border-0 rounded-lg px-3 h-11 text-sm focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30 text-right"
                     data-testid="input-dep-months"
                   />

@@ -311,11 +311,12 @@ export default function InvestmentPage({
                         <div className="relative flex-1 max-w-[180px]">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg text-slate-400">$</span>
                           <input
-                            type="number"
-                            value={costPerUnit}
+                            type="text"
+                            inputMode="numeric"
+                            value={costPerUnit === "" ? "" : costPerUnit.toLocaleString()}
                             placeholder={`${config.defaultPrice}`}
                             onChange={(e) => {
-                              const val = e.target.value;
+                              const val = e.target.value.replace(/[^0-9.]/g, "");
                               setCostPerUnit(val === "" ? "" : Number(val));
                             }}
                             className="w-full pl-8 pr-4 py-3 text-xl font-bold text-slate-900 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-[#EA2C00] focus:ring-2 focus:ring-[#EA2C00]/10 placeholder:text-slate-300 placeholder:font-normal"

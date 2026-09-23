@@ -16,6 +16,7 @@ import {
   CAPACITY_TIME_USAGE_LABELS,
   type DomainFeedback,
 } from "./domainCalculations";
+import { selectWhenSettled } from "@/lib/selectOnFocus";
 
 interface Screen4Props {
   onNext: () => void;
@@ -350,8 +351,9 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
   // Focus rev-per-visit inline edit input
   useEffect(() => {
     if (editingRevPerVisit) {
-      setEditRevRaw(revenuePerVisit > 0 ? revenuePerVisit.toString() : '200');
-      setTimeout(() => editRevRef.current?.select(), 30);
+      const staged = revenuePerVisit > 0 ? revenuePerVisit.toString() : '200';
+      setEditRevRaw(staged);
+      selectWhenSettled(editRevRef.current, staged);
     }
   }, [editingRevPerVisit]);
 
@@ -360,7 +362,7 @@ export default function Screen4Domains({ onNext, onBack, initialDomain }: Screen
     if (editingBenchmarkMin) {
       const bm = (domainStates.capacity.inputs.timeSaved as number) || 1.5;
       setEditBenchmarkRaw(bm.toString());
-      setTimeout(() => editBenchmarkRef.current?.select(), 30);
+      selectWhenSettled(editBenchmarkRef.current, bm.toString());
     }
   }, [editingBenchmarkMin]);
 

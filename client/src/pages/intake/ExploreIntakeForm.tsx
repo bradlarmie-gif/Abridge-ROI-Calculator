@@ -8,6 +8,7 @@ import {
 import { downloadIntakeReceiptPDF } from "@/components/intake/IntakeReceiptPDF";
 import type { ExploreCareSetting } from "@/pages/explore/ExploreFlow";
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
+import { selectAllOnFocus } from "@/lib/selectOnFocus";
 
 interface ExploreIntakeFormProps {
   preseed?: IntakeFormPreseed;
@@ -100,7 +101,7 @@ function NumberField({
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
     setFocused(true);
-    setTimeout(() => e.target.select(), 0);
+    selectAllOnFocus(e.target);
   }, []);
 
   if (!focused && value != null) {

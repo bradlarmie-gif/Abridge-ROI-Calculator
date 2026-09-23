@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Input } from "./input";
 import { cn } from "@/lib/utils";
+import { selectAllOnFocus } from "@/lib/selectOnFocus";
 
 interface FormattedNumberInputProps {
   value: number;
@@ -78,10 +79,9 @@ export function FormattedNumberInput({
   }, [displayValue]);
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Select all on focus for easy replacement
-    setTimeout(() => {
-      e.target.select();
-    }, 0);
+    // Select all on focus for easy replacement, guarded against the
+    // character-eating race (see selectAllOnFocus).
+    selectAllOnFocus(e.target);
   };
 
   const handleBlur = () => {

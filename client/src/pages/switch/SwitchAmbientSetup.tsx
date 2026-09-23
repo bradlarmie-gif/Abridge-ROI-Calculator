@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { UnifiedHeader, UnifiedHeaderSpacer } from '@/components/UnifiedHeader';
 import { Input } from '@/components/ui/input';
 import { FormattedNumberInput } from '@/components/FormattedNumberInput';
+import { NumberField } from '@/components/NumberField';
 import { AmbientInputs, AmbientCalculations, AmbientBenchmarks, AmbientMode, MetricValues } from './SwitchAmbientFlow';
 
 interface SwitchAmbientSetupProps {
@@ -447,11 +448,11 @@ export default function SwitchAmbientSetup({
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-[#6B7280]">Current utilization</label>
                   <div className="relative">
-                    <input
-                      type="number"
+                    <NumberField
                       placeholder="e.g., 72"
-                      value={inputs.utilization > 0 ? inputs.utilization : ''}
-                      onChange={(e) => setInputs({ ...inputs, utilization: e.target.value ? Number(e.target.value) : 0 })}
+                      max={100}
+                      value={inputs.utilization}
+                      onValueChange={(utilization) => setInputs({ ...inputs, utilization })}
                       className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent pr-10"
                       data-testid="input-utilization"
                     />
@@ -514,13 +515,11 @@ export default function SwitchAmbientSetup({
                         <div className="px-4 pb-4 pt-0 ml-[4.5rem]">
                           <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-emerald-200">
                             <label className="text-sm text-slate-600 whitespace-nowrap">Your current:</label>
-                            <input
-                              type="number"
+                            <NumberField
                               min={metric.min}
                               max={metric.max}
-                              step={metric.step}
-                              value={inputs.metricValues[metric.id] ?? ''}
-                              onChange={(e) => updateMetricValue(metric.id, Number(e.target.value))}
+                              value={inputs.metricValues[metric.id] ?? 0}
+                              onValueChange={(v) => updateMetricValue(metric.id, v)}
                               onClick={(e) => e.stopPropagation()}
                               placeholder={`e.g., ${metric.id === 'timeSavings' ? '2' : metric.id === 'workOutsideWork' ? '4' : metric.id === 'wrvuLift' ? '3' : '60'}`}
                               className="w-24 px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"

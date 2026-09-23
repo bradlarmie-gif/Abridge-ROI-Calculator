@@ -2146,12 +2146,11 @@ export default function ExploreModel({
               <div className="flex items-center gap-2 pt-1">
                 <span className="text-xs text-[#888888]">Custom timeline:</span>
                 <input
-                  type="number"
-                  min={1}
-                  max={120}
+                  type="text"
+                  inputMode="numeric"
                   value={selectedPace === 'custom' ? (customMonths ?? '') : paceConfig[selectedPace].months}
                   onChange={(e) => {
-                    const v = parseInt(e.target.value, 10);
+                    const v = parseInt(e.target.value.replace(/[^0-9]/g, ''), 10);
                     if (!isNaN(v)) handleCustomMonthsChange(v);
                   }}
                   className={`w-16 h-7 text-center border rounded text-sm font-semibold outline-none transition-colors ${

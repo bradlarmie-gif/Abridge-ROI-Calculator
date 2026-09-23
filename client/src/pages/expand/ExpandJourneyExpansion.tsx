@@ -614,13 +614,19 @@ export default function ExpandJourneyExpansion({
                   <label className="text-xs text-[#6B7280] block mb-1">Target utilization</label>
                   <div className="flex items-center gap-2">
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       value={expansionTarget.utilization}
                       placeholder="e.g., 75"
-                      onChange={(e) => setExpansionTarget({
-                        ...expansionTarget,
-                        utilization: e.target.value === "" ? "" : Number(e.target.value),
-                      })}
+                      onChange={(e) => {
+                        // Sanitize rather than clamp: the out-of-range message below
+                        // is the teaching moment, so 95 has to be typeable to earn it.
+                        const raw = e.target.value.replace(/[^0-9.]/g, "");
+                        setExpansionTarget({
+                          ...expansionTarget,
+                          utilization: raw === "" ? "" : Number(raw),
+                        });
+                      }}
                       className={`flex-1 px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                         utilizationError ? "border-red-300" : "border-emerald-200"
                       }`}

@@ -11,6 +11,7 @@ import {
 import { generateScribePDF } from "@/components/switch/ScribePDFExport";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { useToast } from "@/hooks/use-toast";
+import { selectAllOnFocus } from "@/lib/selectOnFocus";
 
 interface ScribeFullAnalysisProps {
   inputs: ScribeInputs;
@@ -384,7 +385,7 @@ function AssumptionInput({
             const parsed = parseFloat(cleaned);
             onChange(isNaN(parsed) ? 0 : parsed);
           }}
-          onFocus={(e) => setTimeout(() => e.target.select(), 0)}
+          onFocus={(e) => selectAllOnFocus(e.target)}
           className="w-full min-w-0 text-sm font-semibold text-black bg-transparent border-none focus:outline-none focus:ring-0 p-0"
           placeholder="0"
           data-testid={testId}

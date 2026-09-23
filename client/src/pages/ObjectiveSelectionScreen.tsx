@@ -15,6 +15,7 @@ import {
   type LeverCategory,
 } from "@/lib/SETTING_CONFIG";
 import { formatNumber, parseFormattedNumber } from "@/lib/roi-calculator";
+import { groupDraft } from "@/lib/numberFieldLogic";
 import {
   Stethoscope,
   Siren,
@@ -4462,9 +4463,9 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="decimal"
-                                        value={ftPatientAccessRevenuePerVisit ?? ""}
+                                        value={groupDraft(String(ftPatientAccessRevenuePerVisit ?? ""))}
                                         onChange={(e) => {
-                                          const val = e.target.value;
+                                          const val = e.target.value.replace(/,/g, "");
                                           if (val === "") {
                                             setFtPatientAccessRevenuePerVisit(null as any);
                                           } else {
@@ -4541,7 +4542,7 @@ export default function ObjectiveSelectionScreen({
                                             <input
                                               type="text"
                                               inputMode="numeric"
-                                              value={ftRetentionReplacementCost ?? ""}
+                                              value={groupDraft(String(ftRetentionReplacementCost ?? ""))}
                                               onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === "") {
@@ -4886,9 +4887,9 @@ export default function ObjectiveSelectionScreen({
                                       <input
                                         type="text"
                                         inputMode="decimal"
-                                        value={ftHccBenchmarkPmpm ?? ""}
+                                        value={groupDraft(String(ftHccBenchmarkPmpm ?? ""))}
                                         onChange={(e) => {
-                                          const val = e.target.value;
+                                          const val = e.target.value.replace(/,/g, "");
                                           if (val === "") {
                                             setFtHccBenchmarkPmpm(null as any);
                                           } else {

@@ -1,4 +1,5 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react";
+import { sanitizeNumericDraft, parseNumericDraft, groupDraft, caretForDigits } from "@/lib/numberFieldLogic";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence, animate } from "framer-motion";
 import { Stethoscope, Zap, ChevronDown, Plus, Trash2, ArrowLeft } from "lucide-react";
@@ -221,14 +222,19 @@ function NumCell({
   const fmtVal = format ?? ((n: number) => String(n));
   const [text, setText] = useState(fmtVal(value));
   const focused = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Numeric characters before the caret at the last keystroke, so the caret can
+  // be put back beside the same digit once an inserted comma shifts the string.
+  const pendingCaretDigits = useRef<number | null>(null);
   useEffect(() => {
     if (!focused.current) setText(fmtVal(value));
   }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
-  const parse = (s: string) => {
-    const cleaned = s.replace(decimals ? /[^0-9.]/g : /[^0-9]/g, "");
-    const n = parseFloat(cleaned);
-    return isNaN(n) ? 0 : n;
-  };
+  useLayoutEffect(() => {
+    if (!focused.current || pendingCaretDigits.current === null || !inputRef.current) return;
+    const pos = caretForDigits(text, pendingCaretDigits.current);
+    inputRef.current.setSelectionRange(pos, pos);
+    pendingCaretDigits.current = null;
+  }, [text]);
   const isChain = variant === "chain";
   const numFontSize = (valueStyle?.fontSize as number) ?? (isChain ? 19 : 15);
   return (
@@ -242,19 +248,26 @@ function NumCell({
       <span style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 1 }}>
         {prefix && <span className="tabular-nums" style={{ fontSize: numFontSize, fontWeight: 500, color: T.ink, ...valueStyle }}>{prefix}</span>}
         <input
+          ref={inputRef}
           value={text}
           inputMode={decimals ? "decimal" : "numeric"}
           onFocus={() => {
             focused.current = true;
-            setText(String(value));
+            // Keep the separators while editing. Dropping to String(value) here
+            // is why a four-figure fee showed bare until you clicked away.
+            setText(groupDraft(String(value)));
           }}
           onBlur={() => {
             focused.current = false;
             setText(fmtVal(value));
           }}
           onChange={(e) => {
-            setText(e.target.value);
-            onChange(parse(e.target.value));
+            const raw = e.currentTarget.value;
+            const caret = e.currentTarget.selectionStart ?? raw.length;
+            pendingCaretDigits.current = raw.slice(0, caret).replace(/[^0-9.]/g, "").length;
+            const sanitized = sanitizeNumericDraft(raw, { decimal: !!decimals });
+            setText(groupDraft(sanitized));
+            onChange(parseNumericDraft(sanitized));
           }}
           className="tabular-nums"
           style={{

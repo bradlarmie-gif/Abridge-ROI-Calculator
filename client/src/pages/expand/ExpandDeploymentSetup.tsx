@@ -3,6 +3,7 @@ import { ArrowRight, ArrowLeft, Clock, Moon, FileText, DollarSign, FileCheck, Sm
 import { Button } from "@/components/ui/button";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { NullableNumberField } from "@/components/NumberField";
 import type { DeploymentData, MetricType } from "./ExpandFlow";
 
 interface ExpandDeploymentSetupProps {
@@ -229,16 +230,12 @@ export default function ExpandDeploymentSetup({
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B7280]">Utilization rate</label>
               <div className="relative">
-                <input
-                  type="number"
-                  inputMode="decimal"
+                <NullableNumberField
                   placeholder="e.g., 72"
-                  value={deploymentData.utilizationRate ?? ""}
-                  onChange={(e) =>
-                    setDeploymentData({
-                      ...deploymentData,
-                      utilizationRate: e.target.value ? Number(e.target.value) : null,
-                    })
+                  max={100}
+                  value={deploymentData.utilizationRate ?? null}
+                  onValueChange={(utilizationRate) =>
+                    setDeploymentData({ ...deploymentData, utilizationRate })
                   }
                   className="w-full px-4 py-3 pr-8 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                   data-testid="input-utilization"
@@ -250,16 +247,12 @@ export default function ExpandDeploymentSetup({
             
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B7280]">Months on Abridge</label>
-              <input
-                type="number"
-                inputMode="numeric"
+              <NullableNumberField
                 placeholder="e.g., 6"
-                value={deploymentData.monthsOnAbridge ?? ""}
-                onChange={(e) =>
-                  setDeploymentData({
-                    ...deploymentData,
-                    monthsOnAbridge: e.target.value ? Number(e.target.value) : null,
-                  })
+                decimal={false}
+                value={deploymentData.monthsOnAbridge ?? null}
+                onValueChange={(monthsOnAbridge) =>
+                  setDeploymentData({ ...deploymentData, monthsOnAbridge })
                 }
                 className="w-full px-4 py-3 border border-neutral-200 rounded-lg text-lg font-semibold text-[#111827] bg-white placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#EA2C00] focus:border-transparent"
                 data-testid="input-months"
