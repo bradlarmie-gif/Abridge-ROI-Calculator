@@ -908,18 +908,41 @@ function SynthesisBar({ data }: { data: ExplorePDFData }): JSX.Element {
   );
 }
 
-// Estimated block heights (px) used for greedy pagination.
+// Block heights (px) used for pagination. MEASURED off rendered pages, not
+// guessed: an estimate that runs optimistic silently overflows the page, since
+// the packer will happily fit atoms it thinks are smaller than they are. The
+// synthesis bar was the worst offender at 52 against a real 72.
 const H_HEADER = 42;
-const H_MUTED = 72;
+const H_MUTED = 78;  // measured 75
 const H_AVAIL = 20;
-const H_SYNTH = 52;
-// True usable px for breakdown atoms per page = 1056 minus chrome (pad ~76,
-// running header ~50, footer ~40, and the title block: full eyebrow+headline+
-// lead ~100 on the first page, a compact "(cont.)" ~44 after). Budgets sit a
-// hair under so an accurately-estimated page can never exceed 1056 (no bleed),
-// while the common single-setting model still lands on ONE page.
-const BUDGET_FIRST = 880;
-const BUDGET_CONT = 845;
+const H_SYNTH = 76;  // measured 72
+// True usable px for breakdown atoms per page, measured rather than assumed.
+//
+// A page is 1056px. Off that comes the padding (44 top + 32 bottom = 76), the
+// running header (44), the footer (25 plus ~14 of accumulated inter-block
+// margins), and the title block — which is the part that differs: the first
+// page carries the full eyebrow + headline + lead (17 + 32 + 41 = 90), while a
+// continuation page carries only a compact "(cont.)" eyebrow (17).
+//
+//   first page:  1056 − 76 − 44 − 90 − 39 = 807
+//   continuation: 1056 − 76 − 44 − 17 − 39 = 880
+//
+// So the FIRST page has LESS room, not more. The old constants had it the wrong
+// way round (FIRST 880 > CONT 845), which let an accurately-estimated first
+// page still exceed 1056. That is what bled the page-02 footer 4.7 to 37.8px
+// off the bottom on 22 of the 528 nursing driver combinations: nursing is the
+// setting with enough atoms to fill the first page to its supposed budget.
+//
+// Both sit a few px under the measured figure so an accurate estimate can never
+// reach the edge, while the common single-setting model still lands on ONE page.
+const BUDGET_FIRST = 800;
+const BUDGET_CONT = 872;
+// When the content misses a single page by a hair, opening a second page for the
+// remainder is the worse outcome: you get one full page and one that is 75% white,
+// with the document's grand total stranded alone on it. Dropping the lead
+// paragraph (41px plus its margin) buys back enough room to keep it on one dense
+// page. Used ONLY in that narrow case — the lead stays whenever it costs nothing.
+const BUDGET_FIRST_COMPACT = 858;
 
 // Content-aware height estimate for a driver card: title row + wrapped
 // description lines + wrapped math-chain rows + padding. Accurate estimates are
@@ -928,7 +951,9 @@ function estDriverH(desc: string, summary?: string): number {
   const descLines = Math.max(1, Math.ceil((desc?.length ?? 0) / 82));
   const tiles = summary ? summary.replace(/\s*\|\s*/g, " × ").split(" × ").length + 1 : 2;
   const chainRows = Math.max(1, Math.ceil(tiles / 5));
-  return 24 + descLines * 15 + chainRows * 44 + 18;
+  // Base was 42 (24 + 18) and measured ~5px light on every card, which compounds
+  // across a page of them. 48 makes a full page of drivers estimate honestly.
+  return 30 + descLines * 15 + chainRows * 44 + 18;
 }
 
 interface BreakAtom {
@@ -1014,31 +1039,103 @@ function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
     gUsed += a.h;
   }
 
-  const pages: BreakAtom[][] = [];
-  if (gCount <= 1) {
-    pages.push([...atoms, synthAtom]);
-  } else {
-    const totalH = atoms.reduce((s, a) => s + a.h, 0) + H_SYNTH;
-    const target = totalH / gCount;
+  const budgetFor = (i: number) => (i === 0 ? BUDGET_FIRST : BUDGET_CONT);
+  const heightOf = (page: BreakAtom[]) => page.reduce((sum, a) => sum + a.h, 0);
+  const withinBudget = (ps: BreakAtom[][]) => ps.every((page, i) => heightOf(page) <= budgetFor(i));
+
+  /** Fill each page to its budget before opening the next. Dense by construction. */
+  const greedy = (): BreakAtom[][] => {
+    const out: BreakAtom[][] = [];
+    let cur: BreakAtom[] = [];
+    let used = 0;
+    for (const a of [...atoms, synthAtom]) {
+      if (used + a.h > budgetFor(out.length) && cur.length > 0) {
+        out.push(cur);
+        cur = [];
+        used = 0;
+      }
+      cur.push(a);
+      used += a.h;
+    }
+    if (cur.length) out.push(cur);
+    return out;
+  };
+
+  /** Even split across exactly `count` pages. */
+  const rebalance = (count: number): BreakAtom[][] => {
+    const out: BreakAtom[][] = [];
+    const totalH = atoms.reduce((sum, a) => sum + a.h, 0) + H_SYNTH;
+    const target = totalH / count;
     let cur: BreakAtom[] = [];
     let used = 0;
     for (const a of atoms) {
       cur.push(a);
       used += a.h;
-      // close a page once it reaches the even target, keeping the last page
-      // open to absorb the remainder + the synthesis bar.
-      if (pages.length < gCount - 1 && used >= target) {
-        pages.push(cur);
+      if (out.length < count - 1 && used >= target) {
+        out.push(cur);
         cur = [];
         used = 0;
       }
     }
     cur.push(synthAtom);
-    pages.push(cur);
+    out.push(cur);
+    return out;
+  };
+
+  // Two failure modes pull in opposite directions, and both are real defects
+  // the gates check for:
+  //
+  //   BLEED   — a page packed past 1056px, so the footer spills off the bottom.
+  //   SPARSE  — a page ending far above its footer, which reads as half-empty.
+  //
+  // An earlier version rebalanced unconditionally onto an even split, which
+  // ignored the budgets entirely (the last page absorbed the remainder plus the
+  // synthesis bar unchecked) and bled on 22 of 528 nursing combinations.
+  // Reaching only for the budget fixed the bleed and produced sparse pages
+  // instead, because an even split over-spreads content that would pack densely.
+  //
+  // So: pack greedily, which is dense and legal by construction, and rebalance
+  // ONLY to rescue a near-empty tail page — the case rebalancing was introduced
+  // for. If the rebalanced version would break a budget, keep the greedy one:
+  // a slightly uneven document beats one that bleeds.
+  // Would everything fit one page if the lead came off? If so, do that rather
+  // than spill a scrap onto a second page.
+  const allAtomsH = atoms.reduce((sum, a) => sum + a.h, 0) + H_SYNTH;
+  const compactFirst = allAtomsH > BUDGET_FIRST && allAtomsH <= BUDGET_FIRST_COMPACT;
+  if (compactFirst) {
+    return [renderBreakdownPage([...atoms, synthAtom], 0, data, true)];
+  }
+
+  let pages = greedy();
+  // Rebalance ONLY when it makes every page denser. Splitting 850px of content
+  // evenly over two pages leaves BOTH half empty, which is worse than one full
+  // page and a short tail — layout-smoke's density guard flagged exactly that,
+  // twice on one document. So rescue a near-empty tail only if the even split
+  // does not itself create a sparse page.
+  if (pages.length > 1) {
+    const last = pages.length - 1;
+    const tail = heightOf(pages[last]);
+    if (tail < budgetFor(last) * 0.45) {
+      const even = rebalance(pages.length);
+      const evenTail = heightOf(even[even.length - 1]);
+      if (withinBudget(even) && evenTail > tail && even.every((pg, i) => heightOf(pg) > budgetFor(i) * 0.55)) {
+        pages = even;
+      }
+    }
   }
   if (pages.length === 0) pages.push([synthAtom]);
 
-  return pages.map((pageAtoms, pi) => (
+  return pages.map((pageAtoms, pi) => renderBreakdownPage(pageAtoms, pi, data, false));
+}
+
+/** One page of the breakdown section. `compact` drops the lead to save 58px. */
+function renderBreakdownPage(
+  pageAtoms: BreakAtom[],
+  pi: number,
+  data: ExplorePDFData,
+  compact: boolean,
+): JSX.Element {
+  return (
     <Page key={pi}>
       <RunningHeader data={data} />
       {pi === 0 ? (
@@ -1049,10 +1146,12 @@ function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
           <h2 className="font-abridge" style={sHeadline}>
             Four places a better note moves money.
           </h2>
-          <p style={sLead}>
-            This is the whole map. What you turned on is built out in full, with the exact math; the
-            rest stays visible as what's there to model next.
-          </p>
+          {!compact && (
+            <p style={sLead}>
+              This is the whole map. What you turned on is built out in full, with the exact math; the
+              rest stays visible as what's there to model next.
+            </p>
+          )}
         </>
       ) : (
         <div style={{ ...sEyebrow, marginTop: 18 }}>
@@ -1067,7 +1166,7 @@ function buildBreakdownPages(data: ExplorePDFData): JSX.Element[] {
         num="02"
       />
     </Page>
-  ));
+  );
 }
 
 // ───────────────────────── Page 4 · 03 The investment case ─────────────────────────
