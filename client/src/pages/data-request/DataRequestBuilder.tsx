@@ -361,7 +361,7 @@ export default function DataRequestBuilder({ onBack }: Props) {
                           <Check className="w-4 h-4 text-white" />
                           <p className="text-[13px] font-semibold text-white">Downloaded</p>
                         </div>
-                        <p className="text-[11px] text-white/50 mb-3">Share with your prospect to collect their numbers.</p>
+                        <p className="text-[11px] text-white/50 mb-3">Share this link to collect the numbers.</p>
                         <button
                           onClick={startOver}
                           className="text-[11px] text-[#EA2C00] hover:text-[#EA2C00]/80 font-medium transition-colors"

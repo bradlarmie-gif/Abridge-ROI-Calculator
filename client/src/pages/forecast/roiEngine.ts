@@ -267,7 +267,7 @@ const scribeDriver: RoiDriver = {
   domain: "Workforce",
   title: "Scribe cost reduction",
   optional: true,
-  note: "Only if the partner can retire scribe positions they pay for today.",
+  note: "Only if scribe positions being paid for today can actually be retired.",
   fields: [
     { k: "scribeHeadcount", label: "Scribe positions today", def: 0 },
     { k: "scribePositionsEliminated", label: "Scribe positions you could retire", def: 0 },
@@ -334,12 +334,12 @@ const patientAccessDriver: RoiDriver = {
   id: "patientAccess",
   domain: "Capacity",
   title: "Patient access (reclaimed capacity)",
-  note: "The added visits the partner is already seeing now that notes are faster. We count what they observe, then show what share of the reclaimed hours it uses.",
+  note: "The added visits already being seen now that notes are faster. We count what is observed, then show what share of the reclaimed hours it uses.",
   // The partner is live, so they OBSERVE their added visits — we count that
   // directly (visits/provider/wk) rather than assuming a % of freed time gets
   // reinvested. The card reads back what share of the reclaimed hours it uses.
   fields: [
-    { k: "accessVisitsPerProvWk", label: "Added visits per provider, each week", def: 0, step: 0.5, hint: "what the partner is actually seeing now that notes are faster" },
+    { k: "accessVisitsPerProvWk", label: "Added visits per provider, each week", def: 0, step: 0.5, hint: "what is actually being seen now that notes are faster" },
     { k: "visitDuration", label: "Minutes per added visit", def: 30, suffix: "min" },
     { k: "revenuePerVisit", label: "Margin per added visit", def: 200, prefix: "$" },
   ],

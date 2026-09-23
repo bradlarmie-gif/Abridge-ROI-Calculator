@@ -127,7 +127,7 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
   return (
     <div className="pt-12 sm:pt-16 pb-24">
       <div className={EYEBROW}>ROI Calculator · Step 1 of 4</div>
-      <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#4A3F35] mt-4 max-w-[640px]">How much is Abridge worth to your partner?</h1>
+      <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#4A3F35] mt-4 max-w-[640px]">How much is Abridge worth here?</h1>
       <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
         Three quick steps, straight from the impact analysis. First, which care setting?
       </p>
@@ -327,7 +327,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             {encToday > 0 ? (
               <>So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now. That is {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.</>
             ) : (
-              <span className="italic text-[#A69A88]">Enter the partner's numbers above and we'll show today's Abridge footprint.</span>
+              <span className="italic text-[#A69A88]">Enter the numbers above and we'll show today's Abridge footprint.</span>
             )}
           </p>
           <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
@@ -758,7 +758,7 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
           </>
         ) : (
           <p className="text-[14px] leading-[1.55] italic text-[#A69A88]">
-            Enter the before and after minutes above, plus the partner's encounter numbers on the first step, to see the hours reclaimed.
+            Enter the before and after minutes above, plus the encounter numbers on the first step, to see the hours reclaimed.
           </p>
         )}
       </div>

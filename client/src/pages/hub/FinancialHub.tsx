@@ -30,26 +30,30 @@ export default function FinancialHub({
       row inside it called ROI Calculator disambiguated nothing; and "App
       Rationalization" was enterprise-IT jargon on a CFO-facing screen, which its
       own description already said better in plain words.
+
+      ORDER: the fast read is 01. The list is a ladder of effort, so it opens
+      with the lightest way in and deepens. Leading with the nine-step build put
+      the biggest commitment in front of someone who may only want a number.
   */
   return (
     <HubPage pageName="The Numbers" onHome={onHome} header={<HubHeader eyebrow="The Numbers" title="Put it in dollars" />}>
       <HubList wide>
         <HubRow
-          tagline="The full build"
-          title="Model the Value"
-          description="How the value is built, driver by driver, from your own figures before any data pull."
-          onClick={onSelectExplore}
-          index={1}
-          testId="financial-card-explore"
-          delay={0.15}
-        />
-        <HubRow
           tagline="The fast read"
           title="Size the ROI"
           description="A few figures from the impact analysis, turned straight into dollars."
           onClick={onSelectRoiCalculator}
-          index={2}
+          index={1}
           testId="financial-card-roi-calculator"
+          delay={0.15}
+        />
+        <HubRow
+          tagline="The full build"
+          title="Model the Value"
+          description="How the value is built, driver by driver, from your own figures before any data pull."
+          onClick={onSelectExplore}
+          index={2}
+          testId="financial-card-explore"
           delay={0.22}
         />
         <HubRow
