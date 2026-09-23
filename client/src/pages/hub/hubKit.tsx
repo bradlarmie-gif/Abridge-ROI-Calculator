@@ -205,18 +205,22 @@ export function HubRow({
           </span>
         )}
       </span>
-      <span
-        aria-hidden="true"
-        className={`flex-none w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
-          description ? "mt-[7px]" : ""
-        } ${
-          comingSoon
-            ? "border-[#EFE9E0] text-[#DED7CD]"
-            : "border-[#E8E2DA] text-[#D6CCBE] opacity-60 group-hover:opacity-100 group-hover:bg-[#EA2C00] group-hover:border-[#EA2C00] group-hover:text-white"
-        }`}
-      >
-        <ChevronRight className="w-4 h-4" />
-      </span>
+      {/* The chevron is a "this goes somewhere" promise, so a coming-soon row does
+          not get one. It used to render the same circle in the same position,
+          just paler — which reads as a live control to anyone who is not
+          comparing it side by side with the row above, and there is nobody
+          standing next to a self-serve user to explain why clicking did nothing.
+          The greyed title plus the COMING SOON pill is the whole signal. */}
+      {!comingSoon && (
+        <span
+          aria-hidden="true"
+          className={`flex-none w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+            description ? "mt-[7px]" : ""
+          } border-[#E8E2DA] text-[#D6CCBE] opacity-60 group-hover:opacity-100 group-hover:bg-[#EA2C00] group-hover:border-[#EA2C00] group-hover:text-white`}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </span>
+      )}
     </motion.div>
   );
 }

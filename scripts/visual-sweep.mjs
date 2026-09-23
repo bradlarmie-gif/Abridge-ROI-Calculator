@@ -301,11 +301,20 @@ await scene(browser, "apprat-moat", async (p) => {
 // were deleted (they showed a "PROTOTYPE" label + inconsistent chrome), so the
 // sweep now drives the real hub → Strategy/Planning funnel. Nursing is used
 // deliberately (the reused-content bugs surfaced there first).
-async function attainFunnel(p, openRe, buildRe) {
-  await p.goto(`${BASE}/?hub=1`, { waitUntil: "networkidle" });
+async function attainFunnel(p, hubCard, buildRe) {
+  // Same swallowing bug arEnter had, and with the same result: this clicked an
+  // "Open Strategy" / "Open Planning" CTA label that the hub redesign removed,
+  // clickText swallowed the miss, and the sweep photographed the hub into
+  // galleries labelled attain-strategy-grounding and attain-planning. Both
+  // Attain working screens were therefore unreviewed while reading as covered.
+  await p.goto(BASE, { waitUntil: "networkidle" });
   await p.waitForTimeout(600);
-  await clickText(p, openRe); await p.waitForTimeout(400);
-  await clickText(p, buildRe); await p.waitForTimeout(400);
+  await mustClick(p, "[data-testid=button-enter-app]", "splash → hub");
+  await p.waitForTimeout(700);
+  await mustClick(p, `[data-testid=${hubCard}]`, `hub → ${hubCard}`);
+  await p.waitForTimeout(800);
+  await mustClick(p, "[data-testid=planning-card-build]", "The Plan → Build the Plan");
+  await p.waitForTimeout(900);
   const input = await p.$("input"); if (input) { await input.fill("Utah Health"); await p.waitForTimeout(150); }
   await clickText(p, /^Continue/); await p.waitForTimeout(400);
   await clickText(p, /Nursing/); await p.waitForTimeout(400);
@@ -316,14 +325,49 @@ await scene(browser, "attain-hub", async (p) => {
   await p.waitForTimeout(700);
   return "value attainment hub";
 });
+
+// ── The hub and the Case stories. These are the NEWEST surfaces in the app and
+// the least reviewed: the three sub-hubs and the four editorial story pages had
+// no screenshot coverage at all, so nothing was ever handed to a fresh eye.
+const hubEnter = async (p, card) => {
+  await p.goto(BASE, { waitUntil: "networkidle" });
+  await p.waitForTimeout(600);
+  await mustClick(p, "[data-testid=button-enter-app]", "splash → hub");
+  await p.waitForTimeout(700);
+  await mustClick(p, `[data-testid=${card}]`, `hub → ${card}`);
+  await p.waitForTimeout(900);
+};
+for (const [name, card] of [
+  ["hub-the-case", "hub-card-strategy"],
+  ["hub-the-numbers", "hub-card-financial"],
+  ["hub-the-plan", "hub-card-planning"],
+]) {
+  await scene(browser, name, async (p) => {
+    await hubEnter(p, card);
+    return card;
+  });
+}
+for (const [name, row] of [
+  ["case-ambient-documentation", "strategy-card-value-story"],
+  ["case-care-signals", "strategy-card-care-signals"],
+  ["case-cds", "strategy-card-cds"],
+  ["case-prebill", "strategy-card-prebill"],
+]) {
+  await scene(browser, name, async (p) => {
+    await hubEnter(p, "hub-card-strategy");
+    await mustClick(p, `[data-testid=${row}]`, `The Case → ${row}`);
+    await p.waitForTimeout(1400);
+    return row;
+  }, { height: 2400 });
+}
 await scene(browser, "attain-strategy-grounding", async (p) => {
-  await attainFunnel(p, /Open Strategy/, /Build the Strategy/);
+  await attainFunnel(p, "hub-card-planning", /Build the Strategy/);
   await clickText(p, /Start discovery/); await p.waitForTimeout(500);
   await clickIf(p, "[data-testid=discovery-ground-0-medsurg]"); await p.waitForTimeout(500);
   return "nursing strategy grounding (live)";
 }, { height: 1200 });
 await scene(browser, "attain-planning", async (p) => {
-  await attainFunnel(p, /Open Planning/, /Start building/);
+  await attainFunnel(p, "hub-card-planning", /Start building/);
   await p.waitForTimeout(500);
   return "nursing planning walk (live)";
 }, { height: 1700 });

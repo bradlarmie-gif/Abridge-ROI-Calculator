@@ -20,7 +20,11 @@ export function MethodologyHeader({
   onBack,
   onHome,
   onNavigate,
-  railLabel = "The Value Methodology",
+  // The Ambient Documentation story is the only page that takes the default.
+  // Care Signals / CDS / Pre-Bill each pass their own product name, so leaving
+  // this as "The Value Methodology" meant the flagship row on The Case opened a
+  // page whose rail announced a different thing than the row you clicked.
+  railLabel = "Ambient Documentation",
 }: {
   active?: MethodologyNavKey;
   activeLabel: string;

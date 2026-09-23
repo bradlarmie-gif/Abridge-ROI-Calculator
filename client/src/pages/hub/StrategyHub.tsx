@@ -38,7 +38,7 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           index={1}
           tagline="The record"
           title="Ambient Documentation"
-          description="Every assumption, formula, and limitation behind the value, laid out."
+          description="How the conversation becomes the note, and what that note is worth."
           onClick={onSelectValueStory}
           testId="strategy-card-value-story"
           delay={0.15}

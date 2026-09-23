@@ -50,7 +50,13 @@ function parseShort(raw) {
 function measure() {
   const root = document.querySelector(".explore-pdf-root");
   if (!root) return { error: "no .explore-pdf-root" };
-  const pages = [...root.children];
+  // Only real, rendered pages. The root's first child is a <style> holding the
+  // @page rule; counting it shifted every page index by one and made the
+  // "skip the cover" check skip the style tag instead.
+  const pages = [...root.children].filter((el) => {
+    const r = el.getBoundingClientRect();
+    return r.width > 100 && r.height > 100;
+  });
   const results = [];
   for (let pi = 0; pi < pages.length; pi++) {
     const page = pages[pi];
@@ -110,7 +116,13 @@ function measure() {
       worst,
       svgWorst,
       textLen: txt.length,
-      hasFooter: /Abridge ·/.test(txt),
+      // Two legitimate footers. Body pages carry the numbered running footer
+      // ("Abridge · 03"). The cover and the pitch page carry a lighter one
+      // ("Prepared for X · date" / "Confidential") with no section number,
+      // deliberately, because the report body starts numbering at 01. Matching
+      // only the numbered form reported the pitch page as footerless on every
+      // single combo.
+      hasFooter: /Abridge ·/.test(txt) || /Confidential/.test(txt),
       synths,
     });
   }

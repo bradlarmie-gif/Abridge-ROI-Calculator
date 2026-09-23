@@ -11,3 +11,6 @@ vite.config.ts.*
 /playwright-report/
 /playwright/.cache/
 scripts/visual-sweep-out/
+
+# PDF no-bleed fuzz artifacts (screenshots of failing combos)
+scripts/explore-pdf-nobleed/bleed-fail-*.png
