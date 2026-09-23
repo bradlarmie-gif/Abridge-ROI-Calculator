@@ -23,12 +23,23 @@ export default function ValueAttainmentHub({ onSelectStrategy, onSelectFinancial
               Abridge
             </span>
           </h1>
-          {/* Was an all-caps "WHERE DO YOU WANT TO START?" eyebrow. A left-aligned
-              list already reads as a set of choices, so the label was scaffolding;
-              this says the one thing the eyebrow did not — that you can enter
-              anywhere, rather than at the top. */}
-          <p className="mt-6 md:mt-7 text-[15px] leading-relaxed text-[#666666] max-w-[430px]">
-            Three ways in. Start wherever the conversation is.
+          {/* This line used to say "Three ways in. Start wherever the conversation
+              is." — wayfinding, directly above a numbered 01/02/03 list that
+              already says there are three and that you can start anywhere. The
+              most valuable supporting position on the entry screen was spending
+              itself restating the design.
+
+              It now does the job the title cannot: correcting the reader's scope.
+              If someone arrives thinking Abridge is the scribe, "The value of
+              Abridge" reads as the value of the scribe — while this hub covers
+              documentation, care gaps, decision support, the claim, and
+              dictation. Leading with the debunk fixes that in four words, then
+              names the asset (the record) and the payoff (what it is worth),
+              which is also the shape of the three rows below. */}
+          {/* text-balance: at phone width this wraps, and without balancing it
+              left "worth." orphaned on a line of its own. */}
+          <p className="mt-6 md:mt-7 text-[15px] leading-relaxed text-[#666666] max-w-[430px] text-balance">
+            Not one product. The whole record, and what it is worth.
           </p>
         </>
       }
