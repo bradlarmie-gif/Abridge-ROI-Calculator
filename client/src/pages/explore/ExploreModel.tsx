@@ -790,13 +790,13 @@ export default function ExploreModel({
                   const projected = plan.currentRecaptureRate + effective;
                   const totalPatients = fmt(providers * plan.panelSize);
                   if (hasNetNew) {
-                    return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note, suppressing risk scores and the payment that follows. Ambient documentation lifts recapture from ${plan.currentRecaptureRate}% to ${projected}% and surfaces previously uncoded conditions, adding ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                    return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note, suppressing risk scores and the payment that follows. This models recapture moving from ${plan.currentRecaptureRate}% to ${projected}% as those conditions reach the note, worth ${fmtCur(value)} a year in risk-adjusted revenue.`;
                   }
-                  return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note, a direct suppressor of risk-adjusted payment. Ambient documentation closes that gap, lifting the recapture rate from ${plan.currentRecaptureRate}% to ${projected}% and adding ${fmtCur(value)} in annual revenue.`;
+                  return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note, a direct suppressor of risk-adjusted payment. This models the gap closing, with recapture moving from ${plan.currentRecaptureRate}% to ${projected}%, worth ${fmtCur(value)} a year.`;
                 }
                 const names = hccPlans.map((p: { name: string }) => p.name);
                 const planNameList = names.length <= 2 ? names.join(' and ') : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-                return `Across your ${planNameList} populations, chronic conditions addressed verbally are routinely absent from the note, suppressing risk scores and the payment they drive. Ambient documentation systematically closes that gap${hasNetNew ? ', including previously uncoded conditions,' : ''}, driving ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                return `Across your ${planNameList} populations, chronic conditions addressed verbally are routinely absent from the note, suppressing risk scores and the payment they drive. This models that gap closing${hasNetNew ? ', including previously uncoded conditions,' : ''}, worth ${fmtCur(value)} a year in risk-adjusted revenue.`;
               }
               case 'denialPrevention':
                 if (state.careSetting === 'ed') {
@@ -2082,7 +2082,7 @@ export default function ExploreModel({
 
           {isNursing && (
             <p className="text-sm text-[#888888] text-center mt-4">
-              As adoption scales, documentation consistency improves, which compounds the care quality benefits above.
+              As adoption scales, documentation consistency improves across more of the record, which is what the care quality signals above are measured against.
             </p>
           )}
         </motion.div>

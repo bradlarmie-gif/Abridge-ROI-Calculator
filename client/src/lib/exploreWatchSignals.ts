@@ -110,7 +110,7 @@ export const WATCH_SIGNALS: Partial<
           name: "Burnout score (MBI / Mini-Z)",
           what: "Validated burnout measure, run on a cadence",
           inNote:
-            "The after-hours charting a lighter documentation load removes is a measured input to burnout.",
+            "After-hours charting is a measured input to burnout, and it is what a lighter documentation load targets.",
           signal:
             "A validated burnout instrument, run on a regular cadence, gives you the trend line.",
           matters:
@@ -120,7 +120,7 @@ export const WATCH_SIGNALS: Partial<
           name: "Likelihood to stay",
           what: "Nurses' stated intent to remain in role",
           inNote:
-            "The daily friction a lighter charting load removes is what a stay-or-leave question is really measuring.",
+            "Daily charting friction is what a stay-or-leave question is really measuring, and it is what a lighter load targets.",
           signal:
             "A short intent-to-stay pulse gives you the number without a full engagement survey.",
           matters:

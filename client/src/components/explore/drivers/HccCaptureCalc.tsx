@@ -95,7 +95,7 @@ export default function HccCaptureCalc({ state, updateDocQualityInputs, totalHou
   return (
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-3">
-        When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. Better documentation drives higher HCC recapture rates, improving risk-adjusted payment across plan types.
+        When providers use ambient documentation, chronic conditions addressed verbally are more likely to appear in the note. Recapture depends on the condition reaching the note. Coding still has to act on it, and risk-adjusted payment follows recapture.
       </p>
 
       <div className="h-px bg-[#E5E5E5] my-4" />

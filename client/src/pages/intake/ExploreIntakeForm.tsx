@@ -451,7 +451,7 @@ export default function ExploreIntakeForm({ preseed, storageFingerprint }: Explo
                         onChange={v => update('edAdmissionRevenue', v)} placeholder="e.g. 4,000" suffix="$" />
                     </div>
 
-                    <SectionDivider label="Claim Denials" context="ED claims carry higher denial rates than most settings. We use your baseline to size what better documentation recovers in first-pass acceptance." />
+                    <SectionDivider label="Claim Denials" context="ED claims carry higher denial rates than most settings. We use your baseline to size the first-pass acceptance that better documentation is positioned to recover." />
                     <div className="grid grid-cols-2 gap-4">
                       <NumberField label="Claim denial rate" value={formState.edDenialRate}
                         onChange={v => update('edDenialRate', v)} placeholder="e.g. 8" suffix="%" />

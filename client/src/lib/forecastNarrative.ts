@@ -168,7 +168,7 @@ export function generateForecastNarrative(
       }
       case "denialReduction": {
         const delta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));
-        driverInsights[d.id] = `A ${delta.toFixed(1)}pp improvement in clean claim rate at $${ci.factor1Value ?? 350} average claim value. Documentation quality directly reduces first-pass denials.`;
+        driverInsights[d.id] = `A ${delta.toFixed(1)}pp improvement in clean claim rate at $${ci.factor1Value ?? 350} average claim value. First-pass denials track documentation quality.`;
         break;
       }
       case "emLevelLift": {

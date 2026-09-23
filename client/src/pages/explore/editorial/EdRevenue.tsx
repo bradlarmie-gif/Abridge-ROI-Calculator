@@ -686,7 +686,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           steps={[
             { label: "Claims a year", factor: { value: claimsBase, onChange: (v) => updateDq({ denialsAnnualClaims: v }) }, running: fmtN(claimsBase) },
             { label: "Medical-necessity denial rate", factor: { value: dq.medNecessityDenialRate, onChange: (v) => updateDq({ medNecessityDenialRate: v }), suffix: "%", decimal: true }, running: `${fmtN(denialsDenied)} denials` },
-            { label: "Abridge reduces", factor: { value: denialsPreventedPct, onChange: (v) => updateDq({ denialsScenario: "custom", denialsCustomPercent: v }), suffix: "%" }, running: `${fmtN(denialsFewer)} fewer` },
+            { label: "attributed to Abridge", factor: { value: denialsPreventedPct, onChange: (v) => updateDq({ denialsScenario: "custom", denialsCustomPercent: v }), suffix: "%" }, running: `${fmtN(denialsFewer)} fewer` },
             { label: "Allowed per claim", factor: { value: dq.avgClaimValue, onChange: (v) => updateDq({ avgClaimValue: v }), prefix: "$" }, running: fmt$(denialsGross) },
             { label: "Realization", factor: { value: dq.denialsRealization, onChange: (v) => updateDq({ denialsRealization: v }), suffix: "%" }, running: fmt$(denialsValue), final: true },
           ]}
@@ -807,7 +807,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
           steps={[
             { label: "Claims a year", factor: { value: claimsBase, onChange: (v) => updateDq({ denialsAnnualClaims: v }) }, running: fmtN(claimsBase) },
             { label: "Medical-necessity denial rate", factor: { value: dq.medNecessityDenialRate, onChange: (v) => updateDq({ medNecessityDenialRate: v }), suffix: "%", decimal: true }, running: `${fmtN(denialsDenied)} denials` },
-            { label: "Abridge reduces", factor: { value: denialsPreventedPct, onChange: (v) => updateDq({ denialsScenario: "custom", denialsCustomPercent: v }), suffix: "%" }, running: `${fmtN(denialsFewer)} fewer` },
+            { label: "attributed to Abridge", factor: { value: denialsPreventedPct, onChange: (v) => updateDq({ denialsScenario: "custom", denialsCustomPercent: v }), suffix: "%" }, running: `${fmtN(denialsFewer)} fewer` },
             { label: "Allowed per claim", factor: { value: dq.avgClaimValue, onChange: (v) => updateDq({ avgClaimValue: v }), prefix: "$" }, running: fmt$(denialsGross) },
             { label: "Realization", factor: { value: dq.denialsRealization, onChange: (v) => updateDq({ denialsRealization: v }), suffix: "%" }, running: fmt$(denialsValue), final: true },
           ]}

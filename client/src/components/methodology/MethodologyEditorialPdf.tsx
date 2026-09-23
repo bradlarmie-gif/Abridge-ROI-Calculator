@@ -327,7 +327,7 @@ function RecordPage(): JSX.Element {
             desc="Acuity and services already delivered, captured instead of lost to thin notes."
           />
           <FloorCell dot={DOMAIN_COLORS.Capacity} name="Capacity" desc="Clinician hours returned from after-hours charting to patient care." />
-          <FloorCell dot={DOMAIN_COLORS.Workforce} name="Workforce" desc="The documentation burden that drives burnout, lifted." />
+          <FloorCell dot={DOMAIN_COLORS.Workforce} name="Workforce" desc="The documentation burden associated with burnout." />
           <FloorCell dot={DOMAIN_COLORS.Quality} name="Quality" desc="Care gaps and safety signals surfaced in the record, tracked, not counted." />
         </div>
       </div>

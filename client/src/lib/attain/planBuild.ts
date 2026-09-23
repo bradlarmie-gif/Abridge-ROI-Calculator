@@ -146,8 +146,8 @@ const SETTING_STEP_OVERRIDES: Record<string, Record<number, StepOverride>> = {
  * the setting (the capacity goal title is nursing-overtime; inpatient capacity is
  * the discharge/bed-turn play). */
 const SETTING_TITLE_OVERRIDES: Record<string, string> = {
-  "inpatient:capacity": "How Capacity Opens",
-  "ed:access": "How Throughput Improves",
+  "inpatient:capacity": "What Capacity Depends On",
+  "ed:access": "What Throughput Depends On",
 };
 
 /** Infer a measurement source from a chain link's role in the outcome. */

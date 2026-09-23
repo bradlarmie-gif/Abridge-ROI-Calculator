@@ -43,15 +43,15 @@ const DOMAIN_OF: Record<string, "Revenue" | "Capacity" | "Workforce" | "Quality"
 
 const DRIVER_DESC: Record<string, string> = {
   patientAccess: "Time returned from after-hours charting reopens visit slots, adding contribution margin at the current no-show adjusted rate.",
-  wrvu: "Complete documentation lifts the coded acuity of visits already delivered, recovering wRVUs that thin notes leave on the table.",
+  wrvu: "Complete documentation shows the acuity of visits already delivered. Where coding acts on it, that recovers wRVUs thin notes leave on the table.",
   hcc: "Chronic conditions surfaced and documented at the visit raise risk-adjustment accuracy for the risk-bearing panel.",
-  providerWellbeing: "Lower documentation burden reduces the turnover risk that carries real recruiting and lost-productivity cost.",
-  retention: "Lower documentation burden reduces the turnover risk that carries real recruiting and lost-productivity cost.",
+  providerWellbeing: "Documentation burden is one documented contributor to turnover risk, which carries real recruiting and lost-productivity cost.",
+  retention: "Documentation burden is one documented contributor to turnover risk, which carries real recruiting and lost-productivity cost.",
   locum: "Fewer vacancies to backfill with premium contract labor as retention improves.",
   edLwbs: "Complete documentation can shorten throughput; where teams act on it, fewer patients leave before being seen and their care is retained.",
   edAdmission: "Complete ED notes support the medical necessity and acuity of admissions, protecting earned inpatient revenue.",
   denials: "Stronger documentation supports medical necessity, reducing avoidable denials on eligible claims.",
-  ipDrg: "More complete inpatient documentation raises coded case-mix accuracy on Abridge-enabled discharges.",
+  ipDrg: "More complete inpatient documentation can support coded case-mix accuracy on Abridge-enabled discharges, where coding acts on it.",
   ipObsDefense: "Complete notes defend inpatient status against observation downgrades where the acuity supports it.",
   nursingOt: "Documentation efficiency trims overtime hours across the nursing workforce.",
   scribeCost: "Scribe positions retired as ambient documentation covers the same work.",
@@ -64,7 +64,7 @@ const DRIVER_DESC: Record<string, string> = {
 // setting it actually appears in.
 const DRIVER_DESC_BY_SETTING: Record<string, string> = {
   "ed:wrvu": "Complete ED notes support the E/M level the visit actually warranted, so the acuity already delivered is coded and billed accurately.",
-  "ed:providerWellbeing": "Emergency clinicians are among the hardest roles to staff; a lighter charting load after unpredictable shifts eases the burnout that drives their turnover.",
+  "ed:providerWellbeing": "Emergency clinicians are among the hardest roles to staff; a lighter charting load after unpredictable shifts addresses one documented contributor to their turnover.",
 };
 
 const SIGNALS: Record<string, string[]> = {
@@ -76,7 +76,7 @@ const SIGNALS: Record<string, string[]> = {
 
 const NARRATIVE: Record<string, string> = {
   outpatient: "Outpatient is where the case is won: the highest volume, the richest documentation-driven revenue, and the most provider time to give back.",
-  ed: "Emergency stacks onto the case in year one: faster throughput protects revenue that otherwise walks out the door, and a hard-to-staff team gets time back.",
+  ed: "Emergency stacks onto the case in year one: where throughput improves, revenue that would otherwise walk out the door is retained, and a hard-to-staff team gets time back.",
   inpatient: "Inpatient adds coded case-mix accuracy and status defense on complex admissions, where a complete note protects earned revenue.",
   nursing: "Nursing returns time at the bedside and trims premium labor as the documentation load comes down across a hard-to-staff workforce.",
 };
@@ -84,7 +84,7 @@ const NARRATIVE: Record<string, string> = {
 const DOMAIN_NORTHSTAR: Record<string, string> = {
   Revenue: "Documentation that captures the acuity and services already delivered, so earned revenue is not lost to thin notes.",
   Capacity: "Clinician hours returned from after-hours charting to patient care and added access.",
-  Workforce: "Turnover risk reduced as the documentation burden that drives burnout comes down.",
+  Workforce: "Turnover risk tracked against the documentation burden associated with burnout.",
   Quality: "Safety and experience signals we monitor with you, but deliberately leave out of the dollar case.",
 };
 

@@ -76,7 +76,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs, totalHo
       {/* STEP 2 */}
       <div className="mb-10">
         <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">
-          Step 2: The Gap Abridge Closes
+          Step 2: The Gap Abridge Addresses
         </p>
         <p className="text-[13px] text-[#666666] mb-2">
           Not all gaps are the same. Abridge specifically captures "discussed but not documented": clinical reasoning that happened verbally but didn't make the note.

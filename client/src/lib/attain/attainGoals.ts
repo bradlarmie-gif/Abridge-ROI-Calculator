@@ -103,7 +103,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
     pill: "Capacity",
     pillBg: "#1A1A1A",
     domainSub: "Panel Capacity & Appointment Access",
-    chainTitle: "How Access Is Attained",
+    chainTitle: "What Access Depends On",
     chainArrow: "↑",
     quadrant: "Capacity",
     chain: [
@@ -199,7 +199,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
     pill: "Workforce",
     pillBg: "#574A43",
     domainSub: "Provider Wellbeing & Retention",
-    chainTitle: "How Retention Holds",
+    chainTitle: "What Retention Depends On",
     chainArrow: "↓",
     quadrant: "Workforce",
     chain: [
@@ -295,7 +295,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
     pill: "Revenue",
     pillBg: "#EA2C00",
     domainSub: "Coding Accuracy & Documentation Integrity",
-    chainTitle: "How Revenue Is Captured",
+    chainTitle: "What Revenue Capture Depends On",
     chainArrow: "↑",
     quadrant: "Revenue",
     chain: [
@@ -391,7 +391,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
     pill: "Quality",
     pillBg: "#6B7280",
     domainSub: "Care Bundles & Patient Safety",
-    chainTitle: "How Safety Events Fall",
+    chainTitle: "What Safety Events Depend On",
     chainArrow: "↓",
     quadrant: "Quality",
     chain: [
@@ -487,7 +487,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
     pill: "Capacity",
     pillBg: "#1A1A1A",
     domainSub: "Overtime & After-Shift Charting",
-    chainTitle: "How Overtime Comes Down",
+    chainTitle: "What Overtime Depends On",
     chainArrow: "↓",
     quadrant: "Capacity",
     chain: [
@@ -586,7 +586,7 @@ export const GOAL_CATALOG: Record<GoalId, GoalDef> = {
     pill: "Experience",
     pillBg: "#0891B2",
     domainSub: "Bedside Presence & Communication",
-    chainTitle: "How Experience Rises",
+    chainTitle: "What Experience Depends On",
     chainArrow: "↑",
     quadrant: "Quality",
     chain: [

@@ -274,7 +274,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
               <EqOp>×</EqOp>
               <EqNum cap="OT hrs / wk" value={td.nursingOtHoursPerNurseWeek} onChange={(v) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v })} suffix="hrs" />
               <EqOp>×</EqOp>
-              <EqNum cap="Abridge reduces" value={td.nursingOtReductionPercent} onChange={(v) => updateTimeDriverInputs({ nursingOtReductionPercent: v })} suffix="%" />
+              <EqNum cap="attributed to Abridge" value={td.nursingOtReductionPercent} onChange={(v) => updateTimeDriverInputs({ nursingOtReductionPercent: v })} suffix="%" />
               <EqOp>×</EqOp>
               <EqCarried cap="weeks">52</EqCarried>
               <EqOp>×</EqOp>

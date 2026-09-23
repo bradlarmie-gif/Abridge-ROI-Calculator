@@ -650,7 +650,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       <MathCascade
         steps={[
           { label: "Current incremental-staffing spend", factor: { value: td.ipStaffingCurrentSpend, onChange: (v: number) => updateTimeDriverInputs({ ipStaffingCurrentSpend: v }), prefix: "$" }, running: "—" },
-          { label: "Abridge reduces", factor: { value: td.ipStaffingReductionPct, onChange: (v: number) => updateTimeDriverInputs({ ipStaffingReductionPct: v }), suffix: "%" }, running: formatCurrency(Math.round(staffingValue / 1000) * 1000), final: true },
+          { label: "attributed to Abridge", factor: { value: td.ipStaffingReductionPct, onChange: (v: number) => updateTimeDriverInputs({ ipStaffingReductionPct: v }), suffix: "%" }, running: formatCurrency(Math.round(staffingValue / 1000) * 1000), final: true },
         ]}
       />
     );

@@ -1157,7 +1157,7 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
             {
               label: "wRVU capture",
               value: 412000,
-              desc: "Complete documentation lifts the coded acuity of visits already delivered, recovering wRVUs that thin notes leave on the table.",
+              desc: "Complete documentation shows the acuity of visits already delivered. Where coding acts on it, that recovers wRVUs thin notes leave on the table.",
               chain: "184,000 wRVUs / yr × 1.8% recovery × $124 per wRVU",
             },
             {
@@ -1187,7 +1187,7 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
             {
               label: "Provider wellbeing",
               value: 180000,
-              desc: "Lower documentation burden reduces the turnover risk that carries real recruiting and lost-productivity cost.",
+              desc: "Documentation burden is one documented contributor to turnover risk, which carries real recruiting and lost-productivity cost.",
               chain: "240 providers × $3,000 turnover-risk value × 25% attribution",
             },
           ],
@@ -1216,7 +1216,7 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
       atScaleValue: 550000,
       encounterLabel: "ED visits / yr",
       narrative:
-        "Emergency stacks onto the case in year one: faster throughput protects revenue that otherwise walks out the door, and a hard-to-staff team gets time back.",
+        "Emergency stacks onto the case in year one: where throughput improves, revenue that would otherwise walk out the door is retained, and a hard-to-staff team gets time back.",
       domains: [
         {
           key: "Revenue",
@@ -1225,7 +1225,7 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
             {
               label: "LWBS recovery",
               value: 210000,
-              desc: "Faster documentation shortens throughput, so fewer patients leave without being seen and their care is retained.",
+              desc: "Complete documentation can shorten throughput; where teams act on it, fewer patients leave without being seen.",
               chain: "142,000 ED visits / yr × 1.1% LWBS avoided × $134 margin / visit",
             },
             {
@@ -1284,7 +1284,7 @@ export const SAMPLE_PROFORMA_PDF_DATA: ProformaPdfData = {
   domainTiles: [
     { key: "Revenue", value: 1121000, pct: 56, counted: true, northStar: "Documentation that captures the acuity and services already delivered, so earned revenue is not lost to thin notes." },
     { key: "Capacity", value: 644000, pct: 32, counted: true, northStar: "Clinician hours returned from after-hours charting to patient care and added access." },
-    { key: "Workforce", value: 245000, pct: 12, counted: true, northStar: "Turnover risk reduced as the documentation burden that drives burnout comes down." },
+    { key: "Workforce", value: 245000, pct: 12, counted: true, northStar: "Turnover risk tracked against the documentation burden associated with burnout." },
     { key: "Quality", value: 0, pct: 0, counted: false, northStar: "Safety and experience signals we monitor with you, but deliberately leave out of the dollar case." },
   ],
   thesis:

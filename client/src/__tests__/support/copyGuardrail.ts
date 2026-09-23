@@ -52,7 +52,7 @@ const stripComments = (l: string) => l.replace(/([^:"'`])\/\/.*$/, "$1");
  *   a whole line of —  the same thing when prettier wrapped the JSX
  * The entity spellings are covered too, since they render identically.
  */
-const DASH = "(?:—|&mdash;|&#8212;|&#x2014;)";
+const DASH = "(?:—|&mdash;|&#8212;|&#x2014;|\\\\u2014)";
 const stripPlaceholders = (l: string) =>
   l
     .replace(new RegExp(`(["'\`])\\s*${DASH}\\s*\\1`, "g"), "$1$1")
@@ -96,12 +96,72 @@ const PREVENTED_BY = /\bprevented by\b/i;
 // eliminate"), which the bare present tense here does not match.
 const ELIMINATES = /\b(eliminates|eradicates)\b/i;
 
+/**
+ * "<our thing> <effect-verb>" in the present indicative: the shape that asserts
+ * Abridge DOES something to a clinical or financial outcome.
+ *
+ * This is the class the em-dash and "prevents" rules kept missing, because the
+ * offending verb changes every time — lifts, raises, reopens, protects, eases,
+ * drives. What does not change is the SHAPE: our product (or its output) as the
+ * subject, an effect verb, an outcome as the object.
+ *
+ * Approved forms are capability plus conditional, and are deliberately excluded:
+ *   "Complete documentation CAN shorten throughput; WHERE teams act on it, ..."
+ *   "the share you EXPECT cleaner documentation to prevent"
+ *   "POSITIONED to", "ATTRIBUTED to", "HELPS"
+ *
+ * Also excluded: the problem direction. "the overtime that charting causes" and
+ * "documentation improves in month one, but the coding workflow does not" are
+ * the debunk, which the copy doctrine wants us to be MORE specific about, not
+ * less. Those read as <subject> <verb> too, so the hedge window is checked on
+ * both sides and a leading "the"/"that" relative clause is allowed through.
+ */
+const CLAIM_SUBJ =
+  "(?:abridge|ambient documentation|complete documentation|better documentation|cleaner documentation|real-time documentation|more complete \\w+ documentation|a lighter charting load|lighter charting|time returned|faster throughput|lower documentation burden)";
+const CLAIM_VERB =
+  "(?:lifts|raises|reopens|reduces|protects|eases|drives|boosts|shortens|lowers|removes|eliminates|recovers|restores|unlocks|delivers|generates)";
+const CLAIM_RE = new RegExp(`${CLAIM_SUBJ}\\b((?:\\s+\\w+){0,3}?)\\s+${CLAIM_VERB}\\b`, "i");
+const CLAIM_HEDGE = /\b(can|may|could|might|should|helps?|expected|positioned|intended|designed|aims?|targets?|where|when|if|assumes?|not)\b/i;
+
+/**
+ * What the verb acts ON decides whether it is a claim.
+ *
+ * "Abridge shortens documentation time" is the product's direct, measured
+ * function — the thing the entire tool is built on — and hedging it would be
+ * false modesty, not caution. "Lower documentation burden reduces turnover
+ * risk" reaches past the product into a clinical/financial outcome that other
+ * initiatives also move, and that is the one Legal cares about.
+ *
+ * So: allow the effect when the object is our own surface (documentation, the
+ * note, charting, the record); flag it when the object is an outcome.
+ */
+const OWN_SURFACE =
+  /^\s*(?:the\s+|a\s+|an\s+|structured\s+|draft\s+)?(?:documentation|charting|note|notes|note-writing|record|transcription|typing|after-hours|paperwork|admin|text|draft)\b/i;
+
+function causalClaim(copy: string): boolean {
+  const m = CLAIM_RE.exec(copy);
+  if (!m) return false;
+  if (CLAIM_HEDGE.test(m[1] || "")) return false;
+  // a hedge immediately before the subject ("we assume Abridge reduces ...")
+  if (CLAIM_HEDGE.test(copy.slice(Math.max(0, m.index - 40), m.index))) return false;
+  // a contrastive clause later in the sentence is the hedge doing its job
+  // ("... shortens the query loop, BUT CDI still has to work it")
+  const after = copy.slice(m.index + m[0].length);
+  if (/\b(but|still has to|still have to|only when|only if|requires)\b/i.test(after)) return false;
+  return !OWN_SURFACE.test(after);
+}
+
 const CORE_RULES: Rule[] = [
   // Catch the literal EM dash AND its HTML-entity forms — an entity-encoded em
   // dash renders identically to the customer but slipped past a literal-only
   // check. Deliberately NOT the en dash (–): it is correct in numeric ranges
   // ("$150K–$350K", "0–100") and is not the "AI wrote this" tell we guard.
-  { name: "em-dash", hit: (c) => /—|&mdash;|&#8212;|&#x2014;/i.test(c) },
+  // Literal, HTML-entity AND \u-escaped forms. The escape is the one that got
+  // through: measureCareSettings.ts held a "\u2014" that renders as an em dash to
+  // the customer and read as a plain backslash-u to a literal-only check.
+  // Deliberately NOT the en dash (\u2013, correct in numeric ranges) or the
+  // minus sign (\u2212).
+  { name: "em-dash", hit: (c) => /—|&mdash;|&#8212;|&#x2014;|\\u2014/i.test(c) },
   { name: "guarantee-claim", hit: (c) => GUARANTEE.test(c) && !GUARANTEE_NEGATED.test(c) },
   { name: "ensures", hit: (c) => ENSURES.test(c) },
   { name: "proven-to", hit: (c) => PROVEN.test(c) },
@@ -111,6 +171,7 @@ const CORE_RULES: Rule[] = [
   { name: "prevents", hit: (c) => PREVENTS.test(c) },
   { name: "prevented-by", hit: (c) => PREVENTED_BY.test(c) },
   { name: "eliminates", hit: (c) => ELIMINATES.test(c) },
+  { name: "causal-claim", hit: causalClaim },
 ];
 
 /** Scan `files` (relative to `root`) with the core rules plus any `extra` rules. */

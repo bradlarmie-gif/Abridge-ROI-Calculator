@@ -56,7 +56,7 @@ const DRIVER_DESCRIPTION: Record<string, string> = {
   edLwbs: "Complete documentation can shorten throughput; where teams act on it, fewer patients leave before being seen and their care is retained.",
   edAdmission: "Complete ED notes support the medical necessity and acuity of admissions, protecting earned inpatient revenue.",
   denials: "Stronger documentation supports medical necessity, reducing avoidable denials on eligible claims.",
-  ipDrg: "More complete inpatient documentation raises coded case-mix accuracy on Abridge-enabled discharges.",
+  ipDrg: "More complete inpatient documentation can support coded case-mix accuracy on Abridge-enabled discharges, where coding acts on it.",
   ipObsDefense: "Complete notes defend inpatient status against observation downgrades where the acuity supports it.",
   nursingOt: "Documentation efficiency trims overtime hours across the nursing workforce.",
   scribeCost: "Scribe positions retired as ambient documentation covers the same work.",

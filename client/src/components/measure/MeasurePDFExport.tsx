@@ -264,7 +264,7 @@ function fmtPct(n: number): string {
 }
 
 const Conf = ({ org }: { org: string }) => (
-  <Text style={s.confHeader}>Confidential \u2014 Prepared for {org}</Text>
+  <Text style={s.confHeader}>Confidential · Prepared for {org}</Text>
 );
 
 const Footer = ({ n, total, org }: { n: number; total: number; org: string }) => (
@@ -300,7 +300,7 @@ function MonthlySparkline({ data }: { data: Array<{ month: string; withAbridge: 
         ))}
       </Svg>
       <Text style={{ fontSize: 7, color: C.muted, marginTop: 2 }}>
-        Solid \u2014 With Abridge   Dashed \u2014 Without
+        Solid: With Abridge   Dashed: Without
       </Text>
     </View>
   );
@@ -343,7 +343,7 @@ function DriverCard({ d }: { d: MeasurePDFDriver }) {
       ) : (
         <>
           {d.notes ? <Text style={s.notesText}>{d.notes}</Text> : null}
-          <Text style={s.qualNote}>Tracked qualitatively \u2014 no financial value modeled.</Text>
+          <Text style={s.qualNote}>Tracked qualitatively, with no financial value modeled.</Text>
         </>
       )}
     </View>
@@ -526,13 +526,13 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
                 </Text>
               ) : (
                 <Text style={{ fontSize: 9, color: C.mid }}>
-                  Current setting only \u2014 no expansions modeled.
+                  Current setting only, with no expansions modeled.
                 </Text>
               )}
             </View>
 
             <Text style={s.narrative}>
-              Each tracked driver scales according to its dimension \u2014 some scale with provider count, some with encounter volume, some with patient days. The forecast above applies the right scaling to each driver and sums the result.
+              Each tracked driver scales according to its dimension: some scale with provider count, some with encounter volume, some with patient days. The forecast above applies the right scaling to each driver and sums the result.
             </Text>
 
             <Footer n={P()} total={pageCount} org={orgName} />
@@ -581,7 +581,7 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
             <Conf org={orgName} />
             <Text style={s.eyebrow}>Pricing Comparison</Text>
             <Text style={s.headline}>Investment scenarios at the projected scale.</Text>
-            <Text style={s.subline}>Stepped tier math \u2014 all units price at the matched tier rate.</Text>
+            <Text style={s.subline}>Stepped tier math: all units price at the matched tier rate.</Text>
 
             {data.pricingScenarios.map((sc, i) => (
               <View key={i} style={s.card}>
@@ -709,7 +709,7 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
           <View style={s.bulletRow}>
             <View style={s.bullet} />
             <Text style={s.bulletText}>
-              Forecast projections scale each driver according to its scaleAxis \u2014 providers, encounters, or patient days. The base scale is taken from your deployment; the projected scale comes from the forecast inputs you set.
+              Forecast projections scale each driver according to its scaleAxis: providers, encounters, or patient days. The base scale is taken from your deployment; the projected scale comes from the forecast inputs you set.
             </Text>
           </View>
           <View style={s.bulletRow}>

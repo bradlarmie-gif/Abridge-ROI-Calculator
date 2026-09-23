@@ -565,7 +565,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
   const [popIdx, setPopIdx] = useState(0);
   return (
     <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
-      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[540px] mb-1">Risk capture is valued on the panel, once per member per year, never per visit. Abridge lifts the recapture rate on the conditions a member already carries.</p>
+      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[540px] mb-1">Risk capture is valued on the panel, once per member per year, never per visit. What is modelled here is recapture on the conditions a member already carries.</p>
 
       {pops.length > 0 && (
         <div className="mt-5 flex items-center gap-2 flex-wrap">

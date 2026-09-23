@@ -35,7 +35,7 @@ const CAPABILITY_PROOF: Record<AppRatCategoryId, { today: string; withAbridge: s
   },
   transcription: {
     today: "A transcription service types up dictated audio after the fact.",
-    withAbridge: "Abridge generates structured text from the conversation live, reducing the need for downstream transcription.",
+    withAbridge: "Abridge generates structured text from the conversation live, which is the work downstream transcription was doing.",
   },
   cds: {
     today: "Clinical decision support answers reference questions at the point of care.",

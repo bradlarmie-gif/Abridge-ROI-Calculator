@@ -388,7 +388,7 @@ export function getDriverFallback(driverId: string): string {
     opCareGapClosureRate: "Care gap closure improvement: HEDIS-relevant conditions documented at point of care.",
     opHedisCompositeScore:"HEDIS composite score improvement from complete preventive care documentation.",
     opMaStarsPerformance: "MA Stars performance tied to documentation quality driving risk adjustment accuracy.",
-    edCoreMeasureDocRate: "ED core measure compliance: documentation quality drives measure capture.",
+    edCoreMeasureDocRate: "ED core measure compliance: measure capture depends on documentation quality.",
     edDocDeficiencyRate:  "Chart completion rate improvement, with fewer post-discharge completions needed.",
     edPatientExperience:  "Provider presence during encounters improves ED patient experience scores.",
     opNotesBeforeLeaving: "In-clinic note completion; inbox burden shifted from home to point-of-care.",
