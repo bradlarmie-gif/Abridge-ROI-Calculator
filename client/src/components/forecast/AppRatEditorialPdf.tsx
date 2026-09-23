@@ -54,8 +54,11 @@ const CAPABILITY_PROOF: Record<AppRatCategoryId, { today: string; withAbridge: s
     withAbridge: "Abridge's coding and quality coverage is expanding toward this step; treat this as a working estimate.",
   },
   postChartCoding: {
-    today: "Post-charting CDI and coding tools review the finished note for codes.",
-    withAbridge: "Abridge's coding coverage is expanding toward this step; treat this as a working estimate.",
+    today: "Pre-bill review tools check the finished note against the coded case before the claim goes.",
+    // Pre-Bill is a shipped product, so this no longer carries the
+    // "expanding toward this step / working estimate" hedge the other two
+    // coding-layer categories still use.
+    withAbridge: "Abridge Pre-Bill compares the coded case with the documented stay before submission, which is the same check.",
   },
   custom: {
     today: "A documentation-adjacent tool you entered.",

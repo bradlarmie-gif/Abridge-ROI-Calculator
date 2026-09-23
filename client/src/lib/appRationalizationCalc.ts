@@ -17,19 +17,31 @@ export interface AppRatCategory {
   comingSoon?: boolean; // not yet displaceable by Abridge — shown last, not selectable
 }
 
-// Order matters: available capabilities first, then coming-soon ones, then Custom
-// last. Every surface (grid, command search, add-tool picker) renders in this
-// order, so marking a category comingSoon + placing it here sinks it everywhere.
+// Order matters: every surface (grid, command search, add-tool picker) renders in
+// this order. It now follows the three capability layers the grid shows —
+// Capture, then Coding & integrity, then Decision support — so what a rep sees
+// in search matches the layout they just looked at. Custom stays last.
+//
+// The Coding & integrity three came off comingSoon: their displacement is live.
+// Nothing else needed wiring, which is the tell that they were only gated: the
+// coverage defaults (45% each), the icons and the PDF copy were already there.
+// They stay OUT of the moat chain's CAPTURE_CATEGORIES on purpose, the same way
+// live-and-selectable CDS does — that chain plots the conversation-to-draft-note
+// region, not everything Abridge can displace, and arMoatView.test pins it.
 export const APP_RAT_CATEGORIES: AppRatCategory[] = [
   { id: "ambientDoc",       label: "Ambient documentation",        hint: "Nuance DAX, Suki, Nabla, Ambience", icon: "ambientDoc" },
   { id: "dictation",        label: "Dictation",                    hint: "Dragon Medical One, Fluency",        icon: "dictation" },
   { id: "scribe",           label: "Medical scribe",               hint: "ScribeAmerica, Aquity",              icon: "scribe" },
-  { id: "cds",              label: "Clinical decision support",    hint: "UpToDate, DynaMed, Epocrates",       icon: "cds" },
   { id: "transcription",    label: "Transcription services",       hint: "iMedX, Athreon, offshore",           icon: "transcription" },
+  { id: "preChartRisk",     label: "Pre-charting risk",            hint: "Iodine, Regard, Navina",             icon: "preChartRisk" },
+  { id: "inEncounterCdi",   label: "In-encounter risk / CDI",      hint: "Stanson, 3M CDI",                    icon: "inEncounterCdi" },
+  // Labelled Pre-Bill, after the Abridge product. The `postChartCoding` ID stays:
+  // it is the icon key and the stable join key, never shown to a customer, and
+  // renaming it would churn tests and the PDF copy map for no visible gain. Same
+  // rule as elsewhere — stable internal id, customer-facing display label.
+  { id: "postChartCoding",  label: "Pre-Bill",                     hint: "SmarterDx, Akasa",                   icon: "postChartCoding" },
+  { id: "cds",              label: "Clinical decision support",    hint: "UpToDate, DynaMed, Epocrates",       icon: "cds" },
   { id: "clinicalEvidence", label: "Clinical evidence & search",   hint: "OpenEvidence, ClinicalKey",          icon: "clinicalEvidence" },
-  { id: "preChartRisk",     label: "Pre-charting risk",            hint: "Iodine, Regard, Navina",             icon: "preChartRisk",    comingSoon: true },
-  { id: "inEncounterCdi",   label: "In-encounter risk / CDI",      hint: "Stanson, 3M CDI",                    icon: "inEncounterCdi",  comingSoon: true },
-  { id: "postChartCoding",  label: "Post-charting CDI / coding",   hint: "Solventum, Optum360",                icon: "postChartCoding", comingSoon: true },
   { id: "custom",           label: "Custom",                       hint: "not on the list",                    icon: "custom" },
 ];
 
@@ -94,6 +106,8 @@ export const KNOWN_VENDORS: KnownVendor[] = [
   { name: "3M CDI", category: "inEncounterCdi" },
 
   // Post-charting CDI / coding
+  { name: "SmarterDx", category: "postChartCoding" },
+  { name: "Akasa", category: "postChartCoding" },
   { name: "Solventum", category: "postChartCoding" },
   { name: "3M 360 Encompass", category: "postChartCoding" },
   { name: "Optum360", category: "postChartCoding" },
