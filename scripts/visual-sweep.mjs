@@ -48,6 +48,23 @@ const clickIf = async (page, sel, opts = {}) => {
 const clickText = async (page, re) => {
   try { await page.getByText(re).first().click({ timeout: 1500, force: true }); return true; } catch { return false; }
 };
+/**
+ * For NAVIGATION, which must not be best-effort.
+ *
+ * clickIf/clickText swallow. That is right for optional flourishes (hover a
+ * legend, open a disclosure that may not be there) and badly wrong for the
+ * clicks that decide WHICH SCREEN gets photographed: when the IA changed, the
+ * App Rationalization entry kept clicking a CTA label that no longer existed,
+ * swallowed the miss, and screenshotted the hub into a gallery labelled
+ * "apprat-consolidation" — reported as a soft note, reviewed as if it were the
+ * real screen. A sweep that quietly captures the wrong thing is worse than one
+ * that crashes.
+ */
+const mustClick = async (page, sel, what) => {
+  const el = await page.$(sel);
+  if (!el) throw new Error(`visual-sweep: ${what} — no element matched ${sel}. The IA moved; fix the entry path.`);
+  await el.click({ timeout: 4000 });
+};
 const page_hoverFirstLegend = async (page) => {
   try { const el = await page.$("[data-testid^=ar-legend-]"); if (el) { await el.hover({ timeout: 1200 }); await page.waitForTimeout(250); } } catch {}
 };
@@ -156,8 +173,16 @@ async function scene(browser, name, setup, { width = 1440, height = 1000 } = {})
     // legitimate in-chart labels trip it) — a LOOK prompt, not a hard fail.
     for (const s of r.svgLabels.slice(0, 6)) notes.push(`${name}: review chart label — ${s}`);
   } catch (e) {
-    notes.push(`${name}: drive error ${String(e).slice(0, 90)}`);
-    try { await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true }); shots.push(`${name}.png (partial)`); } catch {}
+    // HARD fail, not a note. If the drive threw, whatever is on screen is not
+    // the scene this file claims to be, and the gallery is the thing a human
+    // reviews for aesthetic defects — a mislabelled screenshot sends that review
+    // to the wrong screen while reading as coverage. The capture is still kept,
+    // clearly marked, because it usually shows exactly where the drive stopped.
+    fails.push(`${name}: DRIVE FAILED, screenshot is not this scene — ${String(e).slice(0, 140)}`);
+    try {
+      await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: true });
+      shots.push(`${name}.png  (⚠ WRONG SCREEN — drive failed)`);
+    } catch {}
   }
   await ctx.close();
 }
@@ -220,12 +245,14 @@ async function arAddTool(page, name, spend) {
 async function arEnter(page) {
   // Live path: hub → Financial → App Rationalization ("Build the case").
   // (The old Forecast-journey nav landed on the hub and captured the wrong screen.)
-  await page.goto(`${BASE}/?hub=1`, { waitUntil: "networkidle" });
+  await page.goto(BASE, { waitUntil: "networkidle" });
   await page.waitForTimeout(700);
-  await clickText(page, /Open Financial/);
-  await page.waitForTimeout(400);
-  await clickIf(page, "[data-testid=financial-card-app-rationalization-button]");
+  await mustClick(page, "[data-testid=button-enter-app]", "splash → hub");
   await page.waitForTimeout(600);
+  await mustClick(page, "[data-testid=hub-card-financial]", "hub → The Numbers");
+  await page.waitForTimeout(600);
+  await mustClick(page, "[data-testid=financial-card-app-rationalization]", "The Numbers → App Rationalization");
+  await page.waitForTimeout(800);
   await arAddTool(page, "Fluency", 250000);
   await arAddTool(page, "UpToDate", 160000);
   await page.waitForTimeout(200);
@@ -327,7 +354,9 @@ for (const route of PDF_ROUTES) {
     const r = await page.evaluate(audit);
     for (const s of r.svgLabels.slice(0, 6)) notes.push(`${route.label}: review chart label — ${s}`);
   } catch (e) {
-    notes.push(`${route.label}: PDF render error ${String(e).slice(0, 90)}`);
+    // Same reasoning as scene(): a PDF that did not render is a failure, not a
+    // note. A missing document reads as "nothing to review here".
+    fails.push(`${route.label}: PDF DID NOT RENDER — ${String(e).slice(0, 140)}`);
   }
   await ctx.close();
 }

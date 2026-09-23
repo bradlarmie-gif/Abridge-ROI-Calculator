@@ -34,7 +34,24 @@ const LONG_NAME = "Legacy ambient documentation platform";
 // Every routable surface. `click` = a nav-button label to press after load;
 // `drive` = a custom interaction (used to reach states behind clicks/modals,
 // e.g. App Rationalization only shows its vendor rows once a tool is added).
+/**
+ * Splash → hub → a named sub-hub. The hub is the first screen every user sees
+ * and had no layout coverage of any kind.
+ */
+const intoHub = (card) => async (page) => {
+  await page.getByTestId("button-enter-app").click({ timeout: 6000 });
+  await page.waitForTimeout(500);
+  if (card) {
+    await page.getByTestId(card).click({ timeout: 6000 });
+    await page.waitForTimeout(600);
+  }
+};
+
 const ROUTES = [
+  { url: "/", label: "Hub · home", drive: intoHub(null) },
+  { url: "/", label: "Hub · The Case", drive: intoHub("hub-card-strategy") },
+  { url: "/", label: "Hub · The Numbers", drive: intoHub("hub-card-financial") },
+  { url: "/", label: "Hub · The Plan", drive: intoHub("hub-card-planning") },
   { url: "/?proformapreview=1", label: "Proforma · Build" },
   { url: "/?proformapreview=1", label: "Proforma · Case", click: "The case" },
   { url: "/?proformapreview=1", label: "Proforma · Present", click: "Present" },
@@ -58,12 +75,11 @@ const ROUTES = [
     // tool (needs annual spend > 0 to enable "Add to stack") so the vendor row
     // renders and any name clip is exposed.
     drive: async (page) => {
-      await page.getByRole("button", { name: /get started/i }).first().click({ timeout: 6000 }).catch(() => {});
-      await page.waitForTimeout(400);
-      await page.getByText("Forecast", { exact: true }).first().click({ timeout: 6000 });
-      await page.waitForTimeout(500);
-      await page.getByText("App Rationalization", { exact: true }).first().click({ timeout: 6000 });
-      await page.waitForTimeout(500);
+      // Via the hub. This used to click the text "Forecast", which only existed
+      // on the retired JourneySelector.
+      await intoHub("hub-card-financial")(page);
+      await page.getByTestId("financial-card-app-rationalization").click({ timeout: 6000 });
+      await page.waitForTimeout(700);
       await page.getByTestId("ar-add-custom-tool").click({ timeout: 6000 });
       await page.waitForTimeout(300);
       await page.getByTestId("ar-add-vendor").fill(LONG_NAME, { timeout: 6000 });
@@ -221,8 +237,10 @@ try {
   await page.waitForTimeout(400);
   const enter = await page.$('[data-testid="button-enter-app"]');
   if (enter) { await enter.click(); await page.waitForTimeout(300); }
-  await page.click('[data-testid="card-forecast"]'); await page.waitForTimeout(250);
-  await page.click('[data-testid="card-forecast-roi-calculator-button"]'); await page.waitForTimeout(250);
+  // Via the hub. The old path clicked card-forecast on the retired
+  // JourneySelector, so this guard had been throwing rather than guarding.
+  await page.click('[data-testid="hub-card-financial"]'); await page.waitForTimeout(500);
+  await page.click('[data-testid="financial-card-roi-calculator"]'); await page.waitForTimeout(600);
   await page.click('button:has-text("Inpatient")'); await page.waitForTimeout(250);
   await page.click('button:has-text("Next: the lift")'); await page.waitForTimeout(350);
   // scroll to the bottom of the lift, then advance — the answer must land at top
