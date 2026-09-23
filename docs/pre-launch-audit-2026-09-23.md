@@ -199,22 +199,30 @@ For an enterprise deploying this to health systems, that's a privacy question, n
 a bug — someone should decide the retention policy rather than have me pick one.
 
 ### C. The reviewers' aesthetic findings
+
+**Update: items 1, 3, 4 and 7 below were fixed in a follow-up pass** (commits
+`7a652b6f`, `db414b3f`). What follows keeps the original numbering; the ones
+still open are 2, 5 and 6.
 Three reviewers produced roughly 80 findings between them. I fixed the unambiguous
 ones (above). The rest are genuinely yours, and several are substantial. The
 highest-value clusters:
 
-1. **A 52px coral `$0 / yr` is the loudest thing on every Explore value screen**
+1. ~~**A 52px coral `$0 / yr` is the loudest thing on every Explore value screen**~~ **DONE.**
    before any driver is switched on — 1.8× the size of the page headline. This
    matches your own documented rule ("never lead with a giant coral Design") almost
    exactly, so I'd guess you want it muted-grey-until-real, but it's a visual call
    on four live screens and I didn't want to make it unilaterally.
 2. **"Continue" moves up to 260px vertically between care settings** on the same
-   step, because it is anchored to the bottom of a right rail whose length varies.
-   Your stated rule is that a recurring control holds one anchor.
+   step. PARTLY DONE: a floor on the grid brings three of the four settings
+   within 18px. ED still sits ~130px lower because it genuinely carries more
+   drivers. Closing it properly means a sticky action bar, which changes the
+   feel of the flow — your call.
 3. **Coral is doing decorative work almost everywhere**, against the money-and-
    active-states-only rule. One reviewer counted eight non-money coral uses on a
    single Case page. Worth one pass with a single rule enforced.
-4. **Three affordances that lie**: "expand any driver to see the math" over rows
+4. ~~**Three affordances that lie**~~ **DONE** — and the App Rat one turned out
+   to be worse than reported: the drawer behind it shipped grey skeleton
+   placeholder bars as content. Details:: "expand any driver to see the math" over rows
    with no expand handle; "click any tool to compare it" on a diagram with no
    tools; "Turn on the drivers that apply" on a screen with zero toggles.
 5. **The proforma cash-flow chart scales positives and negatives against different
@@ -225,7 +233,13 @@ highest-value clusters:
    numbers are all correct, so it's yours.
 6. **Explore PDF p4/p5 are 32% and 19% ink**, with the document's grand total
    stranded alone above 546px of nothing. Merging them is a layout call.
-7. **Legal**: three Plan PDF page titles assert outcomes as fact — "How Safety
+7. ~~**Legal**~~ **DONE, and widened.** Worked from a systematic scan rather
+   than the sample, which found more: all EIGHT Plan chain titles (not three),
+   22 causal claims across the PDFs and screens, and four "Abridge reduces"
+   equation labels. Two new guardrail rules now hold the line — `causal-claim`,
+   which keys off sentence SHAPE rather than a verb list, and an em-dash rule
+   that catches the `\u2014` escape form (20 of those were hiding in two files).
+   Original finding: three Plan PDF page titles assert outcomes as fact — "How Safety
    Events Fall", "How Retention Holds", "How Overtime Comes Down" — along with a
    cluster of causal verbs ("lifts", "raise", "reopens", "reduces", "protects").
    These are exactly the pattern the guardrails exist to prevent, but they sit in
