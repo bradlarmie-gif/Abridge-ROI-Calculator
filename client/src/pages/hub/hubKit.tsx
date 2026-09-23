@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
@@ -83,6 +83,15 @@ export function HubHeader({ eyebrow, title }: { eyebrow: string; title: string }
   );
 }
 
+/**
+ * Sub-hub rows sit a notch lighter than the home list. Home is the loudest thing
+ * in the app and its names are short ("The Case"); a sub-hub name like "Ambient
+ * Documentation" is more than twice the characters, so at the same weight it puts
+ * far more ink on the page and reads heavier than the level above it. Carried on
+ * context so the list decides once and no row can drift.
+ */
+const QuietTitles = createContext(false);
+
 export function HubList({
   children,
   wide = false,
@@ -97,7 +106,11 @@ export function HubList({
   wide?: boolean;
   className?: string;
 }) {
-  return <div className={`${wide ? "max-w-[660px]" : "max-w-[470px]"} ${className}`}>{children}</div>;
+  return (
+    <QuietTitles.Provider value={wide}>
+      <div className={`${wide ? "max-w-[660px]" : "max-w-[470px]"} ${className}`}>{children}</div>
+    </QuietTitles.Provider>
+  );
 }
 
 export function HubRow({
@@ -125,6 +138,7 @@ export function HubRow({
   delay?: number;
   comingSoon?: boolean;
 }) {
+  const quiet = useContext(QuietTitles);
   const handleKey = (e: React.KeyboardEvent) => {
     if (comingSoon) return;
     if (e.key === "Enter" || e.key === " ") {
@@ -171,7 +185,7 @@ export function HubRow({
         {/* 600, not 700. Manrope is a variable face here (200..800), so this is a
             real weight rather than a synthesised one. At 700 the names sat heavier
             than the headline above them and the row read as shouting. */}
-        <span className={`block text-[26px] sm:text-[30px] font-semibold leading-[1.08] tracking-[-0.018em] mt-0.5 ${comingSoon ? "text-[#9A9086]" : "text-[#1A1A1A]"}`}>
+        <span className={`block text-[26px] sm:text-[30px] ${quiet ? "font-medium" : "font-semibold"} leading-[1.08] tracking-[-0.018em] mt-0.5 ${comingSoon ? "text-[#9A9086]" : "text-[#1A1A1A]"}`}>
           {title}
         </span>
         {description && (

@@ -12,7 +12,9 @@ interface StrategyHubProps {
  * Discovery moved into The Plan, where it belongs — it is the first half of the
  * planning walk, not a separate thing you do beforehand. What is left here grows
  * the other way: a story per product, of which the clinical-notes one (the
- * original "Value Story", renamed for what it is actually about) is the first.
+ * original "Value Story") is the first. Named for the product, not the artifact:
+ * the content never once says "clinical notes", and every number in it traces
+ * back to ambient capture.
  */
 export default function StrategyHub({ onSelectValueStory, onHome }: StrategyHubProps) {
   return (
@@ -21,7 +23,7 @@ export default function StrategyHub({ onSelectValueStory, onHome }: StrategyHubP
         <HubRow
           index={1}
           tagline="The narrative"
-          title="Clinical Notes"
+          title="Ambient Documentation"
           description="How ambient documentation creates value, with every assumption, formula, and limitation laid out."
           onClick={onSelectValueStory}
           testId="strategy-card-value-story"
