@@ -16,6 +16,7 @@ import {
   defaultEnabled,
   runRoi,
 } from "./roiEngine";
+import { stashAndOpenPdf, PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
 
 /**
  * ROI Calculator — a guided, editorial three-step flow that turns an Abridge
@@ -260,8 +261,12 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
       setting, account, vals, enabled, price, targetAdoptionPct, targetUtilPct,
     };
-    try { localStorage.setItem(QUICK_ROI_PDF_STORAGE_KEY, JSON.stringify(data)); } catch { /* ignore */ }
-    window.open(`${window.location.pathname}?quickroipdf=1&print=1`, "_blank", "noopener");
+    try {
+      stashAndOpenPdf(QUICK_ROI_PDF_STORAGE_KEY, data, "?quickroipdf=1&print=1");
+    } catch (err) {
+      // Loud beats a sample-data PDF handed to a customer. See lib/pdfHandoff.
+      alert(err instanceof Error ? err.message : PDF_HANDOFF_MESSAGE);
+    }
   };
 
   return (

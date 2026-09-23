@@ -7,6 +7,7 @@ import ConsolidationTiming from "@/components/forecast/ConsolidationTiming";
 import ArMoatView from "@/components/forecast/ArMoatView";
 import { useToast } from "@/hooks/use-toast";
 import { Download } from "lucide-react";
+import { stashAndOpenPdf } from "@/lib/pdfHandoff";
 
 type ArStep = "applications" | "consolidation" | "timing" | "moat";
 
@@ -36,9 +37,7 @@ export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: Ap
       // same editorial engine Explore/Proforma/Attain use, so all four PDFs match.
       const { APP_RAT_PDF_STORAGE_KEY } = await import("@/components/forecast/AppRatEditorialPdf");
       const date = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date());
-      localStorage.setItem(APP_RAT_PDF_STORAGE_KEY, JSON.stringify({ orgName, date, abridgePrice, items }));
-      const url = `${window.location.pathname}?appratpdf=1&print=1`;
-      window.open(url, "_blank", "noopener");
+      stashAndOpenPdf(APP_RAT_PDF_STORAGE_KEY, { orgName, date, abridgePrice, items }, "?appratpdf=1&print=1");
     } catch (err) {
       // Never fail silently: surface a brief, non-blocking message so the rep knows to retry.
       console.error("App Rationalization PDF export failed:", err);

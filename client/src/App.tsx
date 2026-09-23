@@ -698,7 +698,6 @@ export default function App() {
               <PlanningHub
                 onHome={() => navigateTo("hub")}
                 onOpenPlanning={() => navigateTo("planning")}
-                onOpenMetrics={() => navigateTo("planning")}
               />
             )}
 

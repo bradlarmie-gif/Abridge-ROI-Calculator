@@ -136,7 +136,15 @@ export function HubRow({
    * Sub-hub entries keep it, because "App Rationalization" does not self-explain.
    */
   description?: string;
-  onClick: () => void;
+  /**
+   * Omit for a coming-soon row. Not merely unused: PlanningHub's Metrics row
+   * shipped pointing at navigateTo("planning"), so the row said "Coming soon"
+   * while carrying a live handler that opened the PLAN BUILDER. It was inert only
+   * because `comingSoon` nulls onClick below, meaning the day anyone removed that
+   * flag the row would silently open the wrong screen. Optional here so a
+   * coming-soon row has nothing to mis-wire.
+   */
+  onClick?: () => void;
   testId?: string;
   delay?: number;
   comingSoon?: boolean;
@@ -146,7 +154,7 @@ export function HubRow({
     if (comingSoon) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      onClick();
+      onClick?.();
     }
   };
   return (

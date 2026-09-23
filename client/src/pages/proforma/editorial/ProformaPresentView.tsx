@@ -19,6 +19,7 @@ import {
   type Chapter,
   type CaseDriver,
 } from "./editorialShared";
+import { PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
 
 /* ─────────────────────────── driver "show the math" ─────────────────────────── */
 // The REAL reconciling formula string (the same source Build and the PDF use).
@@ -152,7 +153,13 @@ export default function ProformaPresentView({ settings, config, org, onNavigate,
         centerContent={<ChapterNav active="present" onNavigate={onNavigate} />}
         rightAction={
           <button
-            onClick={() => generateProformaEditorialPDF(settings, config, org)}
+            onClick={() => {
+              try {
+                generateProformaEditorialPDF(settings, config, org);
+              } catch (err) {
+                alert(err instanceof Error ? err.message : PDF_HANDOFF_MESSAGE);
+              }
+            }}
             style={{ background: T.ink, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 13, padding: "9px 16px", borderRadius: 9, cursor: "pointer" }}
           >
             Download the deal PDF ↓

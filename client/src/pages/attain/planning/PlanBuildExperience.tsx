@@ -14,6 +14,7 @@ import {
 import { SETTING_GOAL_MATRIX } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
+import { stashAndOpenPdf, PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
 
 /**
  * The rebuilt Planning experience — a guided build-walk that deconstructs each
@@ -390,17 +391,22 @@ export default function PlanBuildExperience({
                 <button onClick={() => {
                   // Hand the real org + setting to the plan PDF (localStorage is the
                   // route's data channel) so it never opens on the sample org.
+                  // Relative + print=1, matching every other PDF trigger. The absolute "/"
+                  // broke under any sub-path deploy, and without print=1 this was the one
+                  // export that opened a page and then just sat there. Verified handoff, so
+                  // a failed stash reports rather than opening the sample org's plan.
                   try {
-                    localStorage.setItem("abridge:plan-pdf-data", JSON.stringify({
+                    stashAndOpenPdf("abridge:plan-pdf-data", {
                       orgName: partner && partner !== "your team" ? partner : "Your organization",
                       date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
                       setting,
                       plans,             // fully resolved: owner names + baselines + targets applied
                       cadence: state.cadence,
                       execOwner: state.execOwner || undefined,
-                    }));
-                  } catch { /* private mode: fall back to the sample */ }
-                  window.open(`/?planpdf=${setting}`, "_blank");
+                    }, `?planpdf=${setting}&print=1`);
+                  } catch (err) {
+                    alert(err instanceof Error ? err.message : PDF_HANDOFF_MESSAGE);
+                  }
                 }} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
                   Download the plan <ArrowRight className="w-4 h-4" />
                 </button>

@@ -1,3 +1,5 @@
+import { stashAndOpenPdf } from "@/lib/pdfHandoff";
+
 // ───────────────────────── Type exports ─────────────────────────
 
 export type ExploreCareSetting = "outpatient" | "ed" | "inpatient" | "nursing";
@@ -150,11 +152,6 @@ export const EXPLORE_PDF_STORAGE_KEY = "abridge:explore-pdf";
  * Save-as-PDF. All four care settings render from the same data shape.
  */
 export const generateExplorePDF = async (data: ExplorePDFData): Promise<void> => {
-  try {
-    localStorage.setItem(EXPLORE_PDF_STORAGE_KEY, JSON.stringify(data));
-  } catch {
-    // localStorage unavailable (private mode / quota) — the route falls back to sample data.
-  }
-  const url = `${window.location.pathname}?explorepdf=1&print=1`;
-  window.open(url, "_blank", "noopener");
+  // Throws rather than opening a sample-data PDF if the handoff fails. See pdfHandoff.
+  stashAndOpenPdf(EXPLORE_PDF_STORAGE_KEY, data, "?explorepdf=1&print=1");
 };

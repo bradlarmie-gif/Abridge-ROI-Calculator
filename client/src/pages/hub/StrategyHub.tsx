@@ -65,7 +65,6 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           index={4}
           tagline="The dictated note"
           title="Dictation"
-          onClick={() => {}}
           testId="strategy-card-dictation"
           delay={0.36}
           comingSoon

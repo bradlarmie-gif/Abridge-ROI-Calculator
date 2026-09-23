@@ -16,6 +16,7 @@ import { SETTING_LABELS } from "@/pages/proforma/proformaTypes";
 import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { generateExplorePDF, type ExplorePDFData, type ExplorePDFQuadrantData } from "@/components/explore/ExplorePDFExport";
 import { useToast } from "@/hooks/use-toast";
+import { PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
 
 /**
  * Drop-in editorial replacement for ExploreModel.tsx — identical props.
@@ -499,6 +500,14 @@ export default function EdModel({
       };
 
       await generateExplorePDF(pdfData);
+    } catch (err) {
+      // A failed handoff used to open a sample-data PDF for a fictional health
+      // system with no error shown. Loud beats wrong numbers. See lib/pdfHandoff.
+      toast({
+        title: "Download failed",
+        description: err instanceof Error ? err.message : PDF_HANDOFF_MESSAGE,
+        variant: "destructive",
+      });
     } finally {
       setIsExporting(false);
     }

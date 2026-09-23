@@ -4,11 +4,10 @@ interface PlanningHubProps {
   // One door. "Build the plan" runs the whole walk — the discovery interview
   // and then the plan — rather than resuming a strategy built elsewhere.
   onOpenPlanning: () => void;
-  onOpenMetrics: () => void;
   onHome?: () => void;
 }
 
-export default function PlanningHub({ onOpenPlanning, onOpenMetrics, onHome }: PlanningHubProps) {
+export default function PlanningHub({ onOpenPlanning, onHome }: PlanningHubProps) {
   return (
     <HubPage pageName="The Plan" onHome={onHome} header={<HubHeader eyebrow="The Plan" title="Make it happen" />}>
       <HubList wide>
@@ -25,7 +24,6 @@ export default function PlanningHub({ onOpenPlanning, onOpenMetrics, onHome }: P
           tagline="Prove it"
           title="Metrics"
           description="The signals that prove each outcome, and exactly where to find them."
-          onClick={onOpenMetrics}
           index={2}
           testId="planning-card-metrics"
           delay={0.22}

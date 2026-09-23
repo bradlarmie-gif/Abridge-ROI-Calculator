@@ -19,6 +19,7 @@ import {
   type PfCashPoint,
   type PfDomainTile,
 } from "./ProformaEditorialPdf";
+import { stashAndOpenPdf } from "@/lib/pdfHandoff";
 
 // ────────────────────────────────────────────────────────────────
 // Builds a fully-reconciled ProformaPdfData FROM the live proforma engine.
@@ -423,12 +424,6 @@ export async function generateProformaEditorialPDF(
   config: ProformaConfig,
   org?: string,
 ): Promise<void> {
-  try {
-    const data = buildProformaPdfData(settings, config, org);
-    localStorage.setItem(PROFORMA_PDF_STORAGE_KEY, JSON.stringify(data));
-  } catch {
-    // localStorage unavailable — the route falls back to sample data.
-  }
-  const url = `${window.location.pathname}?proformapdf=1&print=1`;
-  window.open(url, "_blank", "noopener");
+  const data = buildProformaPdfData(settings, config, org);
+  stashAndOpenPdf(PROFORMA_PDF_STORAGE_KEY, data, "?proformapdf=1&print=1");
 }
