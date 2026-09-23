@@ -4,6 +4,7 @@ interface StrategyHubProps {
   onSelectValueStory: () => void;
   onSelectPreBill: () => void;
   onSelectCds: () => void;
+  onSelectCareSignals: () => void;
   onHome?: () => void;
 }
 
@@ -19,7 +20,7 @@ interface StrategyHubProps {
  * evidence — so the row and the page it opens name the same thing. Every row said
  * "The narrative" before, which at three rows was dull and at five is wallpaper.
  */
-export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSelectCds, onHome }: StrategyHubProps) {
+export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSelectCds, onSelectCareSignals, onHome }: StrategyHubProps) {
   return (
     <HubPage
       pageName="The Case"
@@ -42,16 +43,14 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           testId="strategy-card-value-story"
           delay={0.15}
         />
-        {/* Risk adjustment. Eyebrow is a placeholder until the story is written —
-            it pre-commits nothing beyond the subject the product concerns. */}
         <HubRow
           index={2}
-          tagline="The risk picture"
+          tagline="The risk gap"
           title="Care Signals"
-          onClick={() => {}}
+          description="How a flagged condition gets addressed and evidenced in the room, not a chart review after it."
+          onClick={onSelectCareSignals}
           testId="strategy-card-care-signals"
           delay={0.22}
-          comingSoon
         />
         <HubRow
           index={3}

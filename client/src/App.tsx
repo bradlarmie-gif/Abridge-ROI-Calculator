@@ -36,6 +36,7 @@ import { SwitchFlow } from "@/pages/switch";
 import LearnPath, { type LearnScreen } from "@/pages/LearnPath";
 import PreBillStory from "@/pages/methodology/editorial/PreBillStory";
 import CdsStory from "@/pages/methodology/editorial/CdsStory";
+import CareSignalsStory from "@/pages/methodology/editorial/CareSignalsStory";
 import MeasureFlow from "@/pages/measure/MeasureFlow";
 import ForecastFlow from "@/pages/forecast/ForecastFlow";
 import MockExplore from "@/pages/explore/editorial/MockExplore"; // THROWAWAY ?exploremock=1
@@ -82,7 +83,7 @@ import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain" | "hub" | "strategy-hub" | "financial-hub" | "planning-hub" | "planning" | "prebill-case" | "cds-case" | "explore-bridge";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain" | "hub" | "strategy-hub" | "financial-hub" | "planning-hub" | "planning" | "prebill-case" | "cds-case" | "care-signals-case" | "explore-bridge";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -640,6 +641,7 @@ export default function App() {
                 onHome={() => navigateTo("hub")}
                 onSelectPreBill={() => navigateTo("prebill-case")}
                 onSelectCds={() => navigateTo("cds-case")}
+                onSelectCareSignals={() => navigateTo("care-signals-case")}
                 onSelectValueStory={() => {
                   setLearnInitialScreen(undefined);
                   navigateTo("learn");
@@ -794,6 +796,10 @@ export default function App() {
 
             {currentView === "cds-case" && (
               <CdsStory onBack={() => navigateTo("strategy-hub")} onHome={() => navigateTo("hub")} />
+            )}
+
+            {currentView === "care-signals-case" && (
+              <CareSignalsStory onBack={() => navigateTo("strategy-hub")} onHome={() => navigateTo("hub")} />
             )}
 
             {currentView === "learn" && (
