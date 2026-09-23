@@ -487,10 +487,18 @@ function DriverRow({
     <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
       <Switch on={!isOff} onClick={onToggleOff} />
       <QuadTag quadrant={driver.quadrant} dim={isOff} />
+      {/* The row header advertises "expand any driver to see the math", and the
+          name has always BEEN the control — but with no chevron, no underline
+          and no hover state it was an invisible one, so the hint read as a lie.
+          One rotating chevron, same glyph in both states. */}
       <button
         onClick={onToggleExpand}
+        aria-expanded={expanded}
         style={{
           flex: 1,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
           textAlign: "left",
           fontWeight: 700,
           fontSize: 14.5,
@@ -502,6 +510,15 @@ function DriverRow({
           padding: 0,
         }}
       >
+        <ChevronDown
+          size={14}
+          color={T.off}
+          style={{
+            flexShrink: 0,
+            transform: expanded ? "none" : "rotate(-90deg)",
+            transition: "transform .15s",
+          }}
+        />
         {driver.name}
       </button>
       {isOff ? (

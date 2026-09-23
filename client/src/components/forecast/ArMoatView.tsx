@@ -70,7 +70,15 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
         <span className="text-[12px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">
           The documentation chain, who covers what
         </span>
-        <span className="text-[12px] text-[#8C7E6E]">click any tool to compare it with Abridge</span>
+        {/* Only promise the interaction when it exists. The chain plots fold-in
+            bars for capture-category tools only (ambient / dictation / scribe /
+            transcription); with none of those in the stack it renders a single
+            neutral fallback bar and there is nothing to click. The hint used to
+            show regardless, and used to promise a side-by-side comparison the
+            drawer does not do. */}
+        {hasTools && (
+          <span className="text-[12px] text-[#8C7E6E]">click any tool to see what it covers</span>
+        )}
       </div>
 
       {/* The documentation chain: 6 columns */}
@@ -257,7 +265,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
               className="rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[0.05em] uppercase"
               style={{ color: CORAL, background: "#FFEDE7" }}
             >
-              side-by-side coming soon
+              where it overlaps
             </span>
             <button
               type="button"
@@ -270,27 +278,36 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
             </button>
           </div>
 
+          {/* This used to be three grey skeleton bars per side under a "coming
+              soon" pill — a loading placeholder shipped as content, in the
+              document a seller opens in front of a CFO. The coverage itself is
+              not unknown: the chain above already places every point tool in
+              Capture and Draft note, and Abridge across the whole row. So state
+              that, which is real, instead of miming a comparison that does not
+              exist yet. */}
           <div className="mt-4 grid grid-cols-2 gap-3.5">
             <div className="rounded-[12px] border border-[#E8E2DA] p-[16px_18px]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
                 {openName}
               </div>
-              <div className="mt-3 h-[11px] w-[80%] rounded-[6px] bg-[#EEE7DD]" />
-              <div className="mt-3 h-[11px] w-[60%] rounded-[6px] bg-[#EEE7DD]" />
-              <div className="mt-3 h-[11px] w-[70%] rounded-[6px] bg-[#EEE7DD]" />
+              <div className="mt-2.5 text-[13px] leading-[1.5] text-[#5E534A]">
+                Covers <b className="text-[#1A1A1A]">Capture</b> and <b className="text-[#1A1A1A]">Draft note</b>.
+              </div>
             </div>
             <div className="rounded-[12px] border border-[#F5C8BB] bg-[#FFF7F4] p-[16px_18px]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase" style={{ color: CORAL }}>
                 Abridge
               </div>
-              <div className="mt-3 h-[11px] w-[90%] rounded-[6px] bg-[#F7D9CF]" />
-              <div className="mt-3 h-[11px] w-[80%] rounded-[6px] bg-[#F7D9CF]" />
-              <div className="mt-3 h-[11px] w-[70%] rounded-[6px] bg-[#F7D9CF]" />
+              <div className="mt-2.5 text-[13px] leading-[1.5] text-[#5E534A]">
+                Covers the same two steps, and carries the same conversation on through{" "}
+                <b className="text-[#1A1A1A]">Coding</b> and <b className="text-[#1A1A1A]">Quality</b>.
+              </div>
             </div>
           </div>
 
-          <div className="mt-3.5 text-center text-[12.5px] text-[#8C7E6E]">
-            A step-by-step of what {openName} does and where Abridge already covers it. Coming soon.
+          <div className="mt-3.5 text-[12.5px] leading-[1.5] text-[#8C7E6E]">
+            That overlap is why {openName} folds in rather than sitting alongside. A step-by-step
+            feature comparison is not in this tool yet.
           </div>
         </div>
       )}

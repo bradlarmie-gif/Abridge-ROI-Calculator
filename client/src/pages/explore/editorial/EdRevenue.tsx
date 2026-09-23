@@ -494,6 +494,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Revenue"
         stepIndex={6}
@@ -537,6 +538,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Revenue"
         stepIndex={6}
@@ -739,6 +741,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Revenue"
         stepIndex={6}
@@ -827,6 +830,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Revenue"
         stepIndex={6}

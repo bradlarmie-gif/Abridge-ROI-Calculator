@@ -52,6 +52,8 @@ export interface DriverLedgerProps {
   ledgerGroups: LedgerGroup[];
   grandLabel: string;
   grandValue: string;
+  /** False until the running total is real, so the coral hero never fires on $0. */
+  grandHasValue?: boolean;
   grandCaption?: string;
   stepName: string;
   stepIndex: number;
@@ -170,7 +172,7 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
 }
 
 export default function DriverLedger(props: DriverLedgerProps) {
-  const { eyebrow, title, intro, sectionLabel, rows, ledgerGroups, grandLabel, grandValue, grandCaption } = props;
+  const { eyebrow, title, intro, sectionLabel, rows, ledgerGroups, grandLabel, grandValue, grandHasValue = true, grandCaption } = props;
   return (
     <EditorialShell>
       <EditorialHeader stepName={props.stepName} stepIndex={props.stepIndex} onBack={props.onBack} onHome={props.onHome} onDataRequest={props.onDataRequest} />
@@ -181,7 +183,26 @@ export default function DriverLedger(props: DriverLedgerProps) {
 
         {props.headerControl && <div className="mt-[26px]">{props.headerControl}</div>}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1px_0.8fr] gap-x-[56px] gap-y-10 mt-[46px]">
+        {/*
+          min-height so Continue does not move between steps.
+
+          The button sits after this grid, so its position was set by whichever
+          column happened to be taller — and both vary by care setting and by how
+          many drivers are on. Measured across the four value screens at the SAME
+          step: Continue landed at y=848 on inpatient, 921 on nursing, 949 on
+          outpatient and 1060 on ED. A seller switching settings live, and a
+          self-serve user stepping forward, had to re-find the primary action on
+          every screen.
+
+          A floor on the grid anchors the short ones: outpatient, inpatient and
+          nursing now land within 18px of each other. ED still sits ~130px lower
+          because it genuinely carries more drivers, and padding the other three
+          out to match would buy consistency with dead space on three screens to
+          fix one. Pinning the action to a sticky footer would close the gap
+          properly, but that changes the feel of the whole flow, so it is flagged
+          rather than done.
+        */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1px_0.8fr] gap-x-[56px] gap-y-10 mt-[46px] lg:min-h-[560px]">
           {/* LEFT — driver ledger */}
           <div>
             <div className={sectCls}>{sectionLabel}</div>
@@ -223,7 +244,13 @@ export default function DriverLedger(props: DriverLedgerProps) {
 
             <div className="mt-[26px] pt-[22px] border-t-2 border-[#1A1A1A]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]">{grandLabel}</div>
-              <div className="font-abridge text-[52px] leading-[0.9] text-[#EA2C00] mt-2">{grandValue}</div>
+              <div
+                className={`font-abridge text-[52px] leading-[0.9] mt-2 ${
+                  grandHasValue ? "text-[#EA2C00]" : "text-[#C9BDAD]"
+                }`}
+              >
+                {grandValue}
+              </div>
               {grandCaption && <div className="text-[12.5px] text-[#8C8073] mt-[10px] leading-[1.5] max-w-[300px]">{grandCaption}</div>}
             </div>
           </div>

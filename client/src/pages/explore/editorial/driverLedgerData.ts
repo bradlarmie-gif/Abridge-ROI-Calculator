@@ -97,6 +97,13 @@ export interface LedgerData {
   groups: LedgerGroup[];
   grandValue: string;
   grandCaption: string;
+  /**
+   * Whether the running total is a real number yet. The rail's hero is the
+   * loudest coral moment on the screen, so it must not fire on a zero: a giant
+   * red $0 before anything is switched on reads as an error, not a starting
+   * point. Grey until there is something to be loud about.
+   */
+  grandHasValue: boolean;
 }
 
 export function buildDriverLedger(
@@ -170,10 +177,17 @@ export function buildDriverLedger(
   return {
     groups,
     grandValue: `${fmtMoney(grand)} / yr`,
+    grandHasValue: grand > 0,
+    // An instruction the screen cannot obey is an affordance that lies. On a
+    // proof/tracked step (inpatient Capacity, every setting's Quality) there is
+    // no counted driver and therefore no toggle, so "turn on the drivers that
+    // apply" sent the reader hunting for a control that is not there by design.
     grandCaption:
-      driversOn === 0
-        ? "Turn on the drivers that apply. It grows as you do."
-        : `${driversOn} driver${driversOn === 1 ? "" : "s"} on. It grows as you turn on more.`,
+      driversOn > 0
+        ? `${driversOn} driver${driversOn === 1 ? "" : "s"} on. It grows as you turn on more.`
+        : countedFor(currentDomain).length > 0
+          ? "Turn on the drivers that apply. It grows as you do."
+          : "This step is tracked, not counted. Your dollars build on the counted steps.",
   };
 }
 

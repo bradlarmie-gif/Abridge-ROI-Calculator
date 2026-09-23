@@ -339,6 +339,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Capacity"
         stepIndex={4}
@@ -411,6 +412,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Capacity"
         stepIndex={4}
@@ -483,6 +485,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Capacity"
         stepIndex={4}
@@ -577,6 +580,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Capacity"
         stepIndex={4}

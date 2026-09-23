@@ -296,6 +296,35 @@ await scene(browser, "apprat-moat", async (p) => {
   await clickIf(p, "[data-testid=ar-see-moat]"); await p.waitForTimeout(400);
   return "moat";
 }, { height: 1500 });
+// The compare drawer had NO screenshot coverage, which is how it shipped three
+// grey skeleton bars per side under a "coming soon" pill — a loading
+// placeholder as content, one click from the moat page a seller presents.
+await scene(browser, "apprat-moat-compare", async (p) => {
+  // Enter FRESH rather than through arEnter: that helper seeds two custom-category
+  // tools, and the moat chain only plots capture-category ones (ambient /
+  // dictation / scribe / transcription), so there would be no bar to click.
+  await p.goto(BASE, { waitUntil: "networkidle" });
+  await p.waitForTimeout(600);
+  await mustClick(p, "[data-testid=button-enter-app]", "splash → hub");
+  await p.waitForTimeout(700);
+  await mustClick(p, "[data-testid=hub-card-financial]", "hub → The Numbers");
+  await p.waitForTimeout(700);
+  await mustClick(p, "[data-testid=financial-card-app-rationalization]", "The Numbers → App Rationalization");
+  await p.waitForTimeout(900);
+  await mustClick(p, "[data-testid=ar-browse-ambientDoc]", "browse the ambient category");
+  await p.waitForTimeout(500);
+  try { await p.getByTestId("ar-add-vendor").fill("Nuance DAX", { timeout: 1500 }); } catch {}
+  try { await p.getByTestId("ar-add-spend").fill("240000", { timeout: 1500 }); } catch {}
+  await p.waitForTimeout(200);
+  await mustClick(p, "[data-testid=ar-add-confirm]", "confirm the ambient tool");
+  await p.waitForTimeout(700);
+  await clickIf(p, "[data-testid=ar-see-consolidation]"); await p.waitForTimeout(400);
+  await clickIf(p, "[data-testid=ar-see-timing]"); await p.waitForTimeout(400);
+  await clickIf(p, "[data-testid=ar-see-moat]"); await p.waitForTimeout(600);
+  await mustClick(p, "[data-testid^=ar-moat-tool-]", "moat → open a tool comparison");
+  await p.waitForTimeout(700);
+  return "moat compare drawer";
+}, { height: 1700 });
 
 // ── Attain (Value Attainment): the LIVE hub flow. The old ?*preview prototypes
 // were deleted (they showed a "PROTOTYPE" label + inconsistent chrome), so the

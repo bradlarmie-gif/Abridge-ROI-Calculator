@@ -728,6 +728,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Workforce"
         stepIndex={5}
@@ -845,6 +846,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Workforce"
         stepIndex={5}
@@ -1014,6 +1016,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Workforce"
         stepIndex={5}
@@ -1182,6 +1185,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Workforce"
         stepIndex={5}

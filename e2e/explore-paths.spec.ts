@@ -122,3 +122,59 @@ for (const vp of VIEWPORTS) {
     }
   });
 }
+
+/**
+ * The running-total hero is the loudest coral moment in the app. It must not
+ * fire on a zero.
+ *
+ * Drivers default OFF by design — the seller switches them on live, with the
+ * customer — so the first frame of every value screen showed a 52px coral
+ * "$0 / yr", nearly twice the size of the page headline. That reads as an error
+ * or as "this tool produced nothing", which is the opposite of a starting point.
+ */
+test.describe("the running total stays quiet until it is real", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test("grey at zero, coral once a driver is on", async ({ page }) => {
+    await openTool(page, "financial", "financial-card-explore");
+    await page.getByTestId("ed-setting-outpatient").click();
+    await page.waitForTimeout(900);
+    await fillPractice(page, SETTINGS[0]);
+
+    for (let i = 0; i < 6; i++) {
+      const h = await page.locator("h1, h2").first().innerText().catch(() => "");
+      if (/freed time become/i.test(h)) break;
+      const blanks = page.locator('input[inputmode="numeric"], input[inputmode="decimal"]');
+      for (let k = 0, n = await blanks.count(); k < n; k++) {
+        const el = blanks.nth(k);
+        if (!(await el.isVisible().catch(() => false))) continue;
+        if (await el.inputValue().catch(() => "x")) continue;
+        await el.fill("40").catch(() => {});
+      }
+      if (!(await advance(page))) break;
+      await page.waitForTimeout(600);
+    }
+
+    const heroColour = () =>
+      page.evaluate(() => {
+        const el = Array.from(document.querySelectorAll("div")).find(
+          (e) => e.className && String(e.className).includes("text-[52px]"),
+        );
+        return el ? { text: (el.textContent || "").trim(), color: getComputedStyle(el).color } : null;
+      });
+
+    const off = await heroColour();
+    expect(off, "no running-total hero on the value screen").not.toBeNull();
+    expect(off!.text, "expected a zero total with every driver off").toMatch(/^\$0\b/);
+    expect(off!.color, `a zero total must not be coral (got ${off!.color})`).not.toBe("rgb(234, 44, 0)");
+
+    const sw = page.locator('[role=switch][aria-checked="false"]').first();
+    await expect(sw, "no driver toggle to switch on").toHaveCount(1, { timeout: 5000 });
+    await sw.click();
+    await page.waitForTimeout(1200);
+
+    const on = await heroColour();
+    expect(on!.text, "the total should be real once a driver is on").not.toMatch(/^\$0\b/);
+    expect(on!.color, "a real total should be coral").toBe("rgb(234, 44, 0)");
+  });
+});

@@ -377,6 +377,7 @@ function NursingQualityScreen({
       ledgerGroups={ledger.groups}
       grandLabel="Model so far"
       grandValue={ledger.grandValue}
+      grandHasValue={ledger.grandHasValue}
       grandCaption={ledger.grandCaption}
       stepName="Quality"
       stepIndex={7}
@@ -425,6 +426,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Quality"
         stepIndex={7}
@@ -485,6 +487,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Quality"
         stepIndex={7}
@@ -553,6 +556,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
         ledgerGroups={ledger.groups}
         grandLabel="Model so far"
         grandValue={ledger.grandValue}
+        grandHasValue={ledger.grandHasValue}
         grandCaption={ledger.grandCaption}
         stepName="Quality"
         stepIndex={7}
