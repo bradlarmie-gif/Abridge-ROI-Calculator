@@ -282,7 +282,7 @@ export default function ForecastContract({
     ) {
       return {
         warn: true,
-        text: "Current usage trajectory suggests you may hit the contract limit — model on the Dashboard",
+        text: "Current usage trajectory suggests you may hit the contract limit. Model it on the Dashboard",
       };
     }
     if (
@@ -293,7 +293,7 @@ export default function ForecastContract({
     ) {
       return {
         warn: false,
-        text: "Active utilization is below 70% of provisioned — Dashboard will model adoption levers",
+        text: "Active utilization is below 70% of provisioned. The Dashboard will model adoption levers",
       };
     }
     return {

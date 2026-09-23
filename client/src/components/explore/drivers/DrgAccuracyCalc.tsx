@@ -32,7 +32,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs, totalHo
   return (
     <div>
       <p className="text-[13px] text-[#666666] leading-relaxed mb-8">
-        CCs and MCCs shift DRG weight — a patient with acute kidney injury may move from DRG 470 to DRG 469, typically worth $2,000–$4,000 more per stay. The physician mentioned it at the bedside. It never made it into the note. Capturing those conditions at the point of care supports coding that more accurately reflects the actual case complexity.
+        CCs and MCCs shift DRG weight: a patient with acute kidney injury may move from DRG 470 to DRG 469, typically worth $2,000–$4,000 more per stay. The physician mentioned it at the bedside. It never made it into the note. Capturing those conditions at the point of care supports coding that more accurately reflects the actual case complexity.
       </p>
 
       {/* STEP 1 */}
@@ -79,7 +79,7 @@ export default function DrgAccuracyCalc({ state, updateDocQualityInputs, totalHo
           Step 2: The Gap Abridge Closes
         </p>
         <p className="text-[13px] text-[#666666] mb-2">
-          Not all gaps are the same. Abridge specifically captures "discussed but not documented"—clinical reasoning that happened verbally but didn't make the note.
+          Not all gaps are the same. Abridge specifically captures "discussed but not documented": clinical reasoning that happened verbally but didn't make the note.
         </p>
         <p className="text-[13px] text-[#666666] mb-4">What portion of your documentation gaps are verbal-to-written gaps?</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">

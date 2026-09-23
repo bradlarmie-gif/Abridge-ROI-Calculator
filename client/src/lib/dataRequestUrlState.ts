@@ -124,7 +124,7 @@ const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'
 export function generateDataResponseText(data: MeasureDataRequestResponse, metricLabels: Record<string, string>): string {
   const dep = data.deployment;
   const lines: string[] = [
-    `ABRIDGE — MEASURE DATA REQUEST (${SETTING_LABELS[data.setting]})`,
+    `ABRIDGE · MEASURE DATA REQUEST (${SETTING_LABELS[data.setting]})`,
     '',
   ];
 

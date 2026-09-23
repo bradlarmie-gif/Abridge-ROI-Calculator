@@ -223,7 +223,7 @@ function CostOffsetsSection({
 
       {offsets.length === 0 && (
         <p className="text-xs text-neutral-400 italic text-center py-3">
-          Add a tool or service you're replacing — displaced cost appears as additional value in the proforma.
+          Add a tool or service you're replacing. Displaced cost appears as additional value in the proforma.
         </p>
       )}
 

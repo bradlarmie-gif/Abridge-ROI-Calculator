@@ -820,7 +820,7 @@ function buildChoicesReveal(data: NursingPDFInput): string {
     return "Your model combines overtime reduction with retention savings. OT reduction is grounded in your current overtime spend; retention reflects the burnout-related turnover that documentation burden accelerates. Together they form a defensible staffing ROI.";
   }
   if (otOn && !retOn) {
-    return "Your model is anchored by overtime reduction — the most directly measurable line in the staffing budget. Worth pairing with retention and agency analysis once turnover data is in hand.";
+    return "Your model is anchored by overtime reduction, the most directly measurable line in the staffing budget. Worth pairing with retention and agency analysis once turnover data is in hand.";
   }
   if (qualityOn && !workforceOn) {
     return "Your model is anchored by quality outcomes: safety events that documentation timing influences. Worth pairing with workforce drivers (retention, OT, agency) for a complete labor-and-quality story.";
@@ -934,7 +934,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             Where Nursing Documentation Value Lives
           </Text>
           <Text style={{ fontSize: 9, color: colors.secondary, lineHeight: 1.6, marginBottom: 12 }}>
-            {`For a ${fmtNum(data.staffedBeds)}-bed unit with ${fmtNum(data.nurseFTEs)} nurse FTEs, ${fmtNum(data.hoursReturnedAnnual)} hours of documentation time reclaimed per year. When nursing documentation moves from end-of-shift batching to point-of-care, the queue that drives overtime and erodes bedside presence is less likely to accumulate. That time shift creates value across three buckets — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.`}
+            {`For a ${fmtNum(data.staffedBeds)}-bed unit with ${fmtNum(data.nurseFTEs)} nurse FTEs, ${fmtNum(data.hoursReturnedAnnual)} hours of documentation time reclaimed per year. When nursing documentation moves from end-of-shift batching to point-of-care, the queue that drives overtime and erodes bedside presence is less likely to accumulate. That time shift creates value across three buckets, and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.`}
           </Text>
 
           <View style={{ borderBottomWidth: 1, borderBottomColor: colors.separator, marginBottom: 12 }} />
@@ -1121,7 +1121,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         <View style={styles.pageWrapper}>
           <SectionLabel>CAPACITY</SectionLabel>
           <Text style={styles.sectionHeadline}>
-            Time reclaimed at the end of the shift shows up in the payroll budget — and in the next hour of care.
+            Time reclaimed at the end of the shift shows up in the payroll budget, and in the next hour of care.
           </Text>
           <Text style={styles.body}>
             When nurses finish charting on shift, the effect can show up in two places: fewer
@@ -1173,7 +1173,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           <Text style={styles.subSectionHeader}>How To Read It</Text>
           <Text style={styles.body}>
             <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Hours returned/yr</Text> is the
-            headline — it's what reclaimed documentation time looks like aggregated across
+            headline: it's what reclaimed documentation time looks like aggregated across
             the unit. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Minutes saved/shift</Text>{" "}
             is the per-nurse experience that supports adoption. <Text style={{ fontWeight: "bold", color: colors.primaryText }}>Patient days/yr</Text>{" "}
             and <Text style={{ fontWeight: "bold", color: colors.primaryText }}>staffed beds</Text> anchor
@@ -1182,8 +1182,8 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
 
           <View wrap={false}>
             <Text style={styles.body}>
-              We track bedside time as a leading indicator rather than pricing it directly —
-              translating reclaimed minutes into dollars requires assumptions about what the
+              We track bedside time as a leading indicator rather than pricing it directly.
+              Translating reclaimed minutes into dollars requires assumptions about what the
               next hour is used for, which vary by unit, shift, and patient mix.
             </Text>
 
@@ -1205,10 +1205,10 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
         <View style={styles.pageWrapper}>
           <SectionLabel>WORKFORCE</SectionLabel>
           <Text style={styles.sectionHeadline}>
-            Documentation burden is among the top reasons nurses leave — and stay late.
+            Documentation burden is among the top reasons nurses leave, and stay late.
           </Text>
           <Text style={styles.body}>
-            Two labor lines — turnover and agency premium — both linked to the same
+            Two labor lines, turnover and agency premium, both linked to the same
             upstream factor: documentation burden that follows nurses home after their
             shift.
           </Text>
@@ -1419,20 +1419,20 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           <View style={styles.pageWrapper}>
             <SectionLabel>QUALITY</SectionLabel>
             <Text style={styles.sectionHeadline}>
-              Quality outcomes are worth measuring — the attribution baseline comes first.
+              Quality outcomes are worth measuring. The attribution baseline comes first.
             </Text>
             <Text style={styles.body}>
               These signals are tracked, not modeled. Attribution from documentation
-              to outcome requires a unit-level baseline and a measurement period —
+              to outcome requires a unit-level baseline and a measurement period,
               both of which this assessment is designed to help establish. The signals
               below are where to start.
             </Text>
 
             {[
               ...(data.hcahpsEnabled ? [{
-                title: "HCAHPS — Responsiveness & Communication",
+                title: "HCAHPS: Responsiveness & Communication",
                 cadence: "Quarterly",
-                what: "Top-Box scores for 'responsiveness of hospital staff' and 'communication with nurses' — the two nursing-sensitive domains weighted in the CMS VBP formula.",
+                what: "Top-Box scores for 'responsiveness of hospital staff' and 'communication with nurses'. These are the two nursing-sensitive domains weighted in the CMS VBP formula.",
                 baseline: "Pull from CMS Hospital Compare for your facility. Track quarterly against the national and peer percentile bands. Bedside time reclaimed from documentation burden is the lever.",
               }] : []),
               ...(data.medErrorEnabled ? [{
@@ -1456,7 +1456,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               ...(data.docCompletionEnabled ? [{
                 title: "Documentation Completeness",
                 cadence: "Weekly",
-                what: "Note deficiency rate at final submission, by unit and note type. Lower deficiency rates mean the coding record is usable on first pass — fewer physician interruptions, faster billing cycle.",
+                what: "Note deficiency rate at final submission, by unit and note type. Lower deficiency rates mean the coding record is usable on first pass, with fewer physician interruptions, faster billing cycle.",
                 baseline: "Export a 30-day deficiency rate from your HIM system. Use note type and unit as the segmentation axis; aggregate facility rates hide unit-level variation.",
               }] : []),
             ].map((s, i) => (
@@ -1494,7 +1494,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             Nursing documentation moves the revenue cycle in two places you can measure.
           </Text>
           <Text style={styles.body}>
-            Direct billing originates with the attesting physician or APP — that's a separate
+            Direct billing originates with the attesting physician or APP, which is a separate
             model. But nursing documentation is the upstream record that CDI, quality reporting,
             and payer contracts all read from. These signals do not appear in the financial totals
             above; they are the leading indicators that confirm the story those totals tell.
@@ -1504,18 +1504,18 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             {
               number: "01",
               title: "CDI Query Reduction",
-              mechanism: "When nurses document clinical findings in real time — vital trends, assessment findings, response to treatment — the medical record arrives at CDI review more complete. Specialists may be able to assign a specific, accurate DRG without querying the physician for clarification. Fewer queries means fewer physician interruptions and shorter coding cycles.",
+              mechanism: "When nurses document clinical findings in real time (vital trends, assessment findings, response to treatment), the medical record arrives at CDI review more complete. Specialists may be able to assign a specific, accurate DRG without querying the physician for clarification. Fewer queries means fewer physician interruptions and shorter coding cycles.",
               trackLabel: "Signals to track",
               signals: [
                 { metric: "CDI queries per 100 admissions", why: "Volume drop is the earliest signal that nursing notes are arriving complete." },
                 { metric: "Query response rate & lag (days)", why: "Faster response with fewer open queries = smoother coding throughput." },
-                { metric: "DRG specificity index", why: "More specific DRGs reflect richer source documentation — nursing is the primary contributor." },
+                { metric: "DRG specificity index", why: "More specific DRGs reflect richer source documentation, and nursing is the primary contributor." },
               ],
             },
             {
               number: "02",
-              title: "Value-Based Purchasing — HCAHPS",
-              mechanism: "The HCAHPS responsiveness and communication domains are the two highest-weighted nursing-sensitive items in the CMS Value-Based Purchasing formula. Nurses with more time at the bedside — time reclaimed from documentation burden — may score better on both. VBP adjustments compound annually: a 0.5-point HCAHPS improvement at scale can shift the payment multiplier across the Medicare inpatient book.",
+              title: "Value-Based Purchasing: HCAHPS",
+              mechanism: "The HCAHPS responsiveness and communication domains are the two highest-weighted nursing-sensitive items in the CMS Value-Based Purchasing formula. Nurses with more time at the bedside, reclaimed from documentation burden, may score better on both. VBP adjustments compound annually: a 0.5-point HCAHPS improvement at scale can shift the payment multiplier across the Medicare inpatient book.",
               trackLabel: "Signals to track",
               signals: [
                 { metric: "HCAHPS: responsiveness of hospital staff", why: "Direct nursing-sensitive domain; moves with bedside time." },
@@ -1586,7 +1586,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               const implPhrase = data.implementationFee > 0
                 ? ` A one-time implementation fee of ${fmtCurrency(data.implementationFee)} is shown separately on its own row above the recurring stream so the Year 1–3 economics below stay comparable.`
                 : "";
-              return `${annual} / year — ${pricingPhrase}.${implPhrase} Year 1 reflects 11 months of deployment; the first 30 days are excluded as the implementation period. Years 2 and 3 are modeled at full run-rate. Investment is held constant.`;
+              return `${annual} / year, ${pricingPhrase}.${implPhrase} Year 1 reflects 11 months of deployment; the first 30 days are excluded as the implementation period. Years 2 and 3 are modeled at full run-rate. Investment is held constant.`;
             })()}
           </Text>
 
@@ -1700,8 +1700,8 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
           {/* Bridging copy — describes the model constraints before the expansion section */}
           <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 14 }}>
             {projYears === 3
-              ? `Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The ${fmtCurrency(data.threeYearCumulativeNet)} cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`
-              : `Unit size, staffing, and adoption rate are held constant across all ${projYears === 1 ? 'of Year 1' : `${projYears} years`}. No volume growth is assumed.${projYears === 2 ? ' Year 2 reflects a full calendar year at the inputs above.' : ''} The ${fmtCurrency(horizonCumNet)} cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`}
+              ? `Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The ${fmtCurrency(data.threeYearCumulativeNet)} cumulative net is the sum of the rows above, with no compounding or incremental growth embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`
+              : `Unit size, staffing, and adoption rate are held constant across all ${projYears === 1 ? 'of Year 1' : `${projYears} years`}. No volume growth is assumed.${projYears === 2 ? ' Year 2 reflects a full calendar year at the inputs above.' : ''} The ${fmtCurrency(horizonCumNet)} cumulative net is the sum of the rows above, with no compounding or incremental growth embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.`}
           </Text>
 
           {/* Cost Displacement callout — only renders when items are present */}
@@ -1729,7 +1729,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
                       Cost Displacement
                     </Text>
                     <Text style={{ fontSize: 8, color: "#999999" }}>
-                      Existing tools replaced by Abridge — savings layer on top of clinical ROI
+                      Existing tools replaced by Abridge. Savings layer on top of clinical ROI
                     </Text>
                   </View>
                   <Text style={{ fontSize: 14, fontWeight: "bold", color: "#FFFFFF" }}>
@@ -1841,10 +1841,10 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               </View>
 
               <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 8 }}>
-                {`The ${year1ROI.toFixed(1)}× return reflects ${fmtNum(data.staffedBeds)} beds at ${data.utilizationPercent}% adoption. Applying the same per-bed model to ${fmtNum(data.expansionBeds ?? 0)} beds at ${data.expansionUtilizationPercent}% utilization produces ${fmtCurrency(data.expansionAnnualValue ?? 0)} annually — a ${(data.expansionRoi ?? 0).toFixed(1)}× return. Unit economics are unchanged; the cost per bed is fixed.`}
+                {`The ${year1ROI.toFixed(1)}× return reflects ${fmtNum(data.staffedBeds)} beds at ${data.utilizationPercent}% adoption. Applying the same per-bed model to ${fmtNum(data.expansionBeds ?? 0)} beds at ${data.expansionUtilizationPercent}% utilization produces ${fmtCurrency(data.expansionAnnualValue ?? 0)} annually, a ${(data.expansionRoi ?? 0).toFixed(1)}× return. Unit economics are unchanged; the cost per bed is fixed.`}
               </Text>
               <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6 }}>
-                Each driver in this model — retention, agency reduction, overtime, and quality outcomes — scales with the number of nurse FTEs and patient days in scope. At broader deployment, the same formulas apply to a proportionally larger population. Per-bed inputs remain constant; aggregate value reflects the coverage.
+                Each driver in this model (retention, agency reduction, overtime, and quality outcomes) scales with the number of nurse FTEs and patient days in scope. At broader deployment, the same formulas apply to a proportionally larger population. Per-bed inputs remain constant; aggregate value reflects the coverage.
               </Text>
             </View>
           ) : null}
@@ -1994,12 +1994,12 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             Your post-deployment measurement plan.
           </Text>
           <Text style={[styles.body, { marginBottom: 10 }]}>
-            Each phase answers a different question. Assign an owner before deployment — measurement gaps emerge precisely when data would be most useful.
+            Each phase answers a different question. Assign an owner before deployment. Measurement gaps emerge precisely when data would be most useful.
           </Text>
 
           {[
             {
-              phaseLabel: "Phase 1 — Month 1–3",
+              phaseLabel: "Phase 1 · Month 1–3",
               phaseColor: "#EA2C00",
               title: "Behavioral Foundation",
               question: "Is Abridge changing how nurses document?",
@@ -2011,7 +2011,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               ],
             },
             {
-              phaseLabel: "Phase 2 — Month 3–6",
+              phaseLabel: "Phase 2 · Month 3–6",
               phaseColor: colors.secondary,
               title: "Financial Signal",
               question: "Is behavioral change showing up in payroll and quality data?",
@@ -2024,7 +2024,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
               ],
             },
             {
-              phaseLabel: "Phase 3 — Month 6–18",
+              phaseLabel: "Phase 3 · Month 6–18",
               phaseColor: colors.secondary,
               title: "Strategic Proof",
               question: "Is this a durable organizational capability, or a one-time improvement?",
@@ -2103,7 +2103,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             How this assessment was built.
           </Text>
           <Text style={{ fontSize: 9.5, color: colors.secondary, lineHeight: 1.6, marginBottom: 16 }}>
-            {`This model was built using inputs specific to your organization: ${fmtNum(data.nurseFTEs)} nursing FTEs across ${fmtNum(data.staffedBeds)} staffed beds, ${fmtNum(data.patientDaysAnnual)} patient days annually, and ${data.utilizationPercent}% Abridge utilization. The base-case estimate is ${fmtCurrency(data.totalAnnualValue)} in annual value against ${fmtCurrency(data.annualInvestment)} in annual investment — ${data.annualInvestment > 0 ? (data.totalAnnualValue / data.annualInvestment).toFixed(1) : "N/A"}× Year 1 ROI. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce) run on your specific headcount, cost, and utilization data. Potential value lines (Quality) apply published incidence rates with conservative documentation-attributable prevention fractions. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data.`}
+            {`This model was built using inputs specific to your organization: ${fmtNum(data.nurseFTEs)} nursing FTEs across ${fmtNum(data.staffedBeds)} staffed beds, ${fmtNum(data.patientDaysAnnual)} patient days annually, and ${data.utilizationPercent}% Abridge utilization. The base-case estimate is ${fmtCurrency(data.totalAnnualValue)} in annual value against ${fmtCurrency(data.annualInvestment)} in annual investment, a ${data.annualInvestment > 0 ? (data.totalAnnualValue / data.annualInvestment).toFixed(1) : "N/A"}× Year 1 ROI. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce) run on your specific headcount, cost, and utilization data. Potential value lines (Quality) apply published incidence rates with conservative documentation-attributable prevention fractions. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data.`}
           </Text>
 
           {/* Domain header helper — inline */}
@@ -2112,7 +2112,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             <View style={{ marginBottom: 10 }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
                 <View style={{ width: 3, height: 12, backgroundColor: colors.primary, marginRight: 8 }} />
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 2 }}>Workforce — Hard Value</Text>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 2 }}>Workforce · Hard Value</Text>
               </View>
               {data.retention.enabled && (
                 <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }} wrap={false}>
@@ -2149,7 +2149,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             <View style={{ marginBottom: 10 }}>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
                 <View style={{ width: 3, height: 12, backgroundColor: colors.primary, marginRight: 8 }} />
-                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 2 }}>Quality — Potential Value</Text>
+                <Text style={{ fontSize: 8, fontWeight: "bold", color: colors.primaryText, textTransform: "uppercase", letterSpacing: 2 }}>Quality · Potential Value</Text>
               </View>
               {data.hapi.enabled && (
                 <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }} wrap={false}>
@@ -2223,7 +2223,7 @@ export const NursingPDFDocument = ({ data }: { data: NursingPDFInput }) => {
             </View>
             <View style={{ flexDirection: "row", paddingVertical: 5, borderTopWidth: 0.5, borderTopColor: colors.separator }}>
               <Text style={{ flex: 1.4, fontSize: 8.5, fontWeight: "bold", color: colors.primaryText }}>HAC Penalty</Text>
-              <Text style={{ flex: 4.5, fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>1% of Medicare revenue if in the bottom performance quartile. Displayed as risk context only — not included in the ROI total.</Text>
+              <Text style={{ flex: 4.5, fontSize: 8.5, color: colors.secondary, lineHeight: 1.45 }}>1% of Medicare revenue if in the bottom performance quartile. Displayed as risk context only, and not included in the ROI total.</Text>
             </View>
           </View>
 

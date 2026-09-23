@@ -277,7 +277,7 @@ export function ModelAssumptionRow({
       case 'hcc': {
         return (
           <div className="mt-2">
-            <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Recapture — Per Plan</p>
+            <p className="text-[9px] text-neutral-400 uppercase tracking-wider mb-1.5">Recapture · Per Plan</p>
             {dq.hccPlans.map((plan: { id: string; name: string; panelSize: number; currentRecaptureRate: number; uplift: string; upliftCustomPp?: number }) => {
               const upliftPp = plan.uplift === 'custom' ? (plan.upliftCustomPp ?? 5) : (HCC_UPLIFT_SCENARIOS[plan.uplift] ?? 5);
               const effectiveUplift = Math.min(upliftPp, Math.max(0, 90 - plan.currentRecaptureRate));

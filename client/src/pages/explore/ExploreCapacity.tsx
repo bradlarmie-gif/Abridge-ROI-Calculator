@@ -152,7 +152,7 @@ export default function ExploreCapacity({ state, updateState, totalHoursSaved, p
               <p className="text-sm text-[#888888] line-clamp-2">{driver.tagline ?? driver.shortDescription}</p>
             </div>
             <span className="text-xs font-medium text-[#888888] bg-[#F5F0EB] px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0">
-              Coming Soon — Late 2026
+              Coming Soon · Late 2026
             </span>
           </div>
         </div>

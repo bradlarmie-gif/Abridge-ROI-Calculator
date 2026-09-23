@@ -185,7 +185,7 @@ export default function ExploreCareSettings({ selectedSetting, onSelectSetting, 
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + index * 0.05, duration: 0.3 }}
                   data-testid={`card-setting-${setting.id}`}
-                  aria-label={isDisabled ? `${setting.label} — already in proforma` : `Select ${setting.label}`}
+                  aria-label={isDisabled ? `${setting.label}, already in proforma` : `Select ${setting.label}`}
                 >
                   {isSelected && !isDisabled && (
                     <motion.div 

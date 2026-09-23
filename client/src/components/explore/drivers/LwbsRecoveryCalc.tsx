@@ -27,7 +27,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalH
   return (
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
-        Documentation time is part of the ED flow bottleneck. While a physician is scribing the prior patient's note, they're unavailable for the next. Faster documentation means the physician is available sooner — door-to-doc time and wait times can decrease, reducing the number of patients who leave without being seen.
+        Documentation time is part of the ED flow bottleneck. While a physician is scribing the prior patient's note, they're unavailable for the next. Faster documentation means the physician is available sooner, so door-to-doc time and wait times can decrease, reducing the number of patients who leave without being seen.
       </p>
 
       {state.minutesSavedPerEncounter > 0 && (
@@ -52,7 +52,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalH
             </div>
           </div>
           <p className="text-xs text-[#888888] mt-2">
-            This is a system-level throughput effect, not a direct per-encounter reduction. Saved documentation time returns physician availability to the waiting queue — but door-to-disposition also includes labs, imaging, and boarding time that Abridge doesn't shorten. The Welch et al. relationship (Annals of Emergency Medicine: ~1.5–3% LWBS reduction per minute of throughput improvement) holds when physician availability is the binding constraint. In boarding-dominant EDs, the effect is smaller — use the Conservative preset.
+            This is a system-level throughput effect, not a direct per-encounter reduction. Saved documentation time returns physician availability to the waiting queue, but door-to-disposition also includes labs, imaging, and boarding time that Abridge doesn't shorten. The Welch et al. relationship (Annals of Emergency Medicine: ~1.5–3% LWBS reduction per minute of throughput improvement) holds when physician availability is the binding constraint. In boarding-dominant EDs, the effect is smaller, so use the Conservative preset.
           </p>
         </div>
       )}
@@ -164,7 +164,7 @@ export default function LwbsRecoveryCalc({ state, updateTimeDriverInputs, totalH
         )}
 
         <p className="text-xs text-[#888888]">
-          Conservative (10%) — use when boarding or bed availability drives LWBS, or when physician availability isn't the primary throughput constraint. Typical (20%) — use when wait-to-be-seen time is the dominant LWBS driver and documentation is a known bottleneck. Optimistic (30%) — use when Abridge deployment data or operational analysis supports a higher throughput effect.
+          Conservative (10%): use when boarding or bed availability drives LWBS, or when physician availability isn't the primary throughput constraint. Typical (20%): use when wait-to-be-seen time is the dominant LWBS driver and documentation is a known bottleneck. Optimistic (30%): use when Abridge deployment data or operational analysis supports a higher throughput effect.
         </p>
         <div className="bg-[#F5F0EB] rounded-lg p-3">
           <p className="text-xs text-[#666666]">

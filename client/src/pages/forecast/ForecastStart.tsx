@@ -384,7 +384,7 @@ export default function ForecastStart({
               </p>
               {recentMeasureSessions.length === 0 ? (
                 <p className="text-xs text-neutral-400 py-2 text-center">
-                  None on this device yet — open a Measure session and we'll list it here.
+                  None on this device yet. Open a Measure session and we'll list it here.
                 </p>
               ) : (
                 <div className="space-y-1.5 max-h-44 overflow-y-auto">

@@ -9,10 +9,10 @@ function pluralize(n: number, word: string) {
 
 function monthLabel(m: number | null | undefined): string {
   if (m == null) return "outside the contract term";
-  if (m <= 6) return `Month ${m} — ahead of most deployments`;
-  if (m <= 12) return `Month ${m} — within the first year`;
+  if (m <= 6) return `Month ${m}, ahead of most deployments`;
+  if (m <= 12) return `Month ${m}, within the first year`;
   if (m <= 18) return `Month ${m}`;
-  return `Month ${m} — in year ${Math.ceil(m / 12)}`;
+  return `Month ${m}, in year ${Math.ceil(m / 12)}`;
 }
 
 export interface ForecastNarrative {
@@ -42,9 +42,9 @@ export function generateForecastNarrative(
   if (!hasDrivers) {
     heroSummary = `${partner}'s ${termYears}-year contract totals ${fmtCurrencyShort(kpis.totalContractCost)} under ${pricingLabel} pricing. Add value drivers to model the full ROI picture.`;
   } else if (kpis.roiMultiple >= 3) {
-    heroSummary = `${partner} is projecting a ${kpis.roiMultiple.toFixed(1)}x return — ${fmtCurrencyShort(kpis.totalContractValue)} in modeled value against ${fmtCurrencyShort(kpis.totalContractCost)} invested over ${termYears} ${yearWord}.${fromMeasure ? " Built on measured outcomes, not estimates." : ""}`;
+    heroSummary = `${partner} is projecting a ${kpis.roiMultiple.toFixed(1)}x return: ${fmtCurrencyShort(kpis.totalContractValue)} in modeled value against ${fmtCurrencyShort(kpis.totalContractCost)} invested over ${termYears} ${yearWord}.${fromMeasure ? " Built on measured outcomes, not estimates." : ""}`;
   } else if (kpis.roiMultiple >= 1.5) {
-    heroSummary = `${partner} is on track to generate ${fmtCurrencyShort(kpis.netContractValue)} in net value over ${termYears} ${yearWord} — a ${kpis.roiMultiple.toFixed(1)}x return on their Abridge investment.`;
+    heroSummary = `${partner} is on track to generate ${fmtCurrencyShort(kpis.netContractValue)} in net value over ${termYears} ${yearWord}, a ${kpis.roiMultiple.toFixed(1)}x return on their Abridge investment.`;
   } else if (kpis.roiMultiple >= 1) {
     heroSummary = `${partner} reaches positive ROI but the margin is thin at ${kpis.roiMultiple.toFixed(1)}x. Explore pricing structures or adoption levers below to strengthen the case.`;
   } else {
@@ -93,7 +93,7 @@ export function generateForecastNarrative(
   const initialShare = shareVals.length > 0 ? shareVals[0] : 0;
   let adoptionInsight = "";
   if (initialShare > 0 && finalShare > initialShare * 1.3) {
-    adoptionInsight = `Encounter share is projected to grow from ${initialShare.toFixed(0)}% to ${finalShare.toFixed(0)}% over the term — a ${((finalShare / initialShare - 1) * 100).toFixed(0)}% expansion in Abridge reach. This growth drives compounding value.`;
+    adoptionInsight = `Encounter share is projected to grow from ${initialShare.toFixed(0)}% to ${finalShare.toFixed(0)}% over the term, a ${((finalShare / initialShare - 1) * 100).toFixed(0)}% expansion in Abridge reach. This growth drives compounding value.`;
   } else {
     adoptionInsight = `Encounter share is holding near ${initialShare.toFixed(0)}%. Modeling an expansion in coverage could significantly improve the long-term value story.`;
   }
@@ -103,19 +103,19 @@ export function generateForecastNarrative(
   if (!hasDrivers) {
     topLeverRecommendation = "Import a Measure session or add value drivers to unlock lever recommendations.";
   } else if (kpis.fullBreakEvenMonth == null) {
-    topLeverRecommendation = `The single biggest lever is adoption pace — increasing encounter share from ${initialShare.toFixed(0)}% to ${Math.min(100, initialShare + 20).toFixed(0)}% would materially accelerate break-even. Try adjusting the encounter share curve in the Growth section.`;
+    topLeverRecommendation = `The single biggest lever is adoption pace: increasing encounter share from ${initialShare.toFixed(0)}% to ${Math.min(100, initialShare + 20).toFixed(0)}% would materially accelerate break-even. Try adjusting the encounter share curve in the Growth section.`;
   } else if (kpis.roiMultiple < 2) {
     const workforceDrivers = state.valueDrivers.filter((d) => d.domain === "workforce");
     const revenueDrivers = state.valueDrivers.filter((d) => d.domain === "revenue");
     if (revenueDrivers.length === 0) {
-      topLeverRecommendation = "Adding a revenue driver — wRVU lift, E/M level improvement, or denial reduction — would meaningfully strengthen the ROI multiple. These tend to be the highest-value levers for outpatient.";
+      topLeverRecommendation = "Adding a revenue driver (wRVU lift, E/M level improvement, or denial reduction) would meaningfully strengthen the ROI multiple. These tend to be the highest-value levers for outpatient.";
     } else if (workforceDrivers.length === 0) {
       topLeverRecommendation = "A workforce retention driver would add significant long-term value that compounds over the contract. Provider replacement costs ($150K–$300K per departure) make even small retention gains financially meaningful.";
     } else {
-      topLeverRecommendation = "The current model is solid. To push the multiple higher, revisit your realization rates — even moving from 70% to 80% realization adds meaningful value at scale.";
+      topLeverRecommendation = "The current model is solid. To push the multiple higher, revisit your realization rates. Even moving from 70% to 80% realization adds meaningful value at scale.";
     }
   } else {
-    topLeverRecommendation = `The ROI story is compelling at ${kpis.roiMultiple.toFixed(1)}x. Focus the conversation on contract structure — specifically whether the current pricing model captures value fairly as ${partner} scales.`;
+    topLeverRecommendation = `The ROI story is compelling at ${kpis.roiMultiple.toFixed(1)}x. Focus the conversation on contract structure, specifically whether the current pricing model captures value fairly as ${partner} scales.`;
   }
 
   // Bottom line
@@ -142,7 +142,7 @@ export function generateForecastNarrative(
       case "workOutsideHoursReduction": {
         const minDelta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));
         const annualHrs = (minDelta / 60) * ((state.abridgeEncountersLTM || 0) / (state.activeUsersToday || 1));
-        driverInsights[d.id] = `Providers save ${minDelta.toFixed(0)} min/encounter — ${annualHrs.toFixed(0)} hours per provider per year returned from documentation.`;
+        driverInsights[d.id] = `Providers save ${minDelta.toFixed(0)} min/encounter, or ${annualHrs.toFixed(0)} hours per provider per year returned from documentation.`;
         break;
       }
       case "wrvuLift": {
@@ -154,7 +154,7 @@ export function generateForecastNarrative(
         const minDelta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));
         const visitMin = ci.factor1Value ?? 30;
         const extraVisits = visitMin > 0 ? minDelta / visitMin : 0;
-        driverInsights[d.id] = `${minDelta.toFixed(0)} min saved per encounter enables ~${extraVisits.toFixed(2)} additional visits per provider per encounter — at $${ci.factor2Value ?? 200}/visit.`;
+        driverInsights[d.id] = `${minDelta.toFixed(0)} min saved per encounter enables ~${extraVisits.toFixed(2)} additional visits per provider per encounter, at $${ci.factor2Value ?? 200}/visit.`;
         break;
       }
       case "cmiLift": {
@@ -173,7 +173,7 @@ export function generateForecastNarrative(
       }
       case "emLevelLift": {
         const delta = Math.abs((ci.metricAfter ?? 0) - (ci.metricBefore ?? 0));
-        driverInsights[d.id] = `A ${delta.toFixed(2)}-level improvement in average E/M coding. More complete notes support accurate level selection — this is revenue that was earned but not captured.`;
+        driverInsights[d.id] = `A ${delta.toFixed(2)}-level improvement in average E/M coding. More complete notes support accurate level selection. This is revenue that was earned but not captured.`;
         break;
       }
       default: {

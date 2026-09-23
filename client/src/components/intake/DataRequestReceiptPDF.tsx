@@ -101,7 +101,7 @@ function DataRequestReceiptDocument({ data }: { data: MeasureDataRequestResponse
         <Text style={s.coverSub}>
           {data.deployment?.organizationName
             ? `${data.deployment.organizationName} · ${SETTING_LABELS[data.setting]}`
-            : `${SETTING_LABELS[data.setting]} — Metric Summary`
+            : `${SETTING_LABELS[data.setting]} · Metric Summary`
           }
         </Text>
         {data.deployment?.organizationName ? (

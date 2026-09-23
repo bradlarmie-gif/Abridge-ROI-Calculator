@@ -35,8 +35,8 @@ export default function DenialPreventionCalc({ state, updateDocQualityInputs, to
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-4">
         {isED
-          ? "This is separate from E&M leveling — leveling captures the complexity of what you did, this captures why the ED was the right setting. When documentation doesn't articulate clinical urgency, acuity, or the reasoning behind the visit, payers argue the patient could have been seen at a lower-acuity site and deny the claim outright. These are filed claims that come back as write-offs. The denial rate is already tracked by most revenue cycle teams as a percentage of total ED encounters."
-          : "Medical necessity denials occur when documentation doesn't show why the service was clinically warranted — the physician reasoned correctly, but the note didn't capture it. This is already tracked by most revenue cycle teams as a percentage of total encounters. Capturing clinical reasoning in real time may help reduce denials before they're filed."
+          ? "This is separate from E&M leveling. Leveling captures the complexity of what you did, this captures why the ED was the right setting. When documentation doesn't articulate clinical urgency, acuity, or the reasoning behind the visit, payers argue the patient could have been seen at a lower-acuity site and deny the claim outright. These are filed claims that come back as write-offs. The denial rate is already tracked by most revenue cycle teams as a percentage of total ED encounters."
+          : "Medical necessity denials occur when documentation doesn't show why the service was clinically warranted. The physician reasoned correctly, but the note didn't capture it. This is already tracked by most revenue cycle teams as a percentage of total encounters. Capturing clinical reasoning in real time may help reduce denials before they're filed."
         }
       </p>
 

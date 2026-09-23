@@ -8,7 +8,7 @@ export interface DataRequestField {
   example: string;      // example value as a string (e.g. "3%" or "$480" or "12")
   type: FieldType;
   required?: boolean;   // true = must-fill (scale/identity, can't be benchmarked);
-                        // otherwise optional — the engine uses an industry benchmark if blank.
+                        // otherwise optional: the engine uses an industry benchmark if blank.
 }
 
 export interface DriverFieldGroup {
@@ -93,7 +93,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     quadrant: 'Workforce',
     fields: [
       { id: 'annualTurnoverRate', label: 'Annual physician voluntary turnover rate (%)', description: 'Percentage of outpatient physicians who voluntarily leave per year.', who: 'HR or CMO office', example: '8%', type: 'percent' },
-      { id: 'replacementCost', label: 'All-in replacement cost per physician ($)', description: 'Total cost to recruit, onboard, and ramp a replacement physician — including search fees, lost productivity, and training.', who: 'Finance or HR', example: '$250,000', type: 'currency' },
+      { id: 'replacementCost', label: 'All-in replacement cost per physician ($)', description: 'Total cost to recruit, onboard, and ramp a replacement physician: including search fees, lost productivity, and training.', who: 'Finance or HR', example: '$250,000', type: 'currency' },
     ],
   },
   {
@@ -111,7 +111,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     quadrant: 'Workforce',
     fields: [
       { id: 'scribeHeadcount', label: 'Current scribe headcount', description: 'Total in-person or virtual scribe positions currently in use.', who: 'Operations or finance', example: '4', type: 'number' },
-      { id: 'scribeCostPerPosition', label: 'Annual cost per scribe position ($)', description: 'All-in annual cost per scribe — salary + benefits for in-person, or full contract value for virtual services.', who: 'Finance', example: '$38,000', type: 'currency' },
+      { id: 'scribeCostPerPosition', label: 'Annual cost per scribe position ($)', description: 'All-in annual cost per scribe: salary + benefits for in-person, or full contract value for virtual services.', who: 'Finance', example: '$38,000', type: 'currency' },
       { id: 'scribePositionsEliminated', label: 'Scribe positions being eliminated with Abridge', description: 'Number of positions expected to be eliminated or not backfilled after Abridge deployment.', who: 'Operations or finance', example: '3', type: 'number' },
     ],
   },
@@ -191,7 +191,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     quadrant: 'Workforce',
     fields: [
       { id: 'nursingTurnoverRate', label: 'Annual RN voluntary turnover rate (%)', description: 'Percentage of registered nurses who voluntarily leave per year.', who: 'HR or CNO office', example: '20%', type: 'percent' },
-      { id: 'nursingReplacementCost', label: 'All-in RN replacement cost ($)', description: 'Total cost to replace one RN — recruiting, agency backfill, orientation, and productivity ramp.', who: 'Finance or HR', example: '$50,000', type: 'currency' },
+      { id: 'nursingReplacementCost', label: 'All-in RN replacement cost ($)', description: 'Total cost to replace one RN: recruiting, agency backfill, orientation, and productivity ramp.', who: 'Finance or HR', example: '$50,000', type: 'currency' },
     ],
   },
   {
@@ -218,7 +218,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     quadrant: 'Quality',
     fields: [
       { id: 'nursingHapiRate', label: 'HAPI rate (per 1,000 patient days)', description: 'Current hospital-acquired pressure injury rate per 1,000 inpatient days.', who: 'Quality / infection control / nursing leadership', example: '1.5', type: 'number' },
-      { id: 'nursingCostPerHapi', label: 'Average cost per HAPI event ($)', description: 'All-in cost per hospital-acquired pressure injury — treatment, extended LOS, and potential penalties.', who: 'Finance or quality', example: '$17,000', type: 'currency' },
+      { id: 'nursingCostPerHapi', label: 'Average cost per HAPI event ($)', description: 'All-in cost per hospital-acquired pressure injury: treatment, extended LOS, and potential penalties.', who: 'Finance or quality', example: '$17,000', type: 'currency' },
     ],
   },
   {
@@ -227,7 +227,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     quadrant: 'Quality',
     fields: [
       { id: 'nursingFallsRate', label: 'Fall rate (per 1,000 patient days)', description: 'Current inpatient fall rate per 1,000 patient days.', who: 'Quality or patient safety', example: '3.5', type: 'number' },
-      { id: 'nursingCostPerFall', label: 'Average cost per fall event ($)', description: 'All-in cost per inpatient fall — treatment, extended stay, and liability.', who: 'Finance or quality', example: '$6,500', type: 'currency' },
+      { id: 'nursingCostPerFall', label: 'Average cost per fall event ($)', description: 'All-in cost per inpatient fall: treatment, extended stay, and liability.', who: 'Finance or quality', example: '$6,500', type: 'currency' },
     ],
   },
   {
@@ -236,7 +236,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     quadrant: 'Quality',
     fields: [
       { id: 'nursingCautiRate', label: 'CAUTI rate (per 1,000 catheter days)', description: 'Current catheter-associated UTI rate per 1,000 catheter days.', who: 'Quality / infection control', example: '1.2', type: 'number' },
-      { id: 'nursingCostPerCauti', label: 'Average cost per CAUTI event ($)', description: 'All-in cost per CAUTI — treatment, extended stay, and CMS non-payment implications.', who: 'Finance or quality', example: '$13,000', type: 'currency' },
+      { id: 'nursingCostPerCauti', label: 'Average cost per CAUTI event ($)', description: 'All-in cost per CAUTI: treatment, extended stay, and CMS non-payment implications.', who: 'Finance or quality', example: '$13,000', type: 'currency' },
     ],
   },
   {
@@ -245,7 +245,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
     quadrant: 'Quality',
     fields: [
       { id: 'nursingClabsiRate', label: 'CLABSI rate (per 1,000 central line days)', description: 'Current central line-associated bloodstream infection rate per 1,000 central line days.', who: 'Quality / infection control', example: '0.8', type: 'number' },
-      { id: 'nursingCostPerClabsi', label: 'Average cost per CLABSI event ($)', description: 'All-in cost per CLABSI event — treatment, extended stay, and CMS non-payment.', who: 'Finance or quality', example: '$48,000', type: 'currency' },
+      { id: 'nursingCostPerClabsi', label: 'Average cost per CLABSI event ($)', description: 'All-in cost per CLABSI event: treatment, extended stay, and CMS non-payment.', who: 'Finance or quality', example: '$48,000', type: 'currency' },
     ],
   },
   {
@@ -261,7 +261,7 @@ export const DRIVER_FIELDS: DriverFieldGroup[] = [
 
 /**
  * Splits the requested fields into the must-fill tier (required scale/identity)
- * and the optional tier (everything else — benchmarked if left blank). Drives
+ * and the optional tier (everything else: benchmarked if left blank). Drives
  * both the two-tier spreadsheet and the builder's "N required · M optional" count.
  */
 export interface RequestFieldPlan {

@@ -37,7 +37,7 @@ export default function NursingSepsisCalc({ state, updateDocQualityInputs, total
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Theory</p>
       <p className="text-sm text-black mb-6">
         SEP-1 bundle compliance hinges on time-stamped documentation of vitals, labs, and antibiotics.
-        Real-time documentation reduces the documentation lag that often drives bundle non-compliance —
+        Real-time documentation reduces the documentation lag that often drives bundle non-compliance,
         and the excess cost that follows.
       </p>
 

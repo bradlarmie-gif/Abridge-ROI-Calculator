@@ -39,7 +39,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
   return (
     <div>
       <p className="text-sm text-[#666666] leading-relaxed mb-5">
-        If your organization currently uses in-person or virtual scribes, Abridge directly replaces that function. This is a direct P&amp;L line item — not a modeled projection.
+        If your organization currently uses in-person or virtual scribes, Abridge directly replaces that function. This is a direct P&amp;L line item, not a modeled projection.
       </p>
 
       {/* Billing mode toggle */}
@@ -142,7 +142,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
           {calc.mode === 'position' && calc.headcount > calc.eliminated && calc.eliminated > 0 && (
             <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
               <p className="text-xs text-[#888888]">
-                Retaining {calc.headcount - calc.eliminated} position{calc.headcount - calc.eliminated !== 1 ? 's' : ''} — remaining scribe spend: {fmt(calc.remainingSpend)}/yr.
+                Retaining {calc.headcount - calc.eliminated} position{calc.headcount - calc.eliminated !== 1 ? 's' : ''}. Remaining scribe spend: {fmt(calc.remainingSpend)}/yr.
               </p>
             </div>
           )}
@@ -246,7 +246,7 @@ export default function ScribeCostReductionCalc({ state, updateTimeDriverInputs,
           {calc.mode === 'hourly' && calc.costPerVisit > 0 && (
             <div className="bg-[#F5F0EB]/60 rounded-lg p-3 mt-4">
               <p className="text-xs text-[#888888]">
-                Scribe cost: <span className="font-medium text-[#444444]">{fmtDec(calc.costPerVisit)}/{visitNoun}</span> — use this to benchmark against Abridge's per-{visitNoun} pricing for a direct apples-to-apples comparison.
+                Scribe cost: <span className="font-medium text-[#444444]">{fmtDec(calc.costPerVisit)}/{visitNoun}</span>. Use this to benchmark against Abridge's per-{visitNoun} pricing for a direct apples-to-apples comparison.
               </p>
             </div>
           )}

@@ -1414,13 +1414,13 @@ function getDefensibleClaims(
       return [
         'Abridge is live and being used',
         'Baseline metrics are establishing',
-        'No outcome claims yet — foundation building',
+        'No outcome claims yet: foundation building',
       ];
     case 'emerging':
       return [
         'Documentation patterns are changing with Abridge',
         `Early efficiency signals are present in ${strongestDomain}`,
-        'Trend direction is confirmed — too early for magnitude',
+        'Trend direction is confirmed, but too early for magnitude',
       ];
     case 'demonstrated':
       return [

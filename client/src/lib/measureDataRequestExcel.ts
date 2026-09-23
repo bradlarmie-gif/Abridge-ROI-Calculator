@@ -285,7 +285,7 @@ function getBaselineFields(setting: string, state: MeasureState): BaselineField[
     fields.push({ label: 'MRU Providers',            desc: 'Providers meeting minimum recording usage',      source: 'Abridge CS',       value: dep.mruProviders || null,        note: '' });
     fields.push({ label: 'Total Encounters',         desc: 'Annual encounters in scope',                      source: 'EHR / Practice mgmt', value: dep.totalEncounters || null,  note: '' });
     fields.push({ label: 'Abridge Encounters',       desc: 'Encounters using Abridge',                        source: 'Abridge CS',       value: dep.abridgeEncounters || null,   note: '' });
-    fields.push({ label: 'Non-Abridge Encounters',   desc: 'Control group — same providers without Abridge', source: 'EHR / Abridge CS', value: dep.nonAbridgeEncounters || null, note: 'Establishes the comparison baseline' });
+    fields.push({ label: 'Non-Abridge Encounters',   desc: 'Control group: same providers without Abridge', source: 'EHR / Abridge CS', value: dep.nonAbridgeEncounters || null, note: 'Establishes the comparison baseline' });
   }
   return fields;
 }
@@ -304,7 +304,7 @@ function buildSettingSheet(setting: string, state: MeasureState): XLSX.WorkSheet
   rowHeights.push(H.colHeader);
 
   // Baseline section
-  aoa.push(['DEPLOYMENT SNAPSHOT — Always Required', null, null, null, null, null]);
+  aoa.push(['DEPLOYMENT SNAPSHOT · Always Required', null, null, null, null, null]);
   rowHeights.push(H.section);
 
   for (const f of baselineFields) {
@@ -345,8 +345,8 @@ function buildSettingSheet(setting: string, state: MeasureState): XLSX.WorkSheet
         // $/unit calibration row — always empty, example in notes
         const unitExample = formatCurrency(md.valuePerUnitDefault, md.valuePerUnitPrefix);
         const unitNote = entry !== undefined
-          ? `Wizard entry: ${formatCurrency(entry.valuePerUnit, md.valuePerUnitPrefix)} — confirm with Finance`
-          : `Example: ${unitExample} — enter your org's actual rate`;
+          ? `Wizard entry: ${formatCurrency(entry.valuePerUnit, md.valuePerUnitPrefix)}, confirm with Finance`
+          : `Example: ${unitExample}. Enter your org's actual rate`;
         aoa.push([
           `  ↳ ${md.valuePerUnitLabel}`,
           "Per-unit financial value for the calculation. Enter your organization's actual rate.",
@@ -364,7 +364,7 @@ function buildSettingSheet(setting: string, state: MeasureState): XLSX.WorkSheet
           getDataSource(driver.id),
           entry !== undefined ? entry.withoutAbridge : '',
           entry !== undefined ? entry.withAbridge : '',
-          'Signal — tracked, no financial calculation',
+          'Signal: tracked, no financial calculation',
         ]);
         rowHeights.push(H.dataRow);
       }
@@ -490,7 +490,7 @@ function buildInstructionsSheet(state: MeasureState, activeSettings: string[]): 
     [null],
     ['HOW TO USE'],
     ['1.  Send the relevant tab(s) to your data, billing, or quality contact.'],
-    ['2.  Ask them to fill in every yellow cell — yellow means we need their number.'],
+    ['2.  Ask them to fill in every yellow cell. Yellow means we need their number.'],
     ['3.  Return the completed file to your Abridge account team.'],
     ['4.  Your Abridge rep will use the completed data to produce a finalized measurement report.'],
     [null],

@@ -39,8 +39,25 @@ const stripBlockComments = (c: string) =>
     .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
 const isCommentLine = (l: string) => /^\s*(\/\/|\*)/.test(l);
 const stripComments = (l: string) => l.replace(/([^:"'`])\/\/.*$/, "$1");
+/**
+ * Blank the em dash where it is a UI GLYPH rather than prose.
+ *
+ * The empty-state dash is the canonical case: a big grey "—" standing in for a
+ * value that has not been entered yet. It is not a sentence, and rewriting it
+ * would mean inventing a placeholder character the design does not use.
+ *
+ * Three shapes, all of them a dash standing alone:
+ *   "—" / `—`          a quoted placeholder value
+ *   >—<                JSX text between tags on one line
+ *   a whole line of —  the same thing when prettier wrapped the JSX
+ * The entity spellings are covered too, since they render identically.
+ */
+const DASH = "(?:—|&mdash;|&#8212;|&#x2014;)";
 const stripPlaceholders = (l: string) =>
-  l.replace(/(["'`])\s*—\s*\1/g, "$1$1").replace(/>\s*—\s*</g, "><");
+  l
+    .replace(new RegExp(`(["'\`])\\s*${DASH}\\s*\\1`, "g"), "$1$1")
+    .replace(new RegExp(`>\\s*${DASH}\\s*<`, "g"), "><")
+    .replace(new RegExp(`^\\s*${DASH}\\s*$`), "");
 
 // Guarantee/ensure/cause/proven as a positive CLAIM. Negated forms
 // ("not a guarantee", "no guarantee") are the disclaimer and are allowed.
@@ -60,6 +77,13 @@ const PROVEN = /\bproven to\b|\bclinically proven\b/i;
 // ("has many causes", "the causes", "several causes") which names reasons, not
 // an Abridge claim.
 const CAUSES = /(?<!all-)(?<!root )(?<!\b(?:many|several|multiple|few|other|various|common|possible|potential|underlying|leading|the|its|of|no)\s)\bcauses?\b(?!\s+of\b)/i;
+// The rule exists to stop us claiming ABRIDGE causes a good outcome. It is not
+// meant to stop us naming what causes the PROBLEM — "the overtime that charting
+// causes", "charting delays cause more LWBS" — which is the debunk, and the
+// direction the copy doctrine actually wants us to be specific about. The
+// surrounding copy is careful precisely because of it ("the number never claims
+// overtime that charting did not cause"). So exempt the burden-as-subject form.
+const PROBLEM_CAUSES = /\b(charting|documentation|notes?|note-writing|delays?|burden|backlog)\b(?:\s+\S+){0,3}\s+(?:did not\s+)?causes?\b/i;
 const CAUSAL_WILL = /\bwill\s+(increase|reduce|improve|save|generate|deliver|drive|lower|raise|cut|boost)\b/i;
 const CREDITED = /credited to/i;
 // Present-tense "prevents" and "prevented by" attribute prevention causally.
@@ -81,7 +105,7 @@ const CORE_RULES: Rule[] = [
   { name: "guarantee-claim", hit: (c) => GUARANTEE.test(c) && !GUARANTEE_NEGATED.test(c) },
   { name: "ensures", hit: (c) => ENSURES.test(c) },
   { name: "proven-to", hit: (c) => PROVEN.test(c) },
-  { name: "causes", hit: (c) => CAUSES.test(c) },
+  { name: "causes", hit: (c) => CAUSES.test(c) && !PROBLEM_CAUSES.test(c) },
   { name: "causal-will", hit: (c) => CAUSAL_WILL.test(c) },
   { name: "credited-to", hit: (c) => CREDITED.test(c) },
   { name: "prevents", hit: (c) => PREVENTS.test(c) },

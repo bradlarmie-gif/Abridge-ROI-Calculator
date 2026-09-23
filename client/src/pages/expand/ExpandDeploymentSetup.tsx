@@ -159,7 +159,7 @@ export default function ExpandDeploymentSetup({
           </h1>
           <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl mb-6">
             You championed this change. You navigated the rollout. You've seen what's possible when 
-            documentation stops being a burden. Now let's capture what you've built — in a way that 
+            documentation stops being a burden. Now let's capture what you've built, in a way that 
             resonates with clinical leaders, operations, and anyone who needs to see the value.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -279,7 +279,7 @@ export default function ExpandDeploymentSetup({
             </h2>
             <p className="text-sm text-[#6B7280]">
               Select the metrics you have data for. We've organized these by how directly they connect to 
-              financial value — so your story is clear and compelling at every level.
+              financial value, so your story is clear and compelling at every level.
             </p>
           </div>
 
@@ -294,7 +294,7 @@ export default function ExpandDeploymentSetup({
                 <span className="text-xs text-emerald-600 ml-2">The bottom line</span>
               </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3 ml-9">Direct revenue impact — the foundation of your value story that resonates across leadership.</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">Direct revenue impact: the foundation of your value story that resonates across leadership.</p>
             
             <div className="space-y-2">
               {TIER_1_METRICS.map((metric) => {
@@ -356,7 +356,7 @@ export default function ExpandDeploymentSetup({
                 <span className="text-xs text-blue-600 ml-2">Where the hours went</span>
               </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3 ml-9">Time reclaimed from documentation — meaningful to operations, clinical leads, and providers alike.</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">Time reclaimed from documentation: meaningful to operations, clinical leads, and providers alike.</p>
             
             <div className="space-y-2">
               {TIER_2_METRICS.map((metric) => {
@@ -418,7 +418,7 @@ export default function ExpandDeploymentSetup({
                 <span className="text-xs text-amber-600 ml-2">The human signals</span>
               </div>
             </div>
-            <p className="text-xs text-[#6B7280] mb-3 ml-9">Adoption, satisfaction, workflow change — the signals that tell you this is working.</p>
+            <p className="text-xs text-[#6B7280] mb-3 ml-9">Adoption, satisfaction, workflow change: the signals that tell you this is working.</p>
             
             <div className="space-y-2">
               {TIER_3_METRICS.map((metric) => {

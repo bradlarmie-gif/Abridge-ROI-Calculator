@@ -225,7 +225,7 @@ export function buildDriverFormula(
       return [
         { label: `${n(providers)} providers  ×  ${n(encPerProv)} encounters/provider/yr`, value: `${n(Math.round(totalEnc))} total encounters` },
         { label: `${n(Math.round(totalEnc))} total  ×  ${p(utilPct)} Abridge utilization`, value: `${n(abridgeEnc)} Abridge encounters` },
-        { label: `Problems addressed, data reviewed, and risk documented — complexity delivered, note didn't show it  →  ${wrvuPct > 0 ? wrvuPct.toFixed(1) : "~2–4"}% wRVU lift`, value: `${n(wrvuGained > 0 ? wrvuGained : Math.round(abridgeEnc * 0.03))} wRVUs recovered` },
+        { label: `Problems addressed, data reviewed, and risk documented. Complexity delivered, note didn't show it  →  ${wrvuPct > 0 ? wrvuPct.toFixed(1) : "~2–4"}% wRVU lift`, value: `${n(wrvuGained > 0 ? wrvuGained : Math.round(abridgeEnc * 0.03))} wRVUs recovered` },
         { label: `wRVUs recovered  ×  ${d(convFactor)} conversion factor`, value: fmt(driverValue), isResult: true },
       ];
     }
@@ -376,20 +376,20 @@ export function buildDriverFormula(
 
 export function getDriverFallback(driverId: string): string {
   const notes: Record<string, string> = {
-    bedsideTime:          "Hours returned to direct patient care — documentation time shifted to bedside.",
-    opAfterHoursDoc:      "After-hours documentation eliminated — hours returned directly to providers.",
+    bedsideTime:          "Hours returned to direct patient care, with documentation time shifted to bedside.",
+    opAfterHoursDoc:      "After-hours documentation eliminated, with hours returned directly to providers.",
     opBurnoutTracking:    "Burnout trajectory improvement; workforce sustainability benefit compounds over time.",
     obsDefense:           "Status / medical-necessity denials, the inpatient stays a complete note keeps off observation, auditable per-case.",
     nursingHcahps:        "HCAHPS score improvement from provider presence and communication quality.",
-    nursingSepsis:        "Earlier sepsis recognition via documentation quality — outcomes and cost improvement.",
+    nursingSepsis:        "Earlier sepsis recognition via documentation quality: outcomes and cost improvement.",
     nursingEarlyDeterioration: "Earlier documentation of clinical deterioration signals through real-time flowsheet capture.",
-    nursingBundleCompliance:   "Care bundle compliance improvement — CLABSI, VAP, sepsis bundles tracked through complete flowsheet documentation.",
+    nursingBundleCompliance:   "Care bundle compliance improvement: CLABSI, VAP, sepsis bundles tracked through complete flowsheet documentation.",
     opCdiQueryTrend:      "CDI query volume reduction from outpatient documentation completeness.",
-    opCareGapClosureRate: "Care gap closure improvement — HEDIS-relevant conditions documented at point of care.",
+    opCareGapClosureRate: "Care gap closure improvement: HEDIS-relevant conditions documented at point of care.",
     opHedisCompositeScore:"HEDIS composite score improvement from complete preventive care documentation.",
     opMaStarsPerformance: "MA Stars performance tied to documentation quality driving risk adjustment accuracy.",
-    edCoreMeasureDocRate: "ED core measure compliance — documentation quality drives measure capture.",
-    edDocDeficiencyRate:  "Chart completion rate improvement — fewer post-discharge completions needed.",
+    edCoreMeasureDocRate: "ED core measure compliance: documentation quality drives measure capture.",
+    edDocDeficiencyRate:  "Chart completion rate improvement, with fewer post-discharge completions needed.",
     edPatientExperience:  "Provider presence during encounters improves ED patient experience scores.",
     opNotesBeforeLeaving: "In-clinic note completion; inbox burden shifted from home to point-of-care.",
   };

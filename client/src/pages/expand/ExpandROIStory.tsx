@@ -129,7 +129,7 @@ export default function ExpandROIStory({
         <div className="flex items-center justify-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg mb-10">
           <AlertTriangle className="w-4 h-4 text-amber-600" />
           <span className="text-sm text-amber-800">
-            Conservative estimate — uses {Math.round(calculations.conversionRate * 100)}% conversion rates
+            Conservative estimate, using {Math.round(calculations.conversionRate * 100)}% conversion rates
           </span>
         </div>
 

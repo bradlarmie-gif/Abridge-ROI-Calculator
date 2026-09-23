@@ -763,7 +763,7 @@ export const LEVERS: Record<GoalId, Lever[]> = {
     {
       id: "revenueDenialsPreventable",
       label: "Prevent avoidable medical-necessity denials",
-      help: "A denial that never should have happened still costs the claim. This is the share of your medical-necessity denials cleaner documentation actually prevents.",
+      help: "A denial that never should have happened still costs the claim. This is the share of your medical-necessity denials you expect cleaner documentation to prevent.",
       control: "percent",
       unit: "% preventable",
       min: 0,
@@ -1106,7 +1106,7 @@ export const IP_REVENUE_LEVERS: Lever[] = [
   {
     id: "ipObsPreventable",
     label: "Set the preventable share you are targeting",
-    help: "A downgrade driven by documentation that under-specified severity of illness is preventable. This is the share cleaner documentation actually prevents, above today's zero.",
+    help: "A downgrade driven by documentation that under-specified severity of illness is preventable. This is the share you expect cleaner documentation to prevent, above today's zero.",
     control: "percent",
     unit: "%",
     min: 0,

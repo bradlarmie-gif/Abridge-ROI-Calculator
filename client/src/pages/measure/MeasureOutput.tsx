@@ -149,7 +149,7 @@ function QuoteCard({ quote }: { quote: MeasureQuote }) {
           {quote.text}
         </p>
         <p className="text-xs text-[#8C7E6E] font-medium">
-          — {quote.attribution}{quote.role ? `, ${quote.role}` : ''}
+          – {quote.attribution}{quote.role ? `, ${quote.role}` : ''}
         </p>
       </div>
     </div>

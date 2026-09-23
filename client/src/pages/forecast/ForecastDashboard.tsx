@@ -526,7 +526,7 @@ export default function ForecastDashboard({
         {/* Hero ROI card */}
         {state.valueDrivers.length === 0 && (
           <p className="text-xs text-[#999999] mb-2" data-testid="text-cost-comparison-hint">
-            Cost comparison active — add value drivers to see ROI
+            Cost comparison active. Add value drivers to see ROI
           </p>
         )}
         <NarrativeBar narrative={narrative} hasDrivers={state.valueDrivers.length > 0} />
@@ -779,7 +779,7 @@ function ValueDriversBlock({
       <div className="space-y-4">
         {state.valueDrivers.length === 0 && (
           <div className={`${CARD_BG} ${CARD_BORDER} rounded-xl p-6 text-center`}>
-            <p className="text-sm text-[#999999]">No drivers yet — add one above.</p>
+            <p className="text-sm text-[#999999]">No drivers yet. Add one above.</p>
           </div>
         )}
         {state.valueDrivers.map((d) => {
@@ -1258,7 +1258,7 @@ function CalibrationPanel({
               unit="min"
               value={cal.minutesPerVisit}
               onChange={(v) => updateCal({ minutesPerVisit: v })}
-              tooltip="Average appointment length — determines how many extra visits freed time creates"
+              tooltip="Average appointment length, which determines how many extra visits freed time creates"
               testId="cal-minutes-per-visit"
             />
             <CalField
@@ -1266,7 +1266,7 @@ function CalibrationPanel({
               unit="$"
               value={cal.avgClaimValue}
               onChange={(v) => updateCal({ avgClaimValue: v })}
-              tooltip="Average net claim value — used to calculate denial reduction impact"
+              tooltip="Average net claim value, used to calculate denial reduction impact"
               testId="cal-avg-claim-value"
             />
             <CalField

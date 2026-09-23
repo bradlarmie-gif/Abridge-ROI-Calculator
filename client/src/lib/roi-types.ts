@@ -213,7 +213,7 @@ export const leverDescriptions: Record<LeverId, string> = {
   rnDocTime: "Reduce time spent documenting during and after shifts.",
   rnCommunication: "Reduce repetitive manual documentation across handoffs and care coordination.",
   rnSafetyReduction: "Improve documentation timeliness to surface clinical changes and reduce safety events.",
-  rnDiagnosisSeverity: "Ensure nursing assessments capture clinical severity that supports CC/MCC documentation.",
+  rnDiagnosisSeverity: "Nursing assessments capture clinical severity that supports CC/MCC documentation.",
 };
 
 export const leverLabels: Record<LeverId, string> = {

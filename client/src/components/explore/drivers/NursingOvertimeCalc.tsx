@@ -33,7 +33,7 @@ export default function NursingOvertimeCalc({ state, updateTimeDriverInputs, tot
     <div>
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-2">The Logic</p>
       <p className="text-sm text-[#666666] leading-relaxed mb-6">
-        Nurses are doing direct patient care all shift — documentation is supposed to happen in the gaps, but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Moving charting into the patient interaction can reduce that debt, helping nurses complete documentation before their shift ends.
+        Nurses are doing direct patient care all shift, and documentation is supposed to happen in the gaps, but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Moving charting into the patient interaction can reduce that debt, helping nurses complete documentation before their shift ends.
       </p>
 
       <p className="text-xs font-medium text-[#888888] uppercase tracking-[1.5px] mb-3">Your Organization</p>
@@ -84,7 +84,7 @@ export default function NursingOvertimeCalc({ state, updateTimeDriverInputs, tot
               </button>
             ))}
           </div>
-          <p className="text-xs text-[#888888]">Not all post-shift OT is charting-related — some is handoffs, patient events, or admin. This is your estimate of what Abridge can realistically impact.</p>
+          <p className="text-xs text-[#888888]">Not all post-shift OT is charting-related. Some is handoffs, patient events, or admin. This is your estimate of what Abridge can realistically impact.</p>
         </div>
 
         <div className="space-y-2.5">

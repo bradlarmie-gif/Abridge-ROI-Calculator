@@ -925,7 +925,7 @@ function ProviderVoicesPage({ data }: { data: MeasurePDFData }) {
             {`"${story.text}"`}
           </Text>
           <Text style={{ fontSize: 8.5, fontWeight: 700, color: brand.coral }}>
-            {`— ${story.attribution}`}
+            {`– ${story.attribution}`}
           </Text>
           {story.role && (
             <Text style={{ fontSize: 7.5, color: brand.textSecondary, marginTop: 2 }}>{story.role}</Text>

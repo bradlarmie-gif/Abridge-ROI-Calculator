@@ -667,10 +667,10 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
     // Lead with dominant domain if it's ≥45% of total; otherwise lead with breadth
     if (topDomain && topDomain.p >= 45) {
       const secondDomains = sortedDomains.slice(1).map(d => `${d.domain.toLowerCase()} (${fmt(d.total)})`).join(", ");
-      thesis = `The leading driver is ${topDomain.domain.toLowerCase()} — ${fmt(topDomain.total)}/yr, ${topDomain.p}% of total — with ${topDriver ? `${topDriver.name.toLowerCase()} as the primary mechanism` : "multiple sub-drivers"}. ${secondDomains.length > 0 ? `The remaining value comes from ${secondDomains}.` : ""} Against ${fmt(summary.termInvestment)} invested across ${scale} in ${sName}, the model yields ${fmt(summary.runRateValue)}/yr at full maturity${summary.paybackMonth ? ` and pays back at month ${summary.paybackMonth}` : ""}. Conservative adoption assumptions hold full costs from day one while value scales gradually.`;
+      thesis = `The leading driver is ${topDomain.domain.toLowerCase()} at ${fmt(topDomain.total)}/yr, ${topDomain.p}% of total, with ${topDriver ? `${topDriver.name.toLowerCase()} as the primary mechanism` : "multiple sub-drivers"}. ${secondDomains.length > 0 ? `The remaining value comes from ${secondDomains}.` : ""} Against ${fmt(summary.termInvestment)} invested across ${scale} in ${sName}, the model yields ${fmt(summary.runRateValue)}/yr at full maturity${summary.paybackMonth ? ` and pays back at month ${summary.paybackMonth}` : ""}. Conservative adoption assumptions hold full costs from day one while value scales gradually.`;
     } else {
       const allDomainStr = sortedDomains.map(d => `${d.domain.toLowerCase()} (${fmt(d.total)})`).join(", ");
-      thesis = `Value is distributed across ${activeDomains.length} independent domains — ${allDomainStr} — so no single mechanism carries the entire case. The top driver, ${topDriver ? `${topDriver.name.toLowerCase()} at ${fmt(topDriver.value)}/yr` : fmt(summary.runRateValue)}, is auditable against operational records. Against ${fmt(summary.termInvestment)} invested across ${scale}, this projects ${fmt(summary.runRateValue)}/yr at maturity${summary.paybackMonth ? ` with payback at month ${summary.paybackMonth}` : ""}.`;
+      thesis = `Value is distributed across ${activeDomains.length} independent domains (${allDomainStr}), so no single mechanism carries the entire case. The top driver, ${topDriver ? `${topDriver.name.toLowerCase()} at ${fmt(topDriver.value)}/yr` : fmt(summary.runRateValue)}, is auditable against operational records. Against ${fmt(summary.termInvestment)} invested across ${scale}, this projects ${fmt(summary.runRateValue)}/yr at maturity${summary.paybackMonth ? ` with payback at month ${summary.paybackMonth}` : ""}.`;
     }
   } else {
     // Multi-setting: lead with structural independence, name each setting's top driver
@@ -685,7 +685,7 @@ function InvestmentCasePage({ settings, config, summary, yearlyData, preparedBy,
     const multiScaleDesc = allPerEnc
       ? `${fmtNum(totalFullScaleEnc)} contracted encounters`
       : `${fmtNum(totalFullScale)} providers`;
-    thesis = `${settings.length} structurally independent value sources: ${settingDescriptions}. Each draws from distinct clinical workflows and operational levers — if one setting ramps slower than projected, the others hold. At maturity, ${fmt(summary.runRateValue)}/yr runs across ${multiScaleDesc} against ${fmt(summary.termInvestment)} invested${summary.paybackMonth ? `, with payback at month ${summary.paybackMonth}` : ''}.`;
+    thesis = `${settings.length} structurally independent value sources: ${settingDescriptions}. Each draws from distinct clinical workflows and operational levers. If one setting ramps slower than projected, the others hold. At maturity, ${fmt(summary.runRateValue)}/yr runs across ${multiScaleDesc} against ${fmt(summary.termInvestment)} invested${summary.paybackMonth ? `, with payback at month ${summary.paybackMonth}` : ''}.`;
   }
 
   return (
@@ -892,7 +892,7 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
     hasRevenue   && { domain: "Revenue",   color: brand.revenue,   label: "Revenue",   note: `Modeled from Month 1, ramping over an initial adoption period.${hasHcc ? " HCC/RAF value projected beginning Year 2, reflecting typical reconciliation timelines." : ""}`, inactiveFrac: 1/config.contractTermMonths },
     hasCapacity  && { domain: "Capacity",  color: brand.capacity,  label: "Capacity",  note: `Projected beginning Month ${delayedOnset}, reflecting a conservative adoption ramp as clinical workflows adjust.`, inactiveFrac: delayedOnset / config.contractTermMonths },
     hasQuality   && { domain: "Quality",   color: brand.quality,   label: "Quality",   note: `Projected beginning Month ${delayedOnset}${hasNursing ? "–5" : ""}, modeled conservatively to allow time for documentation patterns to stabilize.`, inactiveFrac: delayedOnset / config.contractTermMonths },
-    hasWorkforce && { domain: "Workforce", color: brand.workforce, label: "Workforce", note: `Phased over ${contractYears >= 3 ? "3 years" : "the contract term"} — ${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}. Retention and wellbeing effects are projected to compound over time.`, inactiveFrac: 0.15 },
+    hasWorkforce && { domain: "Workforce", color: brand.workforce, label: "Workforce", note: `Phased over ${contractYears >= 3 ? "3 years" : "the contract term"}: ${config.retentionPhasing.year1Pct}% Y1 / ${config.retentionPhasing.year2Pct}% Y2${contractYears >= 3 ? ` / ${config.retentionPhasing.year3Pct}% Y3` : ""}. Retention and wellbeing effects are projected to compound over time.`, inactiveFrac: 0.15 },
   ].filter(Boolean) as { domain: string; color: string; label: string; note: string; inactiveFrac: number }[];
 
   return (
@@ -902,7 +902,7 @@ function ValueTrajectoryPage({ settings, config, summary, yearlyData, chartData,
       <Text style={S.eyebrow}>Financial Trajectory</Text>
       <Text style={S.sectionTitle}>How Value Builds</Text>
       <Text style={S.sectionIntro}>
-        Value doesn't arrive on day one. It compounds as providers onboard, utilization deepens, and each domain switches on at its natural pace. The chart reflects your actual deployment path — conservatively modeled.
+        Value doesn't arrive on day one. It compounds as providers onboard, utilization deepens, and each domain switches on at its natural pace. The chart reflects your actual deployment path, conservatively modeled.
       </Text>
 
       {/* CHART */}
@@ -1020,20 +1020,20 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
   let floorLabel: string;
   if (!hasInvestment) {
     floorLabel = "Reading the Range";
-    floorMsg = `No investment is modeled against this value, so the conservative floor represents pure upside — ${fmt(conservFloor)} in realized value at 70% realization across all domains.`;
+    floorMsg = `No investment is modeled against this value, so the conservative floor represents pure upside: ${fmt(conservFloor)} in realized value at 70% realization across all domains.`;
   } else if (conservFloor < 0) {
     floorLabel = "Risk Assessment";
     const shortfall = fmt(Math.abs(conservFloor));
-    floorMsg = `At 70% realization, this model runs ${shortfall} in the red — investment is not fully recovered in the downside case. The primary levers are provider adoption rate and capacity conversion timing. Revisit utilization assumptions and the implementation timeline before finalizing commitments.`;
+    floorMsg = `At 70% realization, this model runs ${shortfall} in the red, and investment is not fully recovered in the downside case. The primary levers are provider adoption rate and capacity conversion timing. Revisit utilization assumptions and the implementation timeline before finalizing commitments.`;
   } else if (conservROI < 0.04) {
     floorLabel = "Reading the Range";
-    floorMsg = `At 70% realization, the floor is ${fmt(conservFloor)} net — investment is recovered${conservPayback ? ` at month ${conservPayback}` : ""}. The base case at ${fmt(summary.termNet)} reflects the model's central projection under conservative adoption assumptions. Execution quality is load-bearing: provider adoption rate and capacity conversion timing determine where in this range outcomes land.`;
+    floorMsg = `At 70% realization, the floor is ${fmt(conservFloor)} net, and investment is recovered${conservPayback ? ` at month ${conservPayback}` : ""}. The base case at ${fmt(summary.termNet)} reflects the model's central projection under conservative adoption assumptions. Execution quality is load-bearing: provider adoption rate and capacity conversion timing determine where in this range outcomes land.`;
   } else if (conservROI >= 0.15) {
     floorLabel = "Reading the Range";
-    floorMsg = `At 70% realization — 30% lower across every domain — this model returns ${fmt(conservFloor)} net${conservPayback ? ` (payback at month ${conservPayback})` : ""}. The floor is positive and well-defined. The base case at ${fmt(summary.termNet)} reflects conservative utilization targets and phased onset timing. Everything above that is execution: faster adoption, earlier go-live, capacity that converts to scheduled volume. The range is tight. All of it works.`;
+    floorMsg = `At 70% realization, 30% lower across every domain, this model returns ${fmt(conservFloor)} net${conservPayback ? ` (payback at month ${conservPayback})` : ""}. The floor is positive and well-defined. The base case at ${fmt(summary.termNet)} reflects conservative utilization targets and phased onset timing. Everything above that is execution: faster adoption, earlier go-live, capacity that converts to scheduled volume. The range is tight. All of it works.`;
   } else {
     floorLabel = "Reading the Range";
-    floorMsg = `At 70% realization, the floor is ${fmt(conservFloor)} net — investment recovered${conservPayback ? ` at month ${conservPayback}` : ""}, with positive return above cost. The base case at ${fmt(summary.termNet)} is the central projection. Provider adoption rate and capacity conversion timing are the execution variables most likely to determine where outcomes land across the range.`;
+    floorMsg = `At 70% realization, the floor is ${fmt(conservFloor)} net, with investment recovered${conservPayback ? ` at month ${conservPayback}` : ""}, with positive return above cost. The base case at ${fmt(summary.termNet)} is the central projection. Provider adoption rate and capacity conversion timing are the execution variables most likely to determine where outcomes land across the range.`;
   }
 
   return (
@@ -1165,7 +1165,7 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
             <Text style={S.eyebrow}>Cost Reductions Captured</Text>
           </View>
           <Text style={{ fontSize: 7.5, color: brand.textTertiary, marginBottom: 5 }}>
-            Annual spend displaced by Abridge — ramps into the Cost Displacement line above.
+            Annual spend displaced by Abridge. Ramps into the Cost Displacement line above.
           </Text>
           {costOffsetItems.map(item => (
             <View key={item.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 1.5 }}>
@@ -1241,7 +1241,7 @@ function FinancialSummaryPage({ settings, config, summary, yearlyData, sensitivi
       </View>
 
       <Text style={{ fontSize: 7, color: brand.textSecondary, marginTop: 6 }}>
-        Investment is held constant across scenarios; only value realization scales (±30%). Value-to-Cost is the whole-contract ratio — it includes the one-time implementation fee and the early adoption ramp. Payback is measured from day one, so a 30% downside shifts it out further than an equal upside pulls it in.
+        Investment is held constant across scenarios; only value realization scales (±30%). Value-to-Cost is the whole-contract ratio: it includes the one-time implementation fee and the early adoption ramp. Payback is measured from day one, so a 30% downside shifts it out further than an equal upside pulls it in.
       </Text>
 
       <View style={[S.insightBox, { marginTop: 10 }]}>
@@ -1458,21 +1458,21 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
 
   // GROUNDED IN DATA — only include what's actually modeled
   const strongItems: string[] = [];
-  strongItems.push("Investment is contractual — cost is exact and fixed from day one");
-  strongItems.push(`Implementation ramp is conservative — ${config.implementationRampMonths} months of gradual value scaling while full subscription costs run from the start`);
+  strongItems.push("Investment is contractual, so cost is exact and fixed from day one");
+  strongItems.push(`Implementation ramp is conservative: ${config.implementationRampMonths} months of gradual value scaling while full subscription costs run from the start`);
   if (allDriverIds.has("wrvu"))             strongItems.push("wRVU lift is auditable against billing data within 90 days of go-live");
-  if (allDriverIds.has("hccCapture"))       strongItems.push("HCC gap closure traces directly to claims — verifiable through coding records, no inference required");
+  if (allDriverIds.has("hccCapture"))       strongItems.push("HCC gap closure traces directly to claims, verifiable through coding records with no inference required");
   if (allDriverIds.has("denialPrevention")) strongItems.push("Medical Necessity Denials is measurable against payer adjudication records with direct attribution");
   if (allDriverIds.has("drgAccuracy"))      strongItems.push("DRG capture is verifiable through coding audit data");
   if (allDriverIds.has("nursingOvertime") || allDriverIds.has("nursingAgency"))  strongItems.push("Nursing overtime and agency costs are directly visible in payroll and staffing records");
-  if (allDriverIds.has("lwbsRecovery"))     strongItems.push("LWBS recovery ties to documented patient arrival data — a hard operational metric");
+  if (allDriverIds.has("lwbsRecovery"))     strongItems.push("LWBS recovery ties to documented patient arrival data, a hard operational metric");
 
   // SHAPED BY YOUR EXECUTION
   const watchItems: string[] = [];
-  watchItems.push("Adoption pace — modeled conservatively; your rollout velocity determines when value accelerates past the base case");
-  if (hasCapacity) watchItems.push("Capacity realization — time recovered converts to revenue where patient demand exists and scheduling is positioned to absorb it");
-  if (hasWorkforce) watchItems.push("Retention attribution — the effect is real, but surfacing it requires a measurement baseline and a consistent tracking cadence");
-  if (settings.length > 1) watchItems.push("Deployment sequencing — a well-coordinated multi-setting rollout compresses the ramp; each week of earlier go-live moves payback forward");
+  watchItems.push("Adoption pace: modeled conservatively; your rollout velocity determines when value accelerates past the base case");
+  if (hasCapacity) watchItems.push("Capacity realization: time recovered converts to revenue where patient demand exists and scheduling is positioned to absorb it");
+  if (hasWorkforce) watchItems.push("Retention attribution: the effect is real, but surfacing it requires a measurement baseline and a consistent tracking cadence");
+  if (settings.length > 1) watchItems.push("Deployment sequencing: a well-coordinated multi-setting rollout compresses the ramp; each week of earlier go-live moves payback forward");
 
   // Methodology inputs: per-setting
   const totalHours = settings.reduce((s, v) => s + v.totalHoursSaved, 0);
@@ -1483,7 +1483,7 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
 
       <Text style={S.sectionTitle}>Hard Numbers. Honest Assumptions.</Text>
       <Text style={[S.sectionIntro, { marginBottom: 14 }]}>
-        Every input in this model traces to a verifiable clinical or operational source. Below is what is locked in from day one — and where your deployment decisions will determine the realized return.
+        Every input in this model traces to a verifiable clinical or operational source. Below is what is locked in from day one, and where your deployment decisions will determine the realized return.
       </Text>
 
       {/* TWO-COLUMN CONFIDENCE CARDS */}
@@ -1581,23 +1581,23 @@ function ModelConfidencePage({ settings, config, summary, yearlyData, sensitivit
 
       {(() => {
         const conservativeItems: string[] = [];
-        conservativeItems.push(`Full subscription cost runs from day one — value builds across a ${config.implementationRampMonths}-month implementation ramp while cost is already at full rate`);
+        conservativeItems.push(`Full subscription cost runs from day one, while value builds across a ${config.implementationRampMonths}-month implementation ramp while cost is already at full rate`);
         if (hasCapacity || hasRevenue || hasQuality) {
           const delayedDomains = [hasCapacity && "Capacity", hasQuality && "Quality"].filter(Boolean).join(" and ");
-          if (delayedDomains) conservativeItems.push(`${delayedDomains} value onset delayed to Month ${delayedMonths} — modeled to arrive later than typically observed in Abridge deployments`);
+          if (delayedDomains) conservativeItems.push(`${delayedDomains} value onset delayed to Month ${delayedMonths}, modeled to arrive later than typically observed in Abridge deployments`);
         }
         const allUtil = settings.map(s => {
           const yu = s.yearlyUtilization ?? config.yearlyUtilization;
           return yu.year1;
         });
         const maxY1 = Math.max(...allUtil);
-        if (maxY1 < 50) conservativeItems.push(`Year 1 utilization targets set well below steady-state — highest setting at ${maxY1}%, reflecting a conservative adoption ramp rather than projected mature-state performance`);
-        else conservativeItems.push(`Utilization targets reflect a gradual adoption ramp — Year 1 targets are set conservatively, with value scaling as provider adoption deepens`);
+        if (maxY1 < 50) conservativeItems.push(`Year 1 utilization targets set well below steady-state, with the highest setting at ${maxY1}%, reflecting a conservative adoption ramp rather than projected mature-state performance`);
+        else conservativeItems.push(`Utilization targets reflect a gradual adoption ramp. Year 1 targets are set conservatively, with value scaling as provider adoption deepens`);
         if (hasWorkforce) {
           const wfPhasing = (hasNursingWorkforce && !hasClinicalWorkforce)
             ? (config.nursingRetentionPhasing ?? config.retentionPhasing)
             : config.retentionPhasing;
-          conservativeItems.push(`Workforce and retention benefits phased at ${wfPhasing.year1Pct}% in Year 1 — real effects modeled to materialize gradually rather than immediately`);
+          conservativeItems.push(`Workforce and retention benefits phased at ${wfPhasing.year1Pct}% in Year 1, with real effects modeled to materialize gradually rather than immediately`);
         }
 
         return (

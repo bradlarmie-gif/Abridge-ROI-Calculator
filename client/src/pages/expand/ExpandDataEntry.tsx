@@ -859,7 +859,7 @@ function BenchmarkCard({
         <span className="text-xs font-semibold text-blue-800 tracking-wider uppercase">BENCHMARK</span>
         <p className="text-sm text-blue-800 mt-1">{text}</p>
         <p className="text-sm text-blue-700 mt-1">
-          You're at: <strong>{current}</strong> — 
+          You're at: <strong>{current}</strong>, 
           <span className={`${config.color} ml-1`}>{config.label}</span>
         </p>
       </div>
@@ -1528,7 +1528,7 @@ export default function ExpandDataEntry({
             <p className="text-slate-400 text-sm">
               {valuePreview.isComplete 
                 ? "All metrics documented. Ready to see your full impact?"
-                : "Keep going — your story is taking shape. We'll show you the full picture next."}
+                : "Keep going. Your story is taking shape. We'll show you the full picture next."}
             </p>
           </motion.div>
         )}

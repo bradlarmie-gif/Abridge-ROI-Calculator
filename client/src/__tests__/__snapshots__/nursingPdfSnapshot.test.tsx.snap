@@ -363,7 +363,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "For a 350-bed unit with 1,200 nurse FTEs, 36,400 hours of documentation time reclaimed per year. When nursing documentation moves from end-of-shift batching to point-of-care, the queue that drives overtime and erodes bedside presence is less likely to accumulate. That time shift creates value across three buckets — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.",
+                        "value": "For a 350-bed unit with 1,200 nurse FTEs, 36,400 hours of documentation time reclaimed per year. When nursing documentation moves from end-of-shift batching to point-of-care, the queue that drives overtime and erodes bedside presence is less likely to accumulate. That time shift creates value across three buckets, and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.",
                       },
                     ],
                     "kind": "primitive",
@@ -1456,7 +1456,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Time reclaimed at the end of the shift shows up in the payroll budget — and in the next hour of care.",
+                        "value": "Time reclaimed at the end of the shift shows up in the payroll budget, and in the next hour of care.",
                       },
                     ],
                     "kind": "primitive",
@@ -2228,7 +2228,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       },
                       {
                         "kind": "text",
-                        "value": " is the headline — it's what reclaimed documentation time looks like aggregated across the unit. ",
+                        "value": " is the headline: it's what reclaimed documentation time looks like aggregated across the unit. ",
                       },
                       {
                         "children": [
@@ -2316,7 +2316,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "We track bedside time as a leading indicator rather than pricing it directly — translating reclaimed minutes into dollars requires assumptions about what the next hour is used for, which vary by unit, shift, and patient mix.",
+                            "value": "We track bedside time as a leading indicator rather than pricing it directly. Translating reclaimed minutes into dollars requires assumptions about what the next hour is used for, which vary by unit, shift, and patient mix.",
                           },
                         ],
                         "kind": "primitive",
@@ -2516,7 +2516,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Documentation burden is among the top reasons nurses leave — and stay late.",
+                        "value": "Documentation burden is among the top reasons nurses leave, and stay late.",
                       },
                     ],
                     "kind": "primitive",
@@ -2535,7 +2535,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Two labor lines — turnover and agency premium — both linked to the same upstream factor: documentation burden that follows nurses home after their shift.",
+                        "value": "Two labor lines, turnover and agency premium, both linked to the same upstream factor: documentation burden that follows nurses home after their shift.",
                       },
                     ],
                     "kind": "primitive",
@@ -6587,7 +6587,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Direct billing originates with the attesting physician or APP — that's a separate model. But nursing documentation is the upstream record that CDI, quality reporting, and payer contracts all read from. These signals do not appear in the financial totals above; they are the leading indicators that confirm the story those totals tell.",
+                        "value": "Direct billing originates with the attesting physician or APP, which is a separate model. But nursing documentation is the upstream record that CDI, quality reporting, and payer contracts all read from. These signals do not appear in the financial totals above; they are the leading indicators that confirm the story those totals tell.",
                       },
                     ],
                     "kind": "primitive",
@@ -6657,7 +6657,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "When nurses document clinical findings in real time — vital trends, assessment findings, response to treatment — the medical record arrives at CDI review more complete. Specialists may be able to assign a specific, accurate DRG without querying the physician for clarification. Fewer queries means fewer physician interruptions and shorter coding cycles.",
+                            "value": "When nurses document clinical findings in real time (vital trends, assessment findings, response to treatment), the medical record arrives at CDI review more complete. Specialists may be able to assign a specific, accurate DRG without querying the physician for clarification. Fewer queries means fewer physician interruptions and shorter coding cycles.",
                           },
                         ],
                         "kind": "primitive",
@@ -6822,7 +6822,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "More specific DRGs reflect richer source documentation — nursing is the primary contributor.",
+                                    "value": "More specific DRGs reflect richer source documentation, and nursing is the primary contributor.",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -6902,7 +6902,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Value-Based Purchasing — HCAHPS",
+                                "value": "Value-Based Purchasing: HCAHPS",
                               },
                             ],
                             "kind": "primitive",
@@ -6931,7 +6931,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "The HCAHPS responsiveness and communication domains are the two highest-weighted nursing-sensitive items in the CMS Value-Based Purchasing formula. Nurses with more time at the bedside — time reclaimed from documentation burden — may score better on both. VBP adjustments compound annually: a 0.5-point HCAHPS improvement at scale can shift the payment multiplier across the Medicare inpatient book.",
+                            "value": "The HCAHPS responsiveness and communication domains are the two highest-weighted nursing-sensitive items in the CMS Value-Based Purchasing formula. Nurses with more time at the bedside, reclaimed from documentation burden, may score better on both. VBP adjustments compound annually: a 0.5-point HCAHPS improvement at scale can shift the payment multiplier across the Medicare inpatient book.",
                           },
                         ],
                         "kind": "primitive",
@@ -7257,7 +7257,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "$1.05M / year — $250/bed/month at 350 staffed beds. A one-time implementation fee of $75K is shown separately on its own row above the recurring stream so the Year 1–3 economics below stay comparable. Year 1 reflects 11 months of deployment; the first 30 days are excluded as the implementation period. Years 2 and 3 are modeled at full run-rate. Investment is held constant.",
+                        "value": "$1.05M / year, $250/bed/month at 350 staffed beds. A one-time implementation fee of $75K is shown separately on its own row above the recurring stream so the Year 1–3 economics below stay comparable. Year 1 reflects 11 months of deployment; the first 30 days are excluded as the implementation period. Years 2 and 3 are modeled at full run-rate. Investment is held constant.",
                       },
                     ],
                     "kind": "primitive",
@@ -7932,7 +7932,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The $23.61M cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.",
+                        "value": "Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The $23.61M cumulative net is the sum of the rows above, with no compounding or incremental growth embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.",
                       },
                     ],
                     "kind": "primitive",
@@ -9230,7 +9230,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Each phase answers a different question. Assign an owner before deployment — measurement gaps emerge precisely when data would be most useful.",
+                        "value": "Each phase answers a different question. Assign an owner before deployment. Measurement gaps emerge precisely when data would be most useful.",
                       },
                     ],
                     "kind": "primitive",
@@ -9257,7 +9257,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Phase 1 — Month 1–3",
+                                "value": "Phase 1 · Month 1–3",
                               },
                             ],
                             "kind": "primitive",
@@ -9625,7 +9625,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Phase 2 — Month 3–6",
+                                "value": "Phase 2 · Month 3–6",
                               },
                             ],
                             "kind": "primitive",
@@ -10081,7 +10081,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Phase 3 — Month 6–18",
+                                "value": "Phase 3 · Month 6–18",
                               },
                             ],
                             "kind": "primitive",
@@ -10822,7 +10822,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "This model was built using inputs specific to your organization: 1,200 nursing FTEs across 350 staffed beds, 104,755 patient days annually, and 60% Abridge utilization. The base-case estimate is $7.64M in annual value against $1.05M in annual investment — 7.3× Year 1 ROI. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce) run on your specific headcount, cost, and utilization data. Potential value lines (Quality) apply published incidence rates with conservative documentation-attributable prevention fractions. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data.",
+                        "value": "This model was built using inputs specific to your organization: 1,200 nursing FTEs across 350 staffed beds, 104,755 patient days annually, and 60% Abridge utilization. The base-case estimate is $7.64M in annual value against $1.05M in annual investment, a 7.3× Year 1 ROI. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce) run on your specific headcount, cost, and utilization data. Potential value lines (Quality) apply published incidence rates with conservative documentation-attributable prevention fractions. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data.",
                       },
                     ],
                     "kind": "primitive",
@@ -10857,7 +10857,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Workforce — Hard Value",
+                                "value": "Workforce · Hard Value",
                               },
                             ],
                             "kind": "primitive",
@@ -11123,7 +11123,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Quality — Potential Value",
+                                "value": "Quality · Potential Value",
                               },
                             ],
                             "kind": "primitive",
@@ -11679,7 +11679,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "1% of Medicare revenue if in the bottom performance quartile. Displayed as risk context only — not included in the ROI total.",
+                                "value": "1% of Medicare revenue if in the bottom performance quartile. Displayed as risk context only, and not included in the ROI total.",
                               },
                             ],
                             "kind": "primitive",
@@ -12296,7 +12296,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "For a 1,400-bed unit with 5,200 nurse FTEs, 36,400 hours of documentation time reclaimed per year. When nursing documentation moves from end-of-shift batching to point-of-care, the queue that drives overtime and erodes bedside presence is less likely to accumulate. That time shift creates value across three buckets — and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.",
+                        "value": "For a 1,400-bed unit with 5,200 nurse FTEs, 36,400 hours of documentation time reclaimed per year. When nursing documentation moves from end-of-shift batching to point-of-care, the queue that drives overtime and erodes bedside presence is less likely to accumulate. That time shift creates value across three buckets, and they don't all carry the same kind of math. We separate them so the financial story stays defensible and the qualitative signals don't get lost in the totals.",
                       },
                     ],
                     "kind": "primitive",
@@ -13389,7 +13389,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Time reclaimed at the end of the shift shows up in the payroll budget — and in the next hour of care.",
+                        "value": "Time reclaimed at the end of the shift shows up in the payroll budget, and in the next hour of care.",
                       },
                     ],
                     "kind": "primitive",
@@ -14161,7 +14161,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                       },
                       {
                         "kind": "text",
-                        "value": " is the headline — it's what reclaimed documentation time looks like aggregated across the unit. ",
+                        "value": " is the headline: it's what reclaimed documentation time looks like aggregated across the unit. ",
                       },
                       {
                         "children": [
@@ -14249,7 +14249,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "We track bedside time as a leading indicator rather than pricing it directly — translating reclaimed minutes into dollars requires assumptions about what the next hour is used for, which vary by unit, shift, and patient mix.",
+                            "value": "We track bedside time as a leading indicator rather than pricing it directly. Translating reclaimed minutes into dollars requires assumptions about what the next hour is used for, which vary by unit, shift, and patient mix.",
                           },
                         ],
                         "kind": "primitive",
@@ -14449,7 +14449,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Documentation burden is among the top reasons nurses leave — and stay late.",
+                        "value": "Documentation burden is among the top reasons nurses leave, and stay late.",
                       },
                     ],
                     "kind": "primitive",
@@ -14468,7 +14468,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Two labor lines — turnover and agency premium — both linked to the same upstream factor: documentation burden that follows nurses home after their shift.",
+                        "value": "Two labor lines, turnover and agency premium, both linked to the same upstream factor: documentation burden that follows nurses home after their shift.",
                       },
                     ],
                     "kind": "primitive",
@@ -18520,7 +18520,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Direct billing originates with the attesting physician or APP — that's a separate model. But nursing documentation is the upstream record that CDI, quality reporting, and payer contracts all read from. These signals do not appear in the financial totals above; they are the leading indicators that confirm the story those totals tell.",
+                        "value": "Direct billing originates with the attesting physician or APP, which is a separate model. But nursing documentation is the upstream record that CDI, quality reporting, and payer contracts all read from. These signals do not appear in the financial totals above; they are the leading indicators that confirm the story those totals tell.",
                       },
                     ],
                     "kind": "primitive",
@@ -18590,7 +18590,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "When nurses document clinical findings in real time — vital trends, assessment findings, response to treatment — the medical record arrives at CDI review more complete. Specialists may be able to assign a specific, accurate DRG without querying the physician for clarification. Fewer queries means fewer physician interruptions and shorter coding cycles.",
+                            "value": "When nurses document clinical findings in real time (vital trends, assessment findings, response to treatment), the medical record arrives at CDI review more complete. Specialists may be able to assign a specific, accurate DRG without querying the physician for clarification. Fewer queries means fewer physician interruptions and shorter coding cycles.",
                           },
                         ],
                         "kind": "primitive",
@@ -18755,7 +18755,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "More specific DRGs reflect richer source documentation — nursing is the primary contributor.",
+                                    "value": "More specific DRGs reflect richer source documentation, and nursing is the primary contributor.",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -18835,7 +18835,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Value-Based Purchasing — HCAHPS",
+                                "value": "Value-Based Purchasing: HCAHPS",
                               },
                             ],
                             "kind": "primitive",
@@ -18864,7 +18864,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                         "children": [
                           {
                             "kind": "text",
-                            "value": "The HCAHPS responsiveness and communication domains are the two highest-weighted nursing-sensitive items in the CMS Value-Based Purchasing formula. Nurses with more time at the bedside — time reclaimed from documentation burden — may score better on both. VBP adjustments compound annually: a 0.5-point HCAHPS improvement at scale can shift the payment multiplier across the Medicare inpatient book.",
+                            "value": "The HCAHPS responsiveness and communication domains are the two highest-weighted nursing-sensitive items in the CMS Value-Based Purchasing formula. Nurses with more time at the bedside, reclaimed from documentation burden, may score better on both. VBP adjustments compound annually: a 0.5-point HCAHPS improvement at scale can shift the payment multiplier across the Medicare inpatient book.",
                           },
                         ],
                         "kind": "primitive",
@@ -19190,7 +19190,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "$4.20M / year — $250/bed/month at 1,400 staffed beds. A one-time implementation fee of $250K is shown separately on its own row above the recurring stream so the Year 1–3 economics below stay comparable. Year 1 reflects 11 months of deployment; the first 30 days are excluded as the implementation period. Years 2 and 3 are modeled at full run-rate. Investment is held constant.",
+                        "value": "$4.20M / year, $250/bed/month at 1,400 staffed beds. A one-time implementation fee of $250K is shown separately on its own row above the recurring stream so the Year 1–3 economics below stay comparable. Year 1 reflects 11 months of deployment; the first 30 days are excluded as the implementation period. Years 2 and 3 are modeled at full run-rate. Investment is held constant.",
                       },
                     ],
                     "kind": "primitive",
@@ -19865,7 +19865,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The $95.50M cumulative net is the sum of the rows above — no compounding or incremental growth is embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.",
+                        "value": "Unit size, staffing, and adoption rate are held constant across all three years. No volume growth is assumed. Year 2 and Year 3 values reflect a full calendar year at the inputs above. The $95.50M cumulative net is the sum of the rows above, with no compounding or incremental growth embedded. Adoption rate is the primary sensitivity; a change in utilization adjusts all workforce and capacity values proportionally.",
                       },
                     ],
                     "kind": "primitive",
@@ -21163,7 +21163,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Each phase answers a different question. Assign an owner before deployment — measurement gaps emerge precisely when data would be most useful.",
+                        "value": "Each phase answers a different question. Assign an owner before deployment. Measurement gaps emerge precisely when data would be most useful.",
                       },
                     ],
                     "kind": "primitive",
@@ -21190,7 +21190,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Phase 1 — Month 1–3",
+                                "value": "Phase 1 · Month 1–3",
                               },
                             ],
                             "kind": "primitive",
@@ -21558,7 +21558,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Phase 2 — Month 3–6",
+                                "value": "Phase 2 · Month 3–6",
                               },
                             ],
                             "kind": "primitive",
@@ -22014,7 +22014,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Phase 3 — Month 6–18",
+                                "value": "Phase 3 · Month 6–18",
                               },
                             ],
                             "kind": "primitive",
@@ -22755,7 +22755,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                     "children": [
                       {
                         "kind": "text",
-                        "value": "This model was built using inputs specific to your organization: 5,200 nursing FTEs across 1,400 staffed beds, 449,680 patient days annually, and 60% Abridge utilization. The base-case estimate is $33.43M in annual value against $4.20M in annual investment — 8.0× Year 1 ROI. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce) run on your specific headcount, cost, and utilization data. Potential value lines (Quality) apply published incidence rates with conservative documentation-attributable prevention fractions. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data.",
+                        "value": "This model was built using inputs specific to your organization: 5,200 nursing FTEs across 1,400 staffed beds, 449,680 patient days annually, and 60% Abridge utilization. The base-case estimate is $33.43M in annual value against $4.20M in annual investment, a 8.0× Year 1 ROI. Every value line is formula-driven, source-cited, and auditable to the rows below. Hard value lines (Workforce) run on your specific headcount, cost, and utilization data. Potential value lines (Quality) apply published incidence rates with conservative documentation-attributable prevention fractions. Where Abridge deployment averages are used as defaults, they reflect medians from live implementations and can be replaced with your institutional data.",
                       },
                     ],
                     "kind": "primitive",
@@ -22790,7 +22790,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Workforce — Hard Value",
+                                "value": "Workforce · Hard Value",
                               },
                             ],
                             "kind": "primitive",
@@ -23056,7 +23056,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Quality — Potential Value",
+                                "value": "Quality · Potential Value",
                               },
                             ],
                             "kind": "primitive",
@@ -23612,7 +23612,7 @@ exports[`Nursing Value Assessment PDF — structural snapshot > renders the mult
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "1% of Medicare revenue if in the bottom performance quartile. Displayed as risk context only — not included in the ROI total.",
+                                "value": "1% of Medicare revenue if in the bottom performance quartile. Displayed as risk context only, and not included in the ROI total.",
                               },
                             ],
                             "kind": "primitive",

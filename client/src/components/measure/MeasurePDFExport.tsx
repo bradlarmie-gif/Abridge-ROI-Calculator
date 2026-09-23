@@ -674,7 +674,7 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
                   {`"${story.text}"`}
                 </Text>
                 <Text style={{ fontSize: 8.5, fontWeight: "bold", color: C.orange }}>
-                  {`— ${story.attribution}`}
+                  {`– ${story.attribution}`}
                 </Text>
                 {story.role ? (
                   <Text style={{ fontSize: 7.5, color: C.muted, marginTop: 2 }}>{story.role}</Text>
@@ -727,7 +727,7 @@ const MeasureEvidenceDoc = ({ data }: { data: MeasurePDFData }) => {
           <View style={s.bulletRow}>
             <View style={s.bullet} />
             <Text style={s.bulletText}>
-              Qualitative drivers are tracked but not assigned a financial value. They appear in the quadrant view to ensure the full picture of impact is represented.
+              Qualitative drivers are tracked but not assigned a financial value. They appear in the quadrant view so the full picture of impact is represented.
             </Text>
           </View>
 

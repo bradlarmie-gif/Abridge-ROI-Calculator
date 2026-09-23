@@ -129,7 +129,7 @@ function executiveNarrative(state: ForecastState, result: ForecastResult, partne
       { text: partnerName, bold: true },
       { text: " is on track to generate " },
       { text: fmtCurrencyShort(ncv), bold: true },
-      { text: " in net value — a " },
+      { text: " in net value, a " },
       { text: `${roi.toFixed(1)}x return`, bold: true },
       { text: ` on their Abridge investment over ${termYears} years.` },
     );
@@ -171,9 +171,9 @@ function executiveNarrative(state: ForecastState, result: ForecastResult, partne
     p3.push({ text: "Add value drivers to unlock the full ROI picture." });
   } else if (roi < 2 && !hasRevenue) {
     p3.push(
-      { text: "Adding a revenue driver — " },
+      { text: "Adding a revenue driver, " },
       { text: "wRVU lift, E/M level improvement, or denial reduction", bold: true },
-      { text: " — would meaningfully strengthen the ROI multiple." },
+      { text: ", would meaningfully strengthen the ROI multiple." },
     );
   } else if (roi < 2 && !hasWorkforce) {
     p3.push(
@@ -229,7 +229,7 @@ function provenanceCallout(state: ForecastState) {
   return (
     <View style={{ marginTop: 14, borderWidth: 1, borderColor: C.muted, borderRadius: 4, paddingVertical: 6, paddingHorizontal: 10 }}>
       <Text style={{ fontSize: 8, color: C.muted, fontWeight: 'bold', letterSpacing: 1 }}>
-        EXPLORATORY MODEL · assumptions entered manually — no measured outcomes yet
+        EXPLORATORY MODEL · assumptions entered manually · no measured outcomes yet
       </Text>
     </View>
   );
@@ -446,7 +446,7 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
 
           <Text style={s.subheader}>Measured outcomes by domain</Text>
           {state.valueDrivers.length === 0 ? (
-            <Text style={s.placeholder}>No measured outcomes captured yet — add value drivers on the Dashboard.</Text>
+            <Text style={s.placeholder}>No measured outcomes captured yet. Add value drivers on the Dashboard.</Text>
           ) : (
             <View>
               <View style={s.tableHeader}>
@@ -571,7 +571,7 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
           <Text style={s.headline}>Value Extrapolation</Text>
           {state.valueDrivers.length === 0 ? (
             <View style={[s.placeholder, { marginTop: 20, padding: 32 }]}>
-              <Text>No value drivers added — projection reflects pricing only. Add drivers on the Dashboard to see value extrapolation.</Text>
+              <Text>No value drivers added, so the projection reflects pricing only. Add drivers on the Dashboard to see value extrapolation.</Text>
             </View>
           ) : (
             <>
@@ -843,9 +843,9 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
 
               // 1. Top lever recommendation
               if (drivers.length === 0) {
-                bullets.push("Add value drivers to unlock the full ROI picture — start with the highest-confidence measured outcomes.");
+                bullets.push("Add value drivers to unlock the full ROI picture. Start with the highest-confidence measured outcomes.");
               } else if (roi < 2 && !hasRevenue) {
-                bullets.push(`To strengthen ROI beyond ${roi.toFixed(1)}x, add a revenue value driver — wRVU lift, E/M level improvement, or denial reduction.`);
+                bullets.push(`To strengthen ROI beyond ${roi.toFixed(1)}x, add a revenue value driver: wRVU lift, E/M level improvement, or denial reduction.`);
               } else if (roi < 2 && !hasWorkforce) {
                 bullets.push(`To strengthen ROI beyond ${roi.toFixed(1)}x, add a provider retention driver. Replacement costs of $150K–$300K make even small retention gains material.`);
               } else if (roi >= 2) {
@@ -870,7 +870,7 @@ export function ForecastPDF({ state, result, partnerName, dateStr }: { state: Fo
               const bestAlt = altCandidates[0];
               if (bestAlt) {
                 const conversationMonth = Math.max(1, termMonths - 3);
-                bullets.push(`Model a switch to ${bestAlt.cmp.label} — it generates ${fmtCurrencyShort(bestAlt.lift)} more in net value over the term. Schedule the pricing conversation before Month ${conversationMonth}.`);
+                bullets.push(`Model a switch to ${bestAlt.cmp.label}: it generates ${fmtCurrencyShort(bestAlt.lift)} more in net value over the term. Schedule the pricing conversation before Month ${conversationMonth}.`);
               }
 
               // 3. Adoption opportunity (encounter share growth >0.1, i.e. 10pp)

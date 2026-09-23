@@ -104,7 +104,7 @@ function MetricRow({ m }: { m: MetricDef }) {
             )}
             <div>
               <p className={`${LBL} mb-1`}>Where to find it</p>
-              <p className="text-[13px] text-[#3A3A3A] leading-[1.55]">{m.source}{where ? ` — ${where}` : ""}.</p>
+              <p className="text-[13px] text-[#3A3A3A] leading-[1.55]">{m.source}{where ? `, ${where}` : ""}.</p>
             </div>
           </div>
         </div>

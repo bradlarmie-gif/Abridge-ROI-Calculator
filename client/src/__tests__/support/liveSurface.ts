@@ -66,9 +66,13 @@ function resolveImport(fromFile: string, spec: string): string | null {
 /** Static `import … from "x"`, `export … from "x"`, and dynamic `import("x")`. */
 function specifiersIn(src: string): string[] {
   const out: string[] = [];
-  for (const m of src.matchAll(/(?:^|\n)\s*(?:import|export)[\s\S]*?from\s*["']([^"']+)["']/g)) out.push(m[1]);
-  for (const m of src.matchAll(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/g)) out.push(m[1]);
-  for (const m of src.matchAll(/(?:^|\n)\s*import\s+["']([^"']+)["']/g)) out.push(m[1]);
+  const collect = (re: RegExp) => {
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(src)) !== null) out.push(m[1]);
+  };
+  collect(/(?:^|\n)\s*(?:import|export)[\s\S]*?from\s*["']([^"']+)["']/g);
+  collect(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/g);
+  collect(/(?:^|\n)\s*import\s+["']([^"']+)["']/g);
   return out;
 }
 
@@ -105,7 +109,7 @@ export function liveFiles(): string[] {
       queue.push(target);
     }
   }
-  cached = [...seen].sort();
+  cached = Array.from(seen).sort();
   return cached;
 }
 

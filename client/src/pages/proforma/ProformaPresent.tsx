@@ -492,7 +492,7 @@ function SettingBeat({ setting, index, count, totals, term, showMath, systemFee 
             <AnimatedValue value={setting.annualValue} format={fmt} fromZero duration={950}
               className="block text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight" style={{ color }} />
             <p className="mt-2 text-base text-white/50">annual value at scale</p>
-            <p className="mt-1 text-sm text-white/30">None of this is captured today — every dollar is net-new.</p>
+            <p className="mt-1 text-sm text-white/30">None of this is captured today, so every dollar is net-new.</p>
           </>
         ) : (
           <>
@@ -608,7 +608,7 @@ function SettingMathView({ setting, index, count, color, Icon, formulas, drivers
             </div>
           </div>
         ) : (
-          <p className="mx-auto mt-9 max-w-md text-base text-white/50">Strategic value — not reduced to a single formula.</p>
+          <p className="mx-auto mt-9 max-w-md text-base text-white/50">Strategic value, not reduced to a single formula.</p>
         )}
       </motion.div>
 
@@ -853,7 +853,7 @@ function CloseBeat({ summary, term, orgName, totalHours }: {
           ))}
         </div>
         <p className="mt-3 text-xs leading-relaxed text-white/35">
-          Range reflects ±20% on realized value — adoption and coding accuracy vary by site.
+          Range reflects ±20% on realized value. Adoption and coding accuracy vary by site.
           {cons.vtc > 1 ? ` Even at the conservative end it returns ${cons.vtc.toFixed(1)}× and pays for itself.` : ""}
         </p>
       </motion.div>
@@ -881,7 +881,7 @@ function CloseBeat({ summary, term, orgName, totalHours }: {
         className="mx-auto mt-10 max-w-lg text-sm leading-relaxed text-white/40"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.85 }}
       >
-        {fmtNum(totalHours)} clinician hours reclaimed a year — status quo captures none of it. Clinician time first, and the dollars that follow.
+        {fmtNum(totalHours)} clinician hours reclaimed a year, and the status quo captures none of it. Clinician time first, and the dollars that follow.
       </motion.p>
     </div>
   );

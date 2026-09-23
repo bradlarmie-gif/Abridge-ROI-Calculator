@@ -739,7 +739,7 @@ export default function ExpandPerformanceDashboard({
           </div>
           <div className="flex items-center gap-2 text-sm text-blue-800">
             <TrendingUp className="w-4 h-4" />
-            <span>At 100% utilization, you could realize <strong>{formatCurrency(fullScaleValue)}/year</strong> — {((fullScaleValue / calculateValueRealized - 1) * 100).toFixed(0)}% more than today</span>
+            <span>At 100% utilization, you could realize <strong>{formatCurrency(fullScaleValue)}/year</strong>, {((fullScaleValue / calculateValueRealized - 1) * 100).toFixed(0)}% more than today</span>
           </div>
         </div>
 

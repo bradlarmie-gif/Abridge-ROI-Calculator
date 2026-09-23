@@ -647,7 +647,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                         "children": [
                           {
                             "kind": "text",
-                            "value": "3 structurally independent value sources: Outpatient ($4.3M/yr, led by documentation time); Emergency Department ($4.3M/yr, led by documentation time); Inpatient ($4.3M/yr, led by documentation time). Each draws from distinct clinical workflows and operational levers — if one setting ramps slower than projected, the others hold. At maturity, $12.1M/yr runs across 690 providers against $8.0M invested, with payback at month 9.",
+                            "value": "3 structurally independent value sources: Outpatient ($4.3M/yr, led by documentation time); Emergency Department ($4.3M/yr, led by documentation time); Inpatient ($4.3M/yr, led by documentation time). Each draws from distinct clinical workflows and operational levers. If one setting ramps slower than projected, the others hold. At maturity, $12.1M/yr runs across 690 providers against $8.0M invested, with payback at month 9.",
                           },
                         ],
                         "kind": "primitive",
@@ -2409,7 +2409,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Value doesn't arrive on day one. It compounds as providers onboard, utilization deepens, and each domain switches on at its natural pace. The chart reflects your actual deployment path — conservatively modeled.",
+                        "value": "Value doesn't arrive on day one. It compounds as providers onboard, utilization deepens, and each domain switches on at its natural pace. The chart reflects your actual deployment path, conservatively modeled.",
                       },
                     ],
                     "kind": "primitive",
@@ -5531,7 +5531,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                             "children": [
                               {
                                 "kind": "text",
-                                "value": "Phased over 3 years — 35% Y1 / 75% Y2 / 100% Y3. Retention and wellbeing effects are projected to compound over time.",
+                                "value": "Phased over 3 years: 35% Y1 / 75% Y2 / 100% Y3. Retention and wellbeing effects are projected to compound over time.",
                               },
                             ],
                             "kind": "primitive",
@@ -7400,7 +7400,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                         "children": [
                           {
                             "kind": "text",
-                            "value": "Annual spend displaced by Abridge — ramps into the Cost Displacement line above.",
+                            "value": "Annual spend displaced by Abridge. Ramps into the Cost Displacement line above.",
                           },
                         ],
                         "kind": "primitive",
@@ -8127,7 +8127,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Investment is held constant across scenarios; only value realization scales (±30%). Value-to-Cost is the whole-contract ratio — it includes the one-time implementation fee and the early adoption ramp. Payback is measured from day one, so a 30% downside shifts it out further than an equal upside pulls it in.",
+                        "value": "Investment is held constant across scenarios; only value realization scales (±30%). Value-to-Cost is the whole-contract ratio: it includes the one-time implementation fee and the early adoption ramp. Payback is measured from day one, so a 30% downside shifts it out further than an equal upside pulls it in.",
                       },
                     ],
                     "kind": "primitive",
@@ -8166,7 +8166,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                         "children": [
                           {
                             "kind": "text",
-                            "value": "At 70% realization — 30% lower across every domain — this model returns $9.0M net (payback at month 12). The floor is positive and well-defined. The base case at $16.3M reflects conservative utilization targets and phased onset timing. Everything above that is execution: faster adoption, earlier go-live, capacity that converts to scheduled volume. The range is tight. All of it works.",
+                            "value": "At 70% realization, 30% lower across every domain, this model returns $9.0M net (payback at month 12). The floor is positive and well-defined. The base case at $16.3M reflects conservative utilization targets and phased onset timing. Everything above that is execution: faster adoption, earlier go-live, capacity that converts to scheduled volume. The range is tight. All of it works.",
                           },
                         ],
                         "kind": "primitive",
@@ -11645,7 +11645,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                     "children": [
                       {
                         "kind": "text",
-                        "value": "Every input in this model traces to a verifiable clinical or operational source. Below is what is locked in from day one — and where your deployment decisions will determine the realized return.",
+                        "value": "Every input in this model traces to a verifiable clinical or operational source. Below is what is locked in from day one, and where your deployment decisions will determine the realized return.",
                       },
                     ],
                     "kind": "primitive",
@@ -11701,7 +11701,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                               },
                               {
                                 "kind": "text",
-                                "value": "Investment is contractual — cost is exact and fixed from day one",
+                                "value": "Investment is contractual, so cost is exact and fixed from day one",
                               },
                             ],
                             "kind": "primitive",
@@ -11723,7 +11723,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                               },
                               {
                                 "kind": "text",
-                                "value": "Implementation ramp is conservative — 3 months of gradual value scaling while full subscription costs run from the start",
+                                "value": "Implementation ramp is conservative: 3 months of gradual value scaling while full subscription costs run from the start",
                               },
                             ],
                             "kind": "primitive",
@@ -11789,7 +11789,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                               },
                               {
                                 "kind": "text",
-                                "value": "Adoption pace — modeled conservatively; your rollout velocity determines when value accelerates past the base case",
+                                "value": "Adoption pace: modeled conservatively; your rollout velocity determines when value accelerates past the base case",
                               },
                             ],
                             "kind": "primitive",
@@ -11811,7 +11811,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                               },
                               {
                                 "kind": "text",
-                                "value": "Capacity realization — time recovered converts to revenue where patient demand exists and scheduling is positioned to absorb it",
+                                "value": "Capacity realization: time recovered converts to revenue where patient demand exists and scheduling is positioned to absorb it",
                               },
                             ],
                             "kind": "primitive",
@@ -11833,7 +11833,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                               },
                               {
                                 "kind": "text",
-                                "value": "Retention attribution — the effect is real, but surfacing it requires a measurement baseline and a consistent tracking cadence",
+                                "value": "Retention attribution: the effect is real, but surfacing it requires a measurement baseline and a consistent tracking cadence",
                               },
                             ],
                             "kind": "primitive",
@@ -11855,7 +11855,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                               },
                               {
                                 "kind": "text",
-                                "value": "Deployment sequencing — a well-coordinated multi-setting rollout compresses the ramp; each week of earlier go-live moves payback forward",
+                                "value": "Deployment sequencing: a well-coordinated multi-setting rollout compresses the ramp; each week of earlier go-live moves payback forward",
                               },
                             ],
                             "kind": "primitive",
@@ -12538,7 +12538,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Full subscription cost runs from day one — value builds across a 3-month implementation ramp while cost is already at full rate",
+                                    "value": "Full subscription cost runs from day one, while value builds across a 3-month implementation ramp while cost is already at full rate",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -12584,7 +12584,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Capacity and Quality value onset delayed to Month 3 — modeled to arrive later than typically observed in Abridge deployments",
+                                    "value": "Capacity and Quality value onset delayed to Month 3, modeled to arrive later than typically observed in Abridge deployments",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -12630,7 +12630,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Utilization targets reflect a gradual adoption ramp — Year 1 targets are set conservatively, with value scaling as provider adoption deepens",
+                                    "value": "Utilization targets reflect a gradual adoption ramp. Year 1 targets are set conservatively, with value scaling as provider adoption deepens",
                                   },
                                 ],
                                 "kind": "primitive",
@@ -12676,7 +12676,7 @@ exports[`Financial Proforma PDF — structural snapshot > renders the proforma P
                                 "children": [
                                   {
                                     "kind": "text",
-                                    "value": "Workforce and retention benefits phased at 35% in Year 1 — real effects modeled to materialize gradually rather than immediately",
+                                    "value": "Workforce and retention benefits phased at 35% in Year 1, with real effects modeled to materialize gradually rather than immediately",
                                   },
                                 ],
                                 "kind": "primitive",

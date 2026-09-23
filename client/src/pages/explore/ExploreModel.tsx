@@ -765,20 +765,20 @@ export default function ExploreModel({
                 const hrsPerProvWk = providers > 0 ? hoursSaved / providers / 48 : 0;
                 const visitHrs = (td.visitDuration ?? 30) / 60;
                 const visitsPerWk = visitHrs > 0 ? Math.round((hrsPerProvWk * (realizePct / 100) / visitHrs) * 10) / 10 : 0;
-                return `${fmt(hoursSaved)} hours returned across ${fmt(providers)} providers. Reinvesting ${realizePct}% of that time into additional visits at ${visitsPerWk} visit${visitsPerWk === 1 ? '' : 's'}/provider/week generates ${fmtCur(value)} annually${providers > 0 ? ` — ${fmtCur(Math.round(value / providers))} per provider` : ''}.`;
+                return `${fmt(hoursSaved)} hours returned across ${fmt(providers)} providers. Reinvesting ${realizePct}% of that time into additional visits at ${visitsPerWk} visit${visitsPerWk === 1 ? '' : 's'}/provider/week generates ${fmtCur(value)} annually${providers > 0 ? `, or ${fmtCur(Math.round(value / providers))} per provider` : ''}.`;
               }
               case 'lwbsRecovery':
-                return `Documentation time is part of the ED flow bottleneck — while a physician finishes scribing, they're unavailable for the next patient. Across ${fmt(encounters)} annual ED visits, faster documentation can shorten door-to-doc time and reduce wait times, modeling ${fmtCur(value)} in potential visit revenue from patients who might otherwise leave without being seen.`;
+                return `Documentation time is part of the ED flow bottleneck. While a physician finishes scribing, they're unavailable for the next patient. Across ${fmt(encounters)} annual ED visits, faster documentation can shorten door-to-doc time and reduce wait times, modeling ${fmtCur(value)} in potential visit revenue from patients who might otherwise leave without being seen.`;
               case 'admissionCapture':
                 return `Of LWBS-recovered patients, a portion require inpatient admission. Capturing that downstream revenue adds ${fmtCur(value)} annually on top of the ED visit recovery.`;
               case 'providerWellbeing':
-                return `The documentation problem isn't the work — it's the timing. Notes reconstructed from memory at the end of a shift or at home late at night. Physicians call it "pajama time." Work that bleeds into personal life with no natural stopping point. With ${fmt(providers)} providers, this driver models ${fmtCur(value)} in potential value from reducing the documentation burden that contributes to burnout-driven departures.`;
+                return `The documentation problem isn't the work. It's the timing. Notes reconstructed from memory at the end of a shift or at home late at night. Physicians call it "pajama time." Work that bleeds into personal life with no natural stopping point. With ${fmt(providers)} providers, this driver models ${fmtCur(value)} in potential value from reducing the documentation burden that contributes to burnout-driven departures.`;
               case 'physicianLocumAgency':
                 return `When a physician leaves, the vacancy is typically filled with locum or agency coverage at a premium commonly running $3,000–$8,000/week above the cost of an employed physician. Every week of vacancy incurs that cost. This driver models ${fmtCur(value)} in potential value from reducing documentation-driven departures and the contracted-coverage spend they generate.`;
               case 'wrvu':
-                return `MDM-based E/M billing requires documenting problems addressed, data reviewed, and risk of management. The physician touched all three — the note said "HTN follow-up, refill meds." Across ${fmt(encounters)} annual encounters, this driver models ${fmtCur(value)} in potential value from closing that gap between complexity delivered and complexity documented.`;
+                return `MDM-based E/M billing requires documenting problems addressed, data reviewed, and risk of management. The physician touched all three. The note said "HTN follow-up, refill meds." Across ${fmt(encounters)} annual encounters, this driver models ${fmtCur(value)} in potential value from closing that gap between complexity delivered and complexity documented.`;
               case 'edEmLevel':
-                return `ED physicians reconstruct notes from memory between patients, and under-documentation tends to be worst when volume is highest. The work happened — the note didn't show it. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that more accurately reflects actual visit complexity.`;
+                return `ED physicians reconstruct notes from memory between patients, and under-documentation tends to be worst when volume is highest. The work happened. The note didn't show it. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that more accurately reflects actual visit complexity.`;
               case 'hccCapture': {
                 const hccPlans = docQualityInputs.hccPlans;
                 const upliftMap: Record<string, number> = { conservative: 3, typical: 5, optimistic: 10 };
@@ -790,29 +790,29 @@ export default function ExploreModel({
                   const projected = plan.currentRecaptureRate + effective;
                   const totalPatients = fmt(providers * plan.panelSize);
                   if (hasNetNew) {
-                    return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note — suppressing risk scores and the payment that follows. Ambient documentation lifts recapture from ${plan.currentRecaptureRate}% to ${projected}% and surfaces previously uncoded conditions, adding ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                    return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note, suppressing risk scores and the payment that follows. Ambient documentation lifts recapture from ${plan.currentRecaptureRate}% to ${projected}% and surfaces previously uncoded conditions, adding ${fmtCur(value)} in annual risk-adjusted revenue.`;
                   }
-                  return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note — a direct suppressor of risk-adjusted payment. Ambient documentation closes that gap, lifting the recapture rate from ${plan.currentRecaptureRate}% to ${projected}% and adding ${fmtCur(value)} in annual revenue.`;
+                  return `Your ${plan.name} population of ${totalPatients} patients carries chronic conditions discussed in the room but missing from the note, a direct suppressor of risk-adjusted payment. Ambient documentation closes that gap, lifting the recapture rate from ${plan.currentRecaptureRate}% to ${projected}% and adding ${fmtCur(value)} in annual revenue.`;
                 }
                 const names = hccPlans.map((p: { name: string }) => p.name);
                 const planNameList = names.length <= 2 ? names.join(' and ') : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
-                return `Across your ${planNameList} populations, chronic conditions addressed verbally are routinely absent from the note — suppressing risk scores and the payment they drive. Ambient documentation systematically closes that gap${hasNetNew ? ', including previously uncoded conditions,' : ''}, driving ${fmtCur(value)} in annual risk-adjusted revenue.`;
+                return `Across your ${planNameList} populations, chronic conditions addressed verbally are routinely absent from the note, suppressing risk scores and the payment they drive. Ambient documentation systematically closes that gap${hasNetNew ? ', including previously uncoded conditions,' : ''}, driving ${fmtCur(value)} in annual risk-adjusted revenue.`;
               }
               case 'denialPrevention':
                 if (state.careSetting === 'ed') {
-                  return `ED physicians document under volume and time pressure — the clinical reasoning behind the visit often doesn't make it into the note. When documentation doesn't show why the service was medically necessary, payers have grounds to challenge the claim. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that can capture that reasoning at the point of care.`;
+                  return `ED physicians document under volume and time pressure, and the clinical reasoning behind the visit often doesn't make it into the note. When documentation doesn't show why the service was medically necessary, payers have grounds to challenge the claim. Across ${fmt(encounters)} annual ED visits, this driver models ${fmtCur(value)} in potential value from documentation that can capture that reasoning at the point of care.`;
                 }
-                return `The physician reasoned correctly — the note didn't show it. Across ${fmt(encounters)} annual outpatient claims, medical necessity denials occur when documentation doesn't capture why the service was clinically warranted. This driver models ${fmtCur(value)} in potential value from documentation that can reduce these denials before they're filed.`;
+                return `The physician reasoned correctly. The note didn't show it. Across ${fmt(encounters)} annual outpatient claims, medical necessity denials occur when documentation doesn't capture why the service was clinically warranted. This driver models ${fmtCur(value)} in potential value from documentation that can reduce these denials before they're filed.`;
               case 'drgAccuracy':
-                return `CCs and MCCs shift DRG weight — a patient with acute kidney injury may move from DRG 470 to DRG 469, typically worth $2,000–$4,000 more per stay. The physician mentioned it at the bedside. It never made it into the note. Across ${fmt(encounters)} annual admissions, this driver models ${fmtCur(value)} in potential value from documentation that more accurately reflects case complexity.`;
+                return `CCs and MCCs shift DRG weight: a patient with acute kidney injury may move from DRG 470 to DRG 469, typically worth $2,000–$4,000 more per stay. The physician mentioned it at the bedside. It never made it into the note. Across ${fmt(encounters)} annual admissions, this driver models ${fmtCur(value)} in potential value from documentation that more accurately reflects case complexity.`;
               case 'obsDefense':
-                return `Payers routinely audit inpatient admissions against the two-midnight rule — did the physician's clinical judgment at admission expect the patient to need inpatient-level care? The physician made that judgment. But if the note says "admitted for monitoring" instead of capturing the acuity reasoning behind it, the payer may downgrade to observation and claw back the difference. Capturing the admission conversation — the "why this patient stays" — supports documentation that is better positioned to withstand a payer audit. At ${fmt(encounters)} annual admissions, this driver models ${fmtCur(value)} in potential at-risk inpatient revenue.`;
+                return `Payers routinely audit inpatient admissions against the two-midnight rule. Did the physician's clinical judgment at admission expect the patient to need inpatient-level care? The physician made that judgment. But if the note says "admitted for monitoring" instead of capturing the acuity reasoning behind it, the payer may downgrade to observation and claw back the difference. Capturing the admission conversation, the "why this patient stays", supports documentation that is better positioned to withstand a payer audit. At ${fmt(encounters)} annual admissions, this driver models ${fmtCur(value)} in potential at-risk inpatient revenue.`;
               case 'nursingRetention':
-                return `The shift ends at 7pm and the nurse can't leave — charting isn't done. That experience, repeated every shift, is what drives the turnover decision. With ${fmt(providers)} nurses on staff, this driver models ${fmtCur(value)} in potential value from reducing the documentation burden that contributes to burnout-driven departures.`;
+                return `The shift ends at 7pm and the nurse can't leave, because charting isn't done. That experience, repeated every shift, is what drives the turnover decision. With ${fmt(providers)} nurses on staff, this driver models ${fmtCur(value)} in potential value from reducing the documentation burden that contributes to burnout-driven departures.`;
               case 'nursingAgency':
                 return `Travel and agency nurses typically run $2,500–$5,000/week. When nurses don't leave, the vacancy may not need to be filled with premium labor. Across ${fmt(providers)} nurses, this driver models ${fmtCur(value)} in potential value from reducing the agency fill that documentation-driven turnover can generate.`;
               case 'nursingOvertime':
-                return `Documentation is supposed to happen in the gaps between patient care — but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Across ${fmt(providers)} nurses, this driver models ${fmtCur(value)} in potential value from moving charting into the patient interaction and reducing post-shift overtime.`;
+                return `Documentation is supposed to happen in the gaps between patient care, but those gaps shrink when acuity rises and ratios tighten. Documentation debt accumulates through the shift and gets paid off on overtime at the end. Across ${fmt(providers)} nurses, this driver models ${fmtCur(value)} in potential value from moving charting into the patient interaction and reducing post-shift overtime.`;
               case 'nursingHapi':
                 return `Real-time skin and turning documentation captures risk factors when they are observed rather than reconstructed at end of shift. CMS does not reimburse for hospital-acquired pressure injuries, so accurate present-on-admission and ongoing documentation protects reimbursement. This driver models ${fmtCur(value)} in documentation-attributable HAPI cost exposure annually.`;
               case 'nursingFalls':
@@ -1270,7 +1270,7 @@ export default function ExploreModel({
           )}
           {!isQualitativeOnly && <p className="text-xl text-[#888888] mb-4">/ year</p>}
           {!isQualitativeOnly && <p className="text-xs text-[#888888] uppercase tracking-wide mb-4">Year 1, including one-time benefits</p>}
-          {isQualitativeOnly && <p className="text-sm text-[#888888] mb-4">Strategic value — not dollarized</p>}
+          {isQualitativeOnly && <p className="text-sm text-[#888888] mb-4">Strategic value, not dollarized</p>}
 
           {/* Subtext */}
           <p className="text-base text-[#888888] mb-8">
@@ -1572,7 +1572,7 @@ export default function ExploreModel({
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-[#EA2C00] uppercase tracking-widest mb-0.5">Cost Displacement</p>
                   {displacementExpanded ? (
-                    <p className="text-xs text-neutral-400">Existing tools replaced by Abridge — savings on top of clinical ROI</p>
+                    <p className="text-xs text-neutral-400">Existing tools replaced by Abridge. Savings on top of clinical ROI</p>
                   ) : (
                     <p className="text-xs text-neutral-400">
                       {displacementItems.length === 0
@@ -1614,7 +1614,7 @@ export default function ExploreModel({
                 >
                   {displacementItems.length === 0 ? (
                     <div className="px-5 py-4 bg-white text-xs text-neutral-400 italic border-t border-neutral-100">
-                      No tools added — click "Add tool" to capture a cost being displaced.
+                      No tools added. Click "Add tool" to capture a cost being displaced.
                     </div>
                   ) : (
                     <div className="bg-white divide-y divide-neutral-100">
@@ -1886,7 +1886,7 @@ export default function ExploreModel({
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">Care Continuity</p>
-                  <p className="text-xs text-[#888888] leading-relaxed">ED and inpatient clinicians inherit a complete record — not a gap — when this patient arrives downstream.</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">ED and inpatient clinicians inherit a complete record, not a gap, when this patient arrives downstream.</p>
                 </div>
               </div>
             </div>
@@ -1906,11 +1906,11 @@ export default function ExploreModel({
               <div className="grid grid-cols-3 gap-6">
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">DRG & Case Mix</p>
-                  <p className="text-xs text-[#888888] leading-relaxed">CCs and MCCs documented in ED carry forward to inpatient coding — what's captured here determines the case mix.</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">CCs and MCCs documented in ED carry forward to inpatient coding. What's captured here determines the case mix.</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">Medical Necessity</p>
-                  <p className="text-xs text-[#888888] leading-relaxed">The admission decision is documented in ED — the first line of defense against inpatient status denials.</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">The admission decision is documented in ED, the first line of defense against inpatient status denials.</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">CDI Efficiency</p>
@@ -1934,7 +1934,7 @@ export default function ExploreModel({
               <div className="grid grid-cols-3 gap-6">
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">DRG Foundation</p>
-                  <p className="text-xs text-[#888888] leading-relaxed">CCs/MCCs documented in ED carry forward — case mix starts stronger from the moment of admission.</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">CCs/MCCs documented in ED carry forward, so case mix starts stronger from the moment of admission.</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">CDI Efficiency</p>
@@ -1957,7 +1957,7 @@ export default function ExploreModel({
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">CC/MCC Corroboration</p>
-                  <p className="text-xs text-[#888888] leading-relaxed">Nursing assessments — skin findings, functional status, intake/output — corroborate physician severity claims and support accurate DRG assignment.</p>
+                  <p className="text-xs text-[#888888] leading-relaxed">Nursing assessments (skin findings, functional status, intake/output) corroborate physician severity claims and support accurate DRG assignment.</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-[#555555] mb-1">Medical Necessity Evidence</p>
@@ -2082,7 +2082,7 @@ export default function ExploreModel({
 
           {isNursing && (
             <p className="text-sm text-[#888888] text-center mt-4">
-              As adoption scales, documentation consistency improves — which compounds the care quality benefits above.
+              As adoption scales, documentation consistency improves, which compounds the care quality benefits above.
             </p>
           )}
         </motion.div>
@@ -2471,7 +2471,7 @@ export default function ExploreModel({
           >
             <span className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Methodology & Assumptions — understand how we calculated these
+              Methodology & Assumptions: understand how we calculated these
             </span>
             {showMethodology ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>

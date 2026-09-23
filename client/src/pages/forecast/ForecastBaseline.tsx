@@ -62,9 +62,9 @@ const CARE_SETTING_ICONS: Record<ForecastCareSetting, LucideIcon> = {
 };
 
 function shareInsight(pct: number): string {
-  if (pct >= 60) return "Strong penetration — ambient is core to your workflow";
-  if (pct >= 30) return "Meaningful footprint — significant room to grow";
-  return "Early adoption — major expansion opportunity";
+  if (pct >= 60) return "Strong penetration: ambient is core to your workflow";
+  if (pct >= 30) return "Meaningful footprint: significant room to grow";
+  return "Early adoption: major expansion opportunity";
 }
 
 export default function ForecastBaseline({

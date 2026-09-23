@@ -140,7 +140,7 @@ function line(label: string, v: number | null | undefined, opts?: { suffix?: str
 }
 
 export function generateIntakeResponseText(data: ExploreIntakeResponse): string {
-  const lines: string[] = ['ABRIDGE — EXPLORE INTAKE RESPONSES', ''];
+  const lines: string[] = ['ABRIDGE · EXPLORE INTAKE RESPONSES', ''];
 
   for (const s of data.settings) {
     lines.push(`── ${SETTING_LABELS[s]} ──`);
