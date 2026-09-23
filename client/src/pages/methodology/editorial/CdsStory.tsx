@@ -81,17 +81,19 @@ const GUARDRAILS = [
 ];
 
 /**
- * The published content sources. The AHA footnote is theirs and is reproduced
- * exactly: dropping it would misstate the relationship.
+ * A few of the published sources, not the whole list.
+ *
+ * The list moves: specialty sources are added on a rolling basis, and the
+ * internal and public lists already disagree. Naming all of them makes this page
+ * wrong the week one changes, so it names the heavyweights and says openly that
+ * there are more. The AHA footnote is theirs and is reproduced exactly:
+ * dropping it would misstate the relationship.
  */
 const SOURCES = [
   "The New England Journal of Medicine",
   "JAMA",
   "American Heart Association*",
   "American Diabetes Association",
-  "American Family Physician",
-  "Journal of Clinical Oncology",
-  "Neurology",
 ];
 
 export default function CdsStory({ onBack, onHome }: Props) {
@@ -204,7 +206,7 @@ export default function CdsStory({ onBack, onHome }: Props) {
           <div className="text-[11.5px] font-extrabold tracking-[0.14em] uppercase text-[#443A32]">Where the evidence comes from</div>
           <p className="mt-2 text-[14px] leading-[1.5] text-[#8C8073] max-w-[640px]">
             Insights connect back to leading sources of medical evidence, so a clinician can follow any answer to the
-            literature behind it.
+            literature behind it. A few of them:
           </p>
           <div className="flex flex-wrap gap-2.5 mt-[22px]">
             {SOURCES.map((s) => (
@@ -215,6 +217,10 @@ export default function CdsStory({ onBack, onHome }: Props) {
                 {s}
               </span>
             ))}
+            {/* Says there are more without committing this page to naming them. */}
+            <span className="border border-dashed border-[#DCD3C6] rounded-[12px] px-4 py-[11px] text-[13.5px] text-[#8C8073]">
+              and further specialty sources, added on a rolling basis
+            </span>
           </div>
           <p className="text-[12px] text-[#B4A896] mt-4">*American Heart Association licenses selected scientific content to Abridge.</p>
         </div>
