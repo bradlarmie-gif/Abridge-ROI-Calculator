@@ -31,7 +31,11 @@ interface Props {
   partner: string;
   initialAnswers: DiscoveryAnswers;
   onPersistAnswers: (a: DiscoveryAnswers) => void;
+  /** Hand the discovery answers to the ROI side. Stays the secondary exit. */
   onFinish?: () => void;
+  /** Carry straight on into the plan. Primary exit once discovery lives inside
+   *  the planning walk, so the interview no longer dead-ends at the brief. */
+  onContinueToPlan?: () => void;
   onExit: () => void;
 }
 export interface VSEHandle { back: () => void }
@@ -45,7 +49,7 @@ type Pos =
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
 const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrategyExperience(
-  { setting, settingLabel, goals, partner, initialAnswers, onPersistAnswers, onFinish, onExit },
+  { setting, settingLabel, goals, partner, initialAnswers, onPersistAnswers, onFinish, onContinueToPlan, onExit },
   ref,
 ) {
   const authoredAll = useMemo(
@@ -196,7 +200,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   const ledger = buildLedger(setting, ground, order, answers, activeIdx);
 
   if (pos.kind === "brief") {
-    return <Brief setting={setting} settingLabel={settingLabel} partner={partner} order={order} pending={pending} answers={answers} triaged={multi} onFinish={onFinish} />;
+    return <Brief setting={setting} settingLabel={settingLabel} partner={partner} order={order} pending={pending} answers={answers} triaged={multi} onFinish={onFinish} onContinueToPlan={onContinueToPlan} />;
   }
 
   // Everything else is a single-select question with the ledger alongside.
@@ -493,10 +497,11 @@ function NoteLines({ notes, pad }: { notes: string[]; pad?: boolean }) {
 
 // ── the synthesized brief ────────────────────────────────────────────────────
 function Brief({
-  setting, settingLabel, partner, order, pending, answers, triaged, onFinish,
+  setting, settingLabel, partner, order, pending, answers, triaged, onFinish, onContinueToPlan,
 }: {
   setting: AttainSetting; settingLabel: string; partner: string; order: GoalId[];
-  pending: GoalId[]; answers: DiscoveryAnswers; triaged: boolean; onFinish?: () => void;
+  pending: GoalId[]; answers: DiscoveryAnswers; triaged: boolean;
+  onFinish?: () => void; onContinueToPlan?: () => void;
 }) {
   const results = order.map((goal) => ({ goal, script: getScript(setting, goal)!, res: resolveResult(setting, goal, answers) }));
 
@@ -609,9 +614,24 @@ function Brief({
         </div>
       )}
 
-      <div className="mt-12 flex items-center justify-end border-t border-[#E8E2DA] pt-6">
-        <button type="button" onClick={onFinish} data-testid="discovery-build-roi" className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors">
-          {counted.length > 0 ? "Build the ROI on this" : "Take this into the ROI"} <ArrowRight className="w-4 h-4" />
+      {/* Two exits, deliberately unequal. Discovery now sits inside the planning
+          walk, so carrying on into the plan is the path; the ROI hand-off is the
+          same one-click it always was, kept as the quieter option beside it. */}
+      <div className="mt-12 flex flex-wrap items-center justify-end gap-x-7 gap-y-3 border-t border-[#E8E2DA] pt-6">
+        {/* Both handlers required: a mount without the ROI hand-off (the deep-link
+            attain route) would otherwise render a button wired to nothing. */}
+        {onContinueToPlan && onFinish && (
+          <button type="button" onClick={onFinish} data-testid="discovery-build-roi" className="text-[13.5px] font-semibold text-[#8C8073] underline underline-offset-4 decoration-[#D8CFC0] hover:text-[#EA2C00] hover:decoration-[#EA2C00] transition-colors">
+            {counted.length > 0 ? "or build the ROI on this" : "or take this into the ROI"}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onContinueToPlan ?? onFinish}
+          data-testid={onContinueToPlan ? "discovery-continue-to-plan" : "discovery-build-roi"}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors"
+        >
+          {onContinueToPlan ? "Continue to the plan" : counted.length > 0 ? "Build the ROI on this" : "Take this into the ROI"} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>

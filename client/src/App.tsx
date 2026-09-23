@@ -80,7 +80,7 @@ import { mergeExploreEditIntoSetting } from "@/lib/proformaCalculations";
 import { type CareSettingType } from "@/lib/SETTING_CONFIG";
 import { type RoiInputs } from "@/lib/roi-types";
 
-type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain" | "hub" | "strategy-hub" | "financial-hub" | "planning-hub" | "value-strategy" | "planning" | "explore-bridge";
+type AppView = "splash" | "journey" | "explore" | "baseline-setup" | "model-builder" | "investment" | "calculator" | "expand" | "switch" | "learn" | "measure" | "forecast" | "forecast-mode" | "forecast-roi-calc" | "proforma-hub" | "proforma-view" | "explore-intake" | "measure-data-request" | "explore-intake-receipt" | "measure-data-receipt" | "data-request-builder" | "forecast-app-rationalization" | "attain" | "hub" | "strategy-hub" | "financial-hub" | "planning-hub" | "planning" | "explore-bridge";
 
 interface SelectionState {
   selectedSettings: CareSettingType[];
@@ -640,31 +640,17 @@ export default function App() {
                   setLearnInitialScreen(undefined);
                   navigateTo("learn");
                 }}
-                onSelectValueStrategy={() => navigateTo("value-strategy")}
               />
             )}
 
             {/* Value Strategy — the Attain funnel + Align + strategy summary, then
                 hands off to Planning (the plan autosaves and Planning resumes it). */}
-            {currentView === "value-strategy" && (
-              <AttainFlowV2
-                mode="strategy"
-                chapters={["align", "strategy"]}
-                onFinish={handleBuildRoiFromDiscovery}
-                onHome={() => navigateTo("hub")}
-                onBackToJourney={() => navigateTo("strategy-hub")}
-                flowLabel="Value Attainment Strategy"
-                buildCta="Start discovery"
-                experienceLabel="Discovery"
-              />
-            )}
-
             {/* Planning — opens on the partner "who it's for" step (never auto-assumes
                 the last partner), so you pick or switch the partner + care setting first;
                 settings with saved work are badged there to resume. */}
             {currentView === "planning" && (
               <AttainFlowV2
-                chapters={["plan", "progress"]}
+                onBuildRoi={handleBuildRoiFromDiscovery}
                 onHome={() => navigateTo("hub")}
                 onBackToJourney={() => navigateTo("planning-hub")}
                 flowLabel="The Plan"

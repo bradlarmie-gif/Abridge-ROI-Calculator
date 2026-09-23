@@ -5,10 +5,9 @@ import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
-import { type ExperienceSlice, type Chapter } from "./preview/MultiCategoryPreview";
+import { type ExperienceSlice } from "./preview/MultiCategoryPreview";
 import ValueStrategyExperience, { type VSEHandle } from "./valuestrategy/ValueStrategyExperience";
 import PlanBuildExperience, { type PlanBuildState } from "./planning/PlanBuildExperience";
-import { ATTAIN_MATRIX } from "./preview/attainCells";
 import { loadPlan, savedSettingsForPartner, loadSnapshot, saveSnapshot, clearSnapshot, type AttainSnapshot } from "./attainStorage";
 import { categoryForGoal, goalDefs } from "@/lib/attain/attainGoals";
 import { STRATEGY_GOALS } from "@/lib/attain/valueStrategy";
@@ -29,45 +28,27 @@ export { categoryForGoal };
 
 const SETTING_LABEL: Record<AttainSetting, string> = { outpatient: "Outpatient", ed: "ED", inpatient: "Inpatient", nursing: "Nursing" };
 
-function cellsFor(setting: AttainSetting, goals: GoalId[]) {
-  const label = SETTING_LABEL[setting];
-  // Setting-aware resolution: capacity → "Inpatient Capacity" on inpatient, "Nursing Capacity" on
-  // nursing, etc. (see attainGoals.categoryForGoal). A hardcoded map here is what orphaned the
-  // Inpatient Capacity cell before — no goal could ever resolve to it.
-  return goals.map((g) => ATTAIN_MATRIX.find((c) => c.setting === label && c.category === categoryForGoal(setting, g))).filter(Boolean) as typeof ATTAIN_MATRIX;
-}
 
-type Phase = "partner" | "setting" | "vision" | "scope" | "experience";
+type Phase = "partner" | "setting" | "vision" | "discovery" | "scope" | "experience";
 
 export default function AttainFlowV2({
   onBackToJourney,
   onHome,
-  chapters,
-  onFinish,
+  onBuildRoi,
   autoResume,
   flowLabel,
-  buildCta,
   experienceLabel,
-  mode,
 }: {
   onBackToJourney?: () => void;
   // The Abridge logo target: always the top home hub. Falls back to onBackToJourney.
   onHome?: () => void;
-  // Value Attainment Hub: mount a SUBSET of chapters. Value Strategy runs
-  // ["align","strategy"] and hands off via onFinish; Planning runs
-  // ["plan","progress"] and autoResumes the active saved plan (skips the funnel).
-  chapters?: Chapter[];
-  onFinish?: () => void;
+  /** The secondary exit from the discovery brief: package the answers and hand
+   *  them to the ROI side. Absent = the brief only offers "continue to the plan". */
+  onBuildRoi?: () => void;
   autoResume?: boolean;
-  // "strategy" swaps the experience for the no-dollar Value Attainment Strategy
-  // backward-trace build + map (align/strategy). Planning leaves this unset and
-  // keeps the shared Plan/Progress engine untouched.
-  mode?: "strategy";
   // Copy overrides so the shared Attain engine names itself per hub section.
-  // Defaults preserve the combined Attain flow.
-  flowLabel?: string; // section label in the header + chapter nav ("Attain" default)
-  buildCta?: string; // the funnel's final button ("Build the plan" default)
-  experienceLabel?: string; // stepName shown once in the experience ("Your plan" default)
+  flowLabel?: string; // section label in the header ("Attain" default)
+  experienceLabel?: string; // stepName shown once in the plan ("Your plan" default)
 } = {}) {
   // Always open on the name step. We never auto-resume the "active" plan, because that
   // silently assumed the last partner (reopening straight into, say, Mayo Clinic, with no
@@ -97,11 +78,14 @@ export default function AttainFlowV2({
   // so it persists to the snapshot without touching the Align/Progress slice.
   const planBuildRef = useRef<PlanBuildState | null>(null);
 
-  // Strategy mode is the pre-ROI discovery interview, so it drops the numeric
-  // Starting Point step (numbers get agreed later, in the Plan/ROI).
-  const PHASES: Phase[] = mode === "strategy"
-    ? ["partner", "setting", "vision", "experience"]
-    : ["partner", "setting", "vision", "scope", "experience"];
+  /**
+   * One walk. Discovery used to be a separate mount in its own hub section, with
+   * the plan a second mount bridged by the saved snapshot — which meant the
+   * partner/setting/goals funnel was asked twice and the two halves could drift.
+   * Discovery is now a phase in the same sequence: the interview runs number-free,
+   * then Starting Point collects the figures it deliberately skipped, then the plan.
+   */
+  const PHASES: Phase[] = ["partner", "setting", "vision", "discovery", "scope", "experience"];
 
   const buildSnapshot = (): AttainSnapshot => ({
     partner, phase, setting, goals: goals as string[], baseline: baseline as Record<string, number | undefined>,
@@ -153,7 +137,13 @@ export default function AttainFlowV2({
     // setting), which would make Continue re-land here and read as a dead button. A plan with a
     // setting belongs in the experience, so anything at or before "partner" resumes there.
     const savedIdx = PHASES.indexOf(existing.phase as Phase);
-    setPhase(savedIdx > 0 ? PHASES[savedIdx] : "experience");
+    // Plans saved before discovery joined this walk recorded phase "experience"
+    // for the discovery interview, because that is what the old strategy mount
+    // called it. Resuming those straight into the plan builder would silently
+    // skip the interview they were halfway through, so send anyone with
+    // discovery answers and no plan yet back to discovery.
+    const midDiscovery = !!existing.discovery && !existing.planBuild;
+    setPhase(midDiscovery ? "discovery" : savedIdx > 0 ? PHASES[savedIdx] : "experience");
   };
 
   // Planning entry (autoResume): skip the funnel and pick up the active saved plan
@@ -189,12 +179,17 @@ export default function AttainFlowV2({
     }
   }
   const canContinue = phase === "partner" ? partner.trim().length > 0 : phase === "setting" ? !!setting : phase === "vision" ? goals.length > 0 : true;
-  const stepName = phase === "partner" ? "Who it's for" : phase === "setting" ? "Care setting" : phase === "vision" ? "What you're after" : phase === "scope" ? "Starting point" : (mode !== "strategy" && planTracking ? "Progress" : (experienceLabel ?? "Your plan"));
+  const stepName = phase === "partner" ? "Who it's for"
+    : phase === "setting" ? "Care setting"
+    : phase === "vision" ? "What you're after"
+    : phase === "discovery" ? "Discovery"
+    : phase === "scope" ? "Starting point"
+    : (planTracking ? "Progress" : (experienceLabel ?? "Your plan"));
 
   const goBack = () => {
     // In the discovery interview, the header Back steps back through the questions
     // (and exits to the funnel from the first one) via the experience's handle.
-    if (phase === "experience" && mode === "strategy" && vseRef.current) { vseRef.current.back(); return; }
+    if (phase === "discovery" && vseRef.current) { vseRef.current.back(); return; }
     if (idx > 0) setPhase(PHASES[idx - 1]); else onBackToJourney?.();
   };
   const goNext = () => {
@@ -222,30 +217,20 @@ export default function AttainFlowV2({
           </div>
         ) : undefined}
       />
-      {phase === "experience" ? (
-        mode === "strategy" ? (
-          <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={`${partner}::${setting}`} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onFinish} onExit={() => setPhase("vision")} /></>
-        ) : (
-          <><UnifiedHeaderSpacer /><PlanBuildExperience key={`${partner}::${setting}`} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
-        )
+      {phase === "discovery" ? (
+        <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={`${partner}::${setting}`} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onBuildRoi} onContinueToPlan={() => setPhase("scope")} onExit={() => setPhase("vision")} /></>
+      ) : phase === "experience" ? (
+        <><UnifiedHeaderSpacer /><PlanBuildExperience key={`${partner}::${setting}`} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
           {phase === "partner" && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">Step 1 · Start here</p>
-              {mode === "strategy" ? (
-                <>
-                  <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Start with the outcome.<br className="hidden md:inline" /> Trace back to what makes it real.</h1>
-                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">Before any ROI or financial model, a value attainment strategy maps how the outcome actually happens: the operating conditions, the decisions, the behaviors, and the dependencies that have to hold for it to land.</p>
-                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">The financial work comes later and proves it. First, who are we building this for?</p>
-                </>
-              ) : (
-                <>
-                  <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Turn the strategy into a plan<br className="hidden md:inline" /> you can run.</h1>
-                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">This turns the value attainment strategy into an owned, step-by-step plan: the metrics that prove it, the owner on each one, the plays that move them, and the review cadence that keeps it honest.</p>
-                  <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">You track attainment against it over time. First, who are we building this for?</p>
-                </>
-              )}
+              {/* One opening for one walk: the interview and the plan used to have
+                  a page each, and each explained only its own half. */}
+              <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Start with the outcome.<br className="hidden md:inline" /> Leave with a plan you can run.</h1>
+              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">First we map how the outcome actually happens: the operating conditions, the decisions, the behaviors, and the dependencies that have to hold for it to land. No numbers yet.</p>
+              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">Then that becomes an owned, step-by-step plan, with the metric that proves each step, the owner on it, and a review cadence. First, who are we building this for?</p>
               <label className="block text-[11px] font-bold uppercase tracking-[1.5px] text-[#8C8073] mb-3">Partner or organization</label>
               <input value={partner} onChange={(e) => setPartner(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canContinue) goNext(); }} placeholder="e.g., Northgate Medical Group" autoFocus className="w-full max-w-[520px] bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-2 font-abridge text-[26px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0] placeholder:font-sans placeholder:text-[18px]" />
               {Object.keys(savedBySetting).length > 0 && <p className="text-[12px] text-[#EA2C00] mt-3">You've worked with this partner before. On the next step, pick a care setting to resume it or start a new one.</p>}
@@ -257,8 +242,12 @@ export default function AttainFlowV2({
               setting={setting}
               selectedGoals={goals}
               onToggle={(g) => setGoals((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]))}
-              goals={mode === "strategy" ? goalDefs(setting, STRATEGY_GOALS[setting]) : undefined}
-              preferOutcome={mode === "strategy"}
+              /* Discovery runs first, so its goal set leads. STRATEGY_GOALS is a
+                 strict superset of SETTING_GOAL_MATRIX in every setting, and
+                 GOAL_CATALOG has a chain for all six ids, so nothing picked here
+                 can reach the plan builder with no content behind it. */
+              goals={goalDefs(setting, STRATEGY_GOALS[setting])}
+              preferOutcome
             />
           )}
           {phase === "scope" && setting && (
@@ -270,7 +259,7 @@ export default function AttainFlowV2({
           {phase !== "setting" && (
             <div className="mt-10 flex items-center justify-end">
               <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:bg-transparent disabled:text-[#B4A896] disabled:border disabled:border-[#E0D9CE] disabled:cursor-not-allowed transition-colors">
-                {idx === PHASES.length - 2 ? (buildCta ?? "Build the plan") : "Continue"} <ArrowRight className="w-4 h-4" />
+                {phase === "vision" ? "Start discovery" : phase === "scope" ? "Build the plan" : "Continue"} <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           )}
