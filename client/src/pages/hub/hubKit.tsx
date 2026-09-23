@@ -160,7 +160,7 @@ export function HubRow({
       onClick={comingSoon ? undefined : onClick}
       data-testid={testId}
       aria-disabled={comingSoon || undefined}
-      className={`group flex ${description ? "items-start" : "items-center"} gap-6 sm:gap-7 rounded-xl py-6 sm:py-7 pl-3 pr-4 transition-colors duration-200 ${
+      className={`group flex ${description ? "items-start" : "items-center"} gap-6 sm:gap-7 rounded-xl ${quiet ? "py-5" : "py-6 sm:py-7"} pl-3 pr-4 transition-colors duration-200 ${
         comingSoon
           ? "cursor-default"
           : "cursor-pointer hover:bg-[#FAF7F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2"
@@ -171,7 +171,7 @@ export function HubRow({
       <span
         aria-hidden="true"
         className={`font-abridge text-[15px] tracking-[0.06em] w-9 flex-none ${
-          description ? "mt-[26px]" : ""
+          description ? "mt-[22px]" : ""
         } ${comingSoon ? "text-[#DED7CD]" : "text-[#CFC5B7] group-hover:text-[#EA2C00]"}`}
       >
         {String(index).padStart(2, "0")}
@@ -200,7 +200,7 @@ export function HubRow({
       <span
         aria-hidden="true"
         className={`flex-none w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
-          description ? "mt-[11px]" : ""
+          description ? "mt-[7px]" : ""
         } ${
           comingSoon
             ? "border-[#EFE9E0] text-[#DED7CD]"
