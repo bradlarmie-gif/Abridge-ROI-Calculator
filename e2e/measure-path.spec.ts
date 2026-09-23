@@ -1,16 +1,46 @@
 import { test, expect, type Page } from "@playwright/test";
+import { encodeDataRequest } from "../client/src/lib/dataRequestUrlState";
 
 /**
- * Phase 3: the Measure (realized value) wizard. Drives setup → the four quadrant
- * screens → forecast → Output, and asserts the realized-value card renders, the
- * evidence-doc PDF downloads (desktop), no overflow, no uncaught errors.
- * Entered via Forecast → Partner ROI Model (a reliable Measure entry point).
+ * The Measure (realized value) wizard: setup → the four quadrant screens →
+ * forecast → Output. Asserts the realized-value card renders, the evidence-doc
+ * PDF downloads (desktop), no overflow, no uncaught errors.
+ *
+ * ENTRY. This used to come in through Forecast → Partner ROI Model, which sat
+ * on the retired JourneySelector; the hub has no route to Measure at all, so
+ * the spec died with the rest of the suite when the IA changed.
+ *
+ * Measure is NOT dead, though, and that is the part worth being precise about.
+ * It keeps exactly one live entry in production: a partner opens a
+ * `?data_receipt=` link (the other half of the Data Request Builder, which is
+ * reachable from the Explore header), lands on MeasureDataReceipt, and clicks
+ * "Load in calculator" — App.tsx then navigates to `measure`.
+ *
+ * So the spec enters the way a real partner does, by minting a receipt link.
+ * That also means this file is the only coverage of that deep link surviving a
+ * round trip, which is worth having on its own.
  */
 
 const VIEWPORTS = [
   { name: "Desktop", width: 1280, height: 800, canDownload: true },
   { name: "iPhone 12", width: 390, height: 844, canDownload: false },
 ];
+
+/** A minimal but valid receipt payload, encoded exactly as the app encodes it. */
+const RECEIPT = encodeDataRequest({
+  setting: "outpatient",
+  deployment: {
+    organizationName: "Riverbend Health",
+    goLiveDate: null,
+    monthsOnAbridge: 9,
+    totalProviders: 100,
+    liveProviders: 80,
+    mruProviders: 70,
+    totalEncounters: 200000,
+    abridgeEncounters: 160000,
+  },
+  metrics: [],
+});
 
 async function expectNoHorizontalOverflow(page: Page, where: string) {
   const { scrollW, clientW } = await page.evaluate(() => ({
@@ -41,11 +71,13 @@ for (const vp of VIEWPORTS) {
       const crashes: string[] = [];
       page.on("pageerror", (e) => crashes.push(String(e)));
 
-      // Forecast → Partner ROI Model → Measure setup.
-      await page.goto("/");
-      await page.getByTestId("button-enter-app").click();
-      await page.getByTestId("card-forecast").click();
-      await page.getByTestId("card-forecast-partner").click();
+      // A real partner's entry: open a data-request receipt link, then load it.
+      await page.goto(`/?data_receipt=${RECEIPT}`);
+      await expect(
+        page.getByRole("button", { name: /load in calculator/i }),
+        "the ?data_receipt= deep link did not render a receipt",
+      ).toBeVisible();
+      await page.getByRole("button", { name: /load in calculator/i }).click();
       await expect(page.getByTestId("pills-care-settings")).toBeVisible();
 
       // Outpatient is the default care setting (no pill needed). Provider settings

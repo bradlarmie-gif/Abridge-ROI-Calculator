@@ -1,16 +1,22 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+import { LIVE_IA, enterHub, openHub, openTool, expectNoHorizontalOverflow, collectPageErrors, type HubName } from "./support/nav";
 
 /**
- * Cross-viewport responsiveness guard. Walks the reachable entry flow
- * (splash → journey → Explore) at phone / tablet / desktop sizes and asserts
- * the page never overflows horizontally — the most common way a layout "breaks"
- * on mobile. This exercises the shared shell (header, page containers, cards)
- * that every screen inherits.
+ * Cross-viewport responsiveness guard: BREADTH, at four widths.
  *
- * NOTE: the deep proforma "Present" view is built from the same responsive
- * primitives but can't be reached without scripting the full multi-step deal
- * flow; its small-screen layout (scrolling stage, wrapping stat rows, fluid
- * type) was hardened by hand alongside this test.
+ * A screen that scrolls sideways is the most common way a layout "breaks" on a
+ * phone, and it is invisible on a desktop monitor. This walks the shared shell
+ * (splash, hub, all three sub-hubs, the first screen of every live tool) at
+ * iPhone SE through desktop and asserts none of them overflow.
+ *
+ * Depth lives elsewhere on purpose: explore-paths.spec.ts drives the full
+ * Explore → Model → proforma → Present chain and asserts overflow at each stage
+ * for all four care settings. This file is about covering MANY screens at MANY
+ * widths, including the two widths that suite does not use (375 and 768).
+ *
+ * The previous version walked splash → journey → Explore via `card-explore`, a
+ * testid on a screen the app can no longer reach, so all 8 of its permutations
+ * failed at step two.
  */
 
 const VIEWPORTS = [
@@ -20,141 +26,58 @@ const VIEWPORTS = [
   { name: "Desktop", width: 1280, height: 800 },
 ];
 
-async function expectNoHorizontalOverflow(page: Page, where: string) {
-  const { scrollW, clientW } = await page.evaluate(() => ({
-    scrollW: document.documentElement.scrollWidth,
-    clientW: document.documentElement.clientWidth,
-  }));
-  // 1px tolerance for sub-pixel rounding.
-  expect(
-    scrollW,
-    `${where}: page overflows horizontally — scrollWidth ${scrollW}px > viewport ${clientW}px`,
-  ).toBeLessThanOrEqual(clientW + 1);
-}
-
-// The flow has desktop/mobile twin "continue" buttons (one hidden per breakpoint),
-// and they all call onNext — so click whichever is actually visible.
-async function advance(page: Page) {
-  const candidates = [
-    "button-continue",
-    "button-continue-mobile",
-    "button-panel-continue",
-    "button-continue-revenue",
-    "button-continue-revenue-mobile",
-  ];
-  for (const id of candidates) {
-    const el = page.getByTestId(id);
-    if (await el.isVisible().catch(() => false)) {
-      await el.click();
-      return;
-    }
-  }
-  throw new Error("no visible continue button found");
-}
+const HUBS = Object.keys(LIVE_IA) as HubName[];
 
 for (const vp of VIEWPORTS) {
   test.describe(`${vp.name} (${vp.width}×${vp.height})`, () => {
     test.use({ viewport: { width: vp.width, height: vp.height } });
 
-    test("entry flow renders without horizontal overflow", async ({ page }) => {
-      await page.goto("/");
+    test("splash and all three hubs fit the viewport", async ({ page }) => {
+      const errs = collectPageErrors(page);
 
+      await page.goto("/");
       await expect(page.getByTestId("button-enter-app")).toBeVisible();
       await expectNoHorizontalOverflow(page, "splash");
 
-      await page.getByTestId("button-enter-app").click();
-      await expect(page.getByTestId("card-explore")).toBeVisible();
-      await expectNoHorizontalOverflow(page, "journey");
+      await enterHub(page);
+      await expectNoHorizontalOverflow(page, "hub");
 
-      await page.getByTestId("card-explore").click();
-      // Explore care-setting picker.
-      await expect(page.getByTestId("card-setting-outpatient")).toBeVisible();
-      await expectNoHorizontalOverflow(page, "explore-care-settings");
-
-      // Into the input-dense Opportunity screen (provider/volume inputs,
-      // scenario tiles) — a real small-screen risk.
-      await page.getByTestId("card-setting-outpatient").click();
-      await page.getByTestId("button-continue").click();
-      await page.waitForTimeout(500);
-      await expectNoHorizontalOverflow(page, "explore-opportunity");
-    });
-
-    test("full flow into the Present view renders without horizontal overflow", async ({ page }) => {
-      await page.goto("/");
-      await page.getByTestId("button-enter-app").click();
-      await page.getByTestId("card-explore").click();
-
-      // Care setting → Opportunity.
-      await page.getByTestId("card-setting-outpatient").click();
-      await page.getByTestId("button-continue").click();
-
-      // Opportunity inputs (providers + total volume + utilization → valid + value).
-      await page.getByTestId("input-providers").fill("50");
-      await page.getByTestId("input-total-encounters").fill("150000");
-      await page.getByTestId("input-utilization").fill("75");
-      await advance(page);
-
-      // Time savings — pick a scenario so there's time value.
-      await page.getByTestId("button-scenario-typical").click();
-      await advance(page);
-
-      // Capacity → Workforce.
-      await advance(page);
-      // Workforce → Revenue.
-      await advance(page);
-
-      // Revenue — enable wRVU so the model produces value (unlocks "Add").
-      await page.getByTestId("toggle-wrvu").click();
-      await advance(page);
-
-      // Quality → Investment.
-      await advance(page);
-      // Investment → Model.
-      await advance(page);
-
-      // Model → add to the proforma → lands on the hub.
-      await page.getByTestId("button-add-proforma").click();
-      await expect(page.getByTestId("button-present")).toBeVisible();
-      await expectNoHorizontalOverflow(page, "proforma-hub");
-
-      // Launch Present — opens on the Time beat (chapter 0).
-      await page.getByTestId("button-present").click();
-      await expect(page.getByTestId("proforma-present")).toBeVisible();
-      await page.waitForTimeout(600);
-      await expectNoHorizontalOverflow(page, "present-time");
-
-      // Dollars beat (chapter 1).
-      await page.getByTestId("present-chapter-1").click();
-      await page.waitForTimeout(600);
-      await expectNoHorizontalOverflow(page, "present-dollars");
-
-      // Care-setting beat (chapter 2) + its expanded "how this is built"
-      // breakdown + a drilled-open driver formula.
-      await page.getByTestId("present-chapter-2").click();
-      await page.waitForTimeout(600);
-      await expectNoHorizontalOverflow(page, "present-setting");
-      await page.getByTestId("button-present-show-math").click();
-      await page.waitForTimeout(400);
-      await expectNoHorizontalOverflow(page, "present-setting-math");
-      const wrvuRow = page.getByTestId("present-driver-wrvu");
-      if (await wrvuRow.isVisible().catch(() => false)) {
-        await wrvuRow.click();
-        await page.waitForTimeout(300);
-        await expectNoHorizontalOverflow(page, "present-driver-formula");
+      for (const hub of HUBS) {
+        await openHub(page, hub);
+        await page.waitForTimeout(400);
+        await expectNoHorizontalOverflow(page, `${hub} hub`);
       }
 
-      // Together beat (chapter 3) — combine + the "when it lands" ramp + math.
-      await page.getByTestId("present-chapter-3").click();
-      await page.waitForTimeout(600);
-      await expectNoHorizontalOverflow(page, "present-combine");
-      await page.getByTestId("button-present-show-math").click();
-      await page.waitForTimeout(400);
-      await expectNoHorizontalOverflow(page, "present-combine-math");
+      expect(errs, `uncaught while walking the shell: ${errs.join(" | ")}`).toEqual([]);
+    });
 
-      // Close beat (chapter 4).
-      await page.getByTestId("present-chapter-4").click();
-      await page.waitForTimeout(600);
-      await expectNoHorizontalOverflow(page, "present-close");
+    test("every live tool's first screen fits the viewport", async ({ page }) => {
+      const errs = collectPageErrors(page);
+
+      for (const hub of HUBS) {
+        for (const id of LIVE_IA[hub]) {
+          await openTool(page, hub, id);
+          await page.waitForTimeout(900);
+          await expectNoHorizontalOverflow(page, `${hub} → ${id}`);
+        }
+      }
+
+      expect(errs, `uncaught while opening tools: ${errs.join(" | ")}`).toEqual([]);
+    });
+
+    test("the input-dense Explore practice screen fits the viewport", async ({ page }) => {
+      // Dense numeric rows with unit suffixes are the real small-screen risk.
+      await openTool(page, "financial", "financial-card-explore");
+      await page.getByTestId("ed-setting-outpatient").click();
+      await page.waitForTimeout(900);
+      await expect(page.getByTestId("ed-input-providers")).toBeVisible();
+      await expectNoHorizontalOverflow(page, "explore-practice");
+
+      await page.getByTestId("ed-input-providers").fill("50");
+      await page.getByTestId("ed-input-total-encounters").fill("150000");
+      await page.getByTestId("ed-input-utilization").fill("75");
+      await page.waitForTimeout(400);
+      await expectNoHorizontalOverflow(page, "explore-practice-filled");
     });
   });
 }
