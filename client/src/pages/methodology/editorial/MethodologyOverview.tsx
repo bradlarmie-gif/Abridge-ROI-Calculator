@@ -1,6 +1,7 @@
 import { METHODOLOGY_SETTINGS } from "@/lib/methodologyContent";
 import { MethodologyHeader, type MethodologyNavKey } from "./MethodologyHeader";
 import { CaseProvenance } from "./CaseProvenance";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 
 interface Props {
   onBack: () => void;
@@ -12,10 +13,12 @@ const RECORD_LINES_LEFT = [84, 54, 72, 40, 50, 30, 44, 20];
 const RECORD_LINES_RIGHT = [100, 95, 98, 90, 99, 93, 96, 92];
 
 const VALUES: { label: string; dot: string; desc: string }[] = [
-  { label: "Revenue", dot: "#EA2C00", desc: "Acuity and services already delivered, captured instead of lost to thin notes." },
-  { label: "Capacity", dot: "#F0704E", desc: "Clinician hours returned from after-hours charting to patient care." },
-  { label: "Workforce", dot: "#F4A48C", desc: "The documentation burden that drives burnout, lifted." },
-  { label: "Quality", dot: "#B4A896", desc: "Care gaps and safety signals surfaced in the record, tracked, not counted." },
+  // Domain dots come from the one palette, not a second hardcoded copy that
+  // inverted Revenue and Capacity against every other surface.
+  { label: "Revenue", dot: DOMAIN_COLORS.Revenue, desc: "Acuity and services already delivered, captured instead of lost to thin notes." },
+  { label: "Capacity", dot: DOMAIN_COLORS.Capacity, desc: "Clinician hours returned from after-hours charting to patient care." },
+  { label: "Workforce", dot: DOMAIN_COLORS.Workforce, desc: "The documentation burden that drives burnout, lifted." },
+  { label: "Quality", dot: DOMAIN_COLORS.Quality, desc: "Care gaps and safety signals surfaced in the record, tracked, not counted." },
 ];
 
 /**

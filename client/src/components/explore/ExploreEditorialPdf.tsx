@@ -1193,7 +1193,19 @@ function ScenarioCard({
         background: highlight ? "#FEF6F3" : C.card,
       }}
     >
-      <div style={{ ...sLbl, color: highlight ? C.coral : C.faint }}>{eyebrow}</div>
+      {/*
+        Fixed height, because this row is read ACROSS.
+
+        The eyebrow is a third of a card wide, so "Downside · miss plan by 30%"
+        wrapped to two lines while "On plan · 100%" did not — which pushed the
+        downside card's $969K about 15px below the $1.38M and $1.8M beside it.
+        In a three-up comparison whose whole job is comparing, the three hero
+        numbers stepping is the most visible craft defect on the page.
+
+        The labels are one line each now; this floor means they stay aligned
+        even if someone lengthens one later.
+      */}
+      <div style={{ ...sLbl, color: highlight ? C.coral : C.faint, minHeight: 15 }}>{eyebrow}</div>
       <div
         className="font-abridge"
         style={{ fontSize: 38, marginTop: 10, color: highlight ? C.coral : C.ink }}
@@ -1297,20 +1309,20 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginTop: 20 }}>
         <ScenarioCard
-          eyebrow="Downside · miss plan by 30%"
+          eyebrow="Downside · −30%"
           amount={fmtShort(total * 0.7)}
           ret={mult(total * 0.7)}
           note="Slower adoption or tighter realization"
         />
         <ScenarioCard
-          eyebrow="On plan · 100%"
+          eyebrow="On plan"
           amount={fmtShort(total)}
           ret={mult(total)}
           note="Your configured model"
           highlight
         />
         <ScenarioCard
-          eyebrow="Upside · beat plan by 30%"
+          eyebrow="Upside · +30%"
           amount={fmtShort(total * 1.3)}
           ret={mult(total * 1.3)}
           note="Faster adoption, full realization"
@@ -1390,6 +1402,35 @@ function InvestmentPage({ data }: { data: ExplorePDFData }): JSX.Element {
                 {priced ? `${data.roi.toFixed(1)}×` : "—"}
               </span>
             </div>
+            {/*
+              Reconcile against the outlay this page already printed in bold.
+
+              The ratio above is computed on RECURRING spend, which its label says
+              honestly. But the left column ends on "True Year-1 cash outlay",
+              which includes the one-time implementation fee, and a reader does
+              that second division in about four seconds. Leaving them to find a
+              number the page never shows is how the whole "conservative" posture
+              gets read as selective. Show both, and let the smaller one be ours.
+            */}
+            {priced && data.includeImplementation && data.implementationFee > 0 && year1Cash > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginTop: 9,
+                  paddingTop: 9,
+                  borderTop: `1px solid ${C.hair}`,
+                }}
+              >
+                <span style={{ fontSize: 12, color: C.muted }}>
+                  Including one-time implementation
+                </span>
+                <span className="font-abridge" style={{ fontSize: 18, color: C.label }}>
+                  {(total / year1Cash).toFixed(1)}×
+                </span>
+              </div>
+            )}
           </div>
           <p style={{ fontSize: 11, color: C.faint, lineHeight: 1.45, marginTop: 12 }}>
             {!priced

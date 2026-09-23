@@ -216,7 +216,12 @@ export function buildOutcomePlan(setting: AttainSetting, goal: GoalId): OutcomeP
     goal,
     category: categoryForGoal(setting, goal),
     displayCategory: goalDisplayLabel(setting, goal),
-    outcomeLabel: def.label,
+    // Setting-native, like displayCategory. This used to take `def.label`, the
+    // generic goal definition, which is how a nursing plan carried the label
+    // "Provider Retention". It was described as an internal field and exempted
+    // from the vocabulary scan on that basis — but "internal" is one render away
+    // from customer-facing, and that is exactly how it surfaced.
+    outcomeLabel: goalDisplayLabel(setting, goal),
     chainTitle: SETTING_TITLE_OVERRIDES[`${setting}:${goal}`] ?? def.chainTitle,
     owners: Array.from(byOwner.values()),
     leadingCount: chain.filter((l) => l.isAbridge).length,

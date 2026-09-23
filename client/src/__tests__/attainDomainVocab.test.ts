@@ -94,10 +94,15 @@ describe("attain domain-vocabulary guard — copy reads native to its buyer", ()
       // owner role + step signal/name.
       for (const goal of (SETTING_GOAL_MATRIX[setting] ?? [])) {
         const plan = buildOutcomePlan(setting, goal);
-        // displayCategory + chainTitle + owner roles + step name/signal are the
-        // customer-facing strings the Plan PDF / walk render. (outcomeLabel is an
-        // internal field, not shown, so it's not scanned.)
-        strings.push(plan.displayCategory, plan.chainTitle);
+        // displayCategory + chainTitle + outcomeLabel + owner roles + step
+        // name/signal are the customer-facing strings the Plan PDF / walk render.
+        //
+        // outcomeLabel used to be skipped here as "an internal field, not shown".
+        // It then took the generic goal label rather than the setting-native one,
+        // so it held "Provider Retention" on nursing — and the day the Plan PDF's
+        // closing page started rendering it, that shipped. An unscanned field is
+        // one render away from being a customer-facing one; scan it.
+        strings.push(plan.displayCategory, plan.chainTitle, plan.outcomeLabel);
         for (const owner of plan.owners) {
           strings.push(owner.role);
           for (const step of owner.steps) strings.push(step.name, step.signal);

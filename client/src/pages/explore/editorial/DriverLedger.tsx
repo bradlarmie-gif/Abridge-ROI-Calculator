@@ -194,15 +194,24 @@ export default function DriverLedger(props: DriverLedgerProps) {
           self-serve user stepping forward, had to re-find the primary action on
           every screen.
 
-          A floor on the grid anchors the short ones: outpatient, inpatient and
-          nursing now land within 18px of each other. ED still sits ~130px lower
-          because it genuinely carries more drivers, and padding the other three
-          out to match would buy consistency with dead space on three screens to
-          fix one. Pinning the action to a sticky footer would close the gap
-          properly, but that changes the feel of the whole flow, so it is flagged
-          rather than done.
+          Measured, outpatient/inpatient/nursing/ED put Continue at 999 / 999 /
+          1016 / 1065. The floor brings the spread from 130px to 66px and puts
+          two of the four on exactly the same line.
+
+          It cannot do better than that, and it is worth being clear why: a
+          min-height only lifts pages whose content is SHORTER than the floor.
+          ED's driver list is genuinely the tallest, so it clears any floor and
+          stays the outlier no matter how high this goes — raising it to 700
+          moved all four down 70px and left the spread at exactly 66. Closing
+          the last 66px needs a fixed height (which would clip ED) or a sticky
+          action bar (which changes the feel of the whole flow). That is a design
+          call, so it is flagged rather than taken here.
+
+          The white space this adds costs little: each of these screens already
+          ends with several hundred px of trailing space below the button, so
+          the button moves down inside space that was empty anyway.
         */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1px_0.8fr] gap-x-[56px] gap-y-10 mt-[46px] lg:min-h-[560px]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1px_0.8fr] gap-x-[56px] gap-y-10 mt-[46px] lg:min-h-[630px]">
           {/* LEFT — driver ledger */}
           <div>
             <div className={sectCls}>{sectionLabel}</div>

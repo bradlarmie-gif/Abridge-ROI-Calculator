@@ -76,10 +76,22 @@ function pad2(n: number): string {
 
 // ───────────────────────── Shell ─────────────────────────
 
+/**
+ * Page padding, shared with the pagination budgets below so the two cannot drift.
+ *
+ * The bottom was 32px against a running footer absolutely positioned at
+ * bottom:16. That left roughly 3px between the last line of content and the top
+ * of the footer on every page of the document — a collision at reading distance,
+ * not a margin. 54 reserves a real safe zone; USABLE_H picks the change up, so
+ * the paginator moves an atom to the next page rather than closing the gap.
+ */
+const PAD_TOP = 44;
+const PAD_BOTTOM = 54;
+
 function Page({ children, pgnum, dark }: { children: ReactNode; pgnum?: string; dark?: boolean }): JSX.Element {
   return (
     <div style={{ width: 816, height: 1056, background: dark ? C.ink : C.page, position: "relative", overflow: "hidden", breakAfter: "page" }}>
-      <div style={{ position: "absolute", inset: 0, padding: "44px 60px 32px", display: "flex", flexDirection: "column" }}>
+      <div style={{ position: "absolute", inset: 0, padding: `${PAD_TOP}px 60px ${PAD_BOTTOM}px`, display: "flex", flexDirection: "column" }}>
         {children}
       </div>
       {pgnum && (
@@ -321,7 +333,7 @@ interface OutcomeAtom {
   node: ReactNode;
 }
 
-const USABLE_H = 1056 - 44 - 32; // Page's top/bottom padding
+const USABLE_H = 1056 - PAD_TOP - PAD_BOTTOM; // Page's top/bottom padding
 const FIRST_BUDGET = USABLE_H - 168; // RunningHeader + SectionEyebrow + chainTitle + meta line + gap
 const CONT_BUDGET = USABLE_H - 114; // RunningHeader + "{chainTitle} (continued)" mini header + gap
 const ATOM_GAP = 14;
@@ -406,30 +418,93 @@ function packAtomsIntoPages(atoms: OutcomeAtom[]): OutcomeAtom[][] {
 function ClosingPage({ data, plans, pgnum }: { data: PlanPdfData; plans: OutcomePlan[]; pgnum: string }): JSX.Element {
   const totalSignals = plans.reduce((a, p) => a + p.owners.reduce((b, o) => b + o.steps.length, 0), 0);
   const totalOwners = plans.reduce((a, p) => a + p.owners.filter((o) => !o.isAbridge).length, 0);
+  /*
+    Rebuilt. This page was three problems at once:
+
+      - It was the ONLY dark page in a five-page white document, and the other
+        two PDFs both close on white. It also dumps a full page of ink on anyone
+        who prints the deck.
+      - It was 14.9% ink, the emptiest page in any of the documents: a headline
+        and two sentences floating with ~340px of nothing above and below.
+      - Both of those sentences performed instead of informing. "Not left to
+        hope" and "This is the deal after the deal" are slogans, and the page
+        that closes a commitment is the worst place to reach for one.
+
+    The fix for the emptiness was not to pad it. The plan already knows exactly
+    what was committed to and by whom, and a recap of that is what a reader
+    actually wants on the last page — so the page now carries the outcomes, each
+    with its owner and signal counts, and says plainly what happens next.
+  */
   return (
-    <Page dark pgnum={pgnum}>
-      <RunningHeader org={data.orgName} dark />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: "#F7A488" }}>
+    <Page pgnum={pgnum}>
+      <RunningHeader org={data.orgName} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.coral, marginTop: 18 }}>
           The commitment
         </div>
-        <h2 className="font-abridge" style={{ fontSize: 36, lineHeight: 1.16, color: "#FFFFFF", marginTop: 14, maxWidth: 640 }}>
-          {plans.length} {plans.length === 1 ? "outcome" : "outcomes"}, owned and measured. Not left to hope.
+        <h2 className="font-abridge" style={{ fontSize: 34, lineHeight: 1.16, color: C.ink, marginTop: 12, maxWidth: 660 }}>
+          {plans.length} {plans.length === 1 ? "outcome" : "outcomes"}, owned and measured.
         </h2>
-        <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "rgba(255,255,255,0.7)", maxWidth: 600, marginTop: 20 }}>
-          <b style={{ color: "#FFFFFF" }}>{totalOwners}</b> owner {totalOwners === 1 ? "role carries" : "roles carry"} this
-          plan across {plans.length} {plans.length === 1 ? "outcome" : "outcomes"}, {totalSignals} signals tell us early whether each one is on track,
-          and the leading signals Abridge proves move first.
+        <p style={{ fontSize: 14, lineHeight: 1.6, color: C.label, maxWidth: 620, marginTop: 14 }}>
+          <b style={{ color: C.ink }}>{totalOwners}</b> owner {totalOwners === 1 ? "role carries" : "roles carry"} this
+          plan, and <b style={{ color: C.ink }}>{totalSignals}</b> signals tell you early whether each outcome is on
+          track. The leading signals Abridge proves move first.
         </p>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 14, maxWidth: 600 }}>
-          This is the deal after the deal: the promise, made real and tracked against your own numbers.
+
+        {/* What was actually committed to, recapped. */}
+        <div style={{ marginTop: 26, borderTop: `2px solid ${C.ink}`, paddingTop: 4 }}>
+          {plans.map((pl, i) => {
+            const owners = pl.owners.filter((o) => !o.isAbridge).length;
+            const signals = pl.owners.reduce((b, o) => b + o.steps.length, 0);
+            return (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "space-between",
+                  gap: 18,
+                  padding: "13px 0",
+                  borderBottom: `1px solid ${C.hair}`,
+                }}
+              >
+                {/* displayCategory + chainTitle, NOT outcomeLabel. outcomeLabel
+                    takes the generic goal definition rather than the
+                    setting-native one, so on a nursing plan it renders
+                    "Provider Retention" under a "NURSE RETENTION" eyebrow —
+                    the wrong-buyer vocabulary defect, surfaced the moment this
+                    page started showing it. Both strings used here are
+                    setting-aware and already scanned by attainDomainVocab. */}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: C.faint }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
+                  <div className="font-abridge" style={{ fontSize: 17, color: C.ink, lineHeight: 1.2, marginTop: 3 }}>
+                    {pl.displayCategory}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: C.faint, marginTop: 3 }}>{pl.chainTitle}</div>
+                </div>
+                <div style={{ fontSize: 11, color: C.off, whiteSpace: "nowrap", textAlign: "right" }}>
+                  {owners} {owners === 1 ? "owner" : "owners"} · {signals} {signals === 1 ? "signal" : "signals"}
+                  <div style={{ color: C.coral, fontWeight: 700, marginTop: 2 }}>
+                    {pl.leadingCount} Abridge {pl.leadingCount === 1 ? "proves" : "prove"} first
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p style={{ fontSize: 13, lineHeight: 1.6, color: C.muted, maxWidth: 620, marginTop: 22 }}>
+          Owners and targets are set with your team. Baselines and by-when dates are added as the plan is
+          built out, and reviewed on the cadence you set.
         </p>
       </div>
       {/* No wordmark here. <Page> already emits the running footer, so this block
           put ABRIDGE twice inside a 20px band at the foot of the closing page.
           Keep the prepared-for line, which the running footer does not carry. */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.14)", paddingTop: 16 }}>
-        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Prepared with your team · {data.orgName} · {data.date}</span>
+      <div style={{ borderTop: `1px solid ${C.hair}`, paddingTop: 16 }}>
+        <span style={{ fontSize: 11, color: C.faint }}>Prepared with your team · {data.orgName} · {data.date}</span>
       </div>
     </Page>
   );

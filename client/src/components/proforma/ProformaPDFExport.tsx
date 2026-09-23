@@ -10,7 +10,6 @@ import { getDriverFallback } from "@/lib/proformaDriverFormulaSteps";
 import {
   PROFORMA_PDF_STORAGE_KEY,
   PF_SETTING_COLORS,
-  buildSampleCashFlow,
   type ProformaPdfData,
   type PfSetting,
   type PfDomainGroup,
@@ -293,7 +292,13 @@ export function buildProformaPdfData(
     c += v;
     cashFlow.push({ month: i + 1, cumNet: Math.round(c) });
   });
-  const cashFlowFinal = cashFlow.length > 1 ? cashFlow : buildSampleCashFlow(termNet, paybackMonth ?? 12, config.contractTermMonths, 100000);
+  // No invented curve in a customer document. This used to fall back to
+  // buildSampleCashFlow, which fabricates a trough at an arbitrary 2.4x a
+  // hardcoded $100,000 month-0 outlay. Plausible-looking and completely made up:
+  // exactly the failure the sample-data PDF guard exists to prevent, one level
+  // down. If the engine produced no monthly points there is nothing honest to
+  // draw, so draw nothing and let the chart render its empty state.
+  const cashFlowFinal = cashFlow.length > 1 ? cashFlow : [];
 
   // ── Milestones ──────────────────────────────────────────────────────────────
   const milestoneNames = ["Foundation", "Scaling", "Maturity"];

@@ -23,7 +23,10 @@ export const PROFORMA_PDF_STORAGE_KEY = "abridge:proforma-pdf";
 // #CDBBA6). Reusing coral made "Outpatient" read as "Capacity" and "Emergency"
 // as "Revenue" on the same page — two taxonomies wearing one set of hues. Neutrals
 // keep settings clearly a different axis from the money domains.
-export const PF_SETTING_COLORS = ["#4A3F35", "#A99A87", "#C9BCA9", "#E0D6C8"] as const;
+// A neutral progression, not brown. #4A3F35 / #A99A87 read as a muddy taupe
+// lifted from a different deck next to the cream-and-coral editorial palette,
+// and the PDF doctrine is an explicitly neutral grey ramp.
+export const PF_SETTING_COLORS = ["#2A2A2A", "#656565", "#9E9E9E", "#CFCFCF"] as const;
 
 // Domain accent colors (mock --rev / --cap / --wf / --off).
 const DOMAIN_COLOR = DOMAIN_COLORS; // one app-wide palette (lib/domainColors)
@@ -257,15 +260,29 @@ function Chain({ chain, value }: { chain?: string; value: number }): JSX.Element
 // Abridge + Manrope faces are already registered app-wide (index.css +
 // the Google Fonts link in index.html), so no @font-face is needed here.
 
+/**
+ * Page padding. Declared here because the stylesheet below interpolates it, and
+ * PAGE_H derives from it, so the box and the budget that packs into it can
+ * never drift apart again.
+ *
+ * The bottom was 30px against a running footer absolutely positioned at
+ * bottom:16, leaving 1-5px between the last line of content and the footer on
+ * three of the eight pages while others left 78-123px. 52 makes the clearance
+ * real and consistent.
+ */
+const PAD_TOP = 44;
+const PAD_BOTTOM = 30;
+
 const CSS = `
 @page { size: Letter; margin: 0; }
 @media print { body { margin: 0; } .pf { background: #fff !important; padding: 0 !important; } .pf .sheet { box-shadow: none !important; margin: 0 auto !important; } }
-.pf { --page:#FFFFFF; --card:#FDFBF8; --hair:#E8E2DA; --soft:#F1EBE3; --coral:#EA2C00; --ink:#1A1A1A; --label:#2E2822; --muted:#5E534A; --faint:#786C5E; --off:#AFA491; --cap:#F0704E; --rev:#EA2C00; --wf:#F4A48C; background:#DED8D0; font-family:'Manrope',sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; padding:34px 0; }
+.pf { --page:#FFFFFF; --card:#FDFBF8; --hair:#E8E2DA; --soft:#F1EBE3; --coral:#EA2C00; --ink:#1A1A1A; --label:#2E2822; --muted:#5E534A; --faint:#786C5E; --off:#AFA491; background:#DED8D0; font-family:'Manrope',sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; padding:34px 0; }
 .pf * { box-sizing:border-box; margin:0; padding:0; }
 .pf .abr { font-family:'Abridge','Manrope'; font-weight:normal; }
 .pf .sheet { width:816px; height:1056px; background:var(--page); margin:0 auto 30px; position:relative; box-shadow:0 8px 34px rgba(60,46,32,.16); overflow:hidden; }
 .pf .sheet:not(:last-child) { break-after:page; }
-.pf .in { position:absolute; inset:0; padding:44px 56px 30px; display:flex; flex-direction:column; }
+/* Padding comes from PAD_TOP / PAD_BOTTOM so it stays in lockstep with PAGE_H. */
+.pf .in { position:absolute; inset:0; padding:${PAD_TOP}px 56px ${PAD_BOTTOM}px; display:flex; flex-direction:column; }
 .pf .rhead { display:flex; justify-content:space-between; align-items:baseline; padding-bottom:11px; border-bottom:1px solid var(--hair); }
 .pf .rhead .l { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
 .pf .rhead .n { font-family:'Abridge'; font-size:15px; color:var(--off); }
@@ -492,10 +509,18 @@ function DealCard({ s }: { s: PfSetting }): JSX.Element {
         {s.pilotProviders} → {s.fullScaleProviders} {s.providerWord ?? "providers"} · ≈{fmtCount(s.encounters)} {s.encounterLabel} · go-live month {s.goLiveMonth}
       </div>
       <div className="mini">
-        <div style={{ width: `${(rev / sum) * 100}%`, background: "var(--rev)" }} />
-        <div style={{ width: `${(cap / sum) * 100}%`, background: "var(--cap)" }} />
-        <div style={{ width: `${(wf / sum) * 100}%`, background: "var(--wf)" }} />
-        {qua > 0 && <div style={{ width: `${(qua / sum) * 100}%`, background: "var(--off)" }} />}
+        {/*
+          One palette. These three segments used local --rev / --cap / --wf CSS
+          vars that INVERTED Capacity and Revenue against DOMAIN_COLORS, the
+          app-wide map the domain cards 200px below this bar use. Same page, same
+          three categories, opposite mapping — and the bar is labelled only by a
+          plain-text run underneath, so colour was the reader's only way in and it
+          pointed the wrong way.
+        */}
+        <div style={{ width: `${(rev / sum) * 100}%`, background: DOMAIN_COLOR.Revenue }} />
+        <div style={{ width: `${(cap / sum) * 100}%`, background: DOMAIN_COLOR.Capacity }} />
+        <div style={{ width: `${(wf / sum) * 100}%`, background: DOMAIN_COLOR.Workforce }} />
+        {qua > 0 && <div style={{ width: `${(qua / sum) * 100}%`, background: DOMAIN_COLOR.Quality }} />}
       </div>
       <div style={{ fontSize: 10, color: "var(--faint)", marginTop: 6 }}>
         Revenue {fmtMoney(rev)} · Capacity {fmtMoney(cap)} · Workforce {fmtMoney(wf)}
@@ -609,8 +634,39 @@ function StackedBar({ data }: { data: ProformaPdfData }): JSX.Element {
             {segs.map((sg, si) => sg.h > 0 && (
               <rect key={si} x={x} y={sg.y} width={barW} height={sg.h} fill={sg.color} />
             ))}
-            <line x1={x} y1={invY} x2={x + barW} y2={invY} stroke="#5E534A" strokeWidth="1.4" strokeDasharray="4 3" />
-            <text x={cx} y={topY - 8} fontSize="12" fill="var(--ink)" textAnchor="middle" className="abr">{fmtM(y.total)}</text>
+            {/*
+              The investment line, drawn so it can actually be seen.
+
+              It used to be a thin #5E534A dash spanning exactly the bar width.
+              Whenever investment came in under the year's value the line fell
+              INSIDE the bar, dark-on-dark against the top segment, and vanished
+              for the two years where the comparison matters most. Now it runs
+              past both bar edges so its ends always sit on background, and it
+              carries a white casing underneath so the dashes read over any fill.
+            */}
+            <line x1={x - 9} y1={invY} x2={x + barW + 9} y2={invY} stroke="#FFFFFF" strokeWidth="3.4" opacity="0.9" />
+            {/* Solid, not dashed. The legend below draws a SOLID swatch for
+                "Investment", so a dashed plot mark did not match the key it is
+                read against — and over a dark bar the gaps in a dash let the
+                white casing dominate, so the same line read light on some years
+                and dark on others. */}
+            <line x1={x - 9} y1={invY} x2={x + barW + 9} y2={invY} stroke="var(--ink)" strokeWidth="1.6" />
+            {/*
+              Clear of BOTH the bar top and the investment line. The value label
+              sat at `topY - 8`, so in any year where investment lands near the
+              bar top the dashes ran straight through the glyphs — year one
+              rendered its "$312K" struck out.
+            */}
+            <text
+              x={cx}
+              y={Math.min(topY, invY) - 9}
+              fontSize="12"
+              fill="var(--ink)"
+              textAnchor="middle"
+              className="abr"
+            >
+              {fmtM(y.total)}
+            </text>
             <text x={cx} y="184" fontSize="10" fill="var(--faint)" textAnchor="middle">Year {yi + 1}</text>
           </g>
         );
@@ -748,15 +804,33 @@ function CashFlowCurve({ data }: { data: ProformaPdfData }): JSX.Element {
   const pts = data.cashFlow;
   if (pts.length === 0) return <svg viewBox="0 0 820 158" style={{ width: "100%" }} />;
   const months = Math.max(...pts.map((p) => p.month), 1);
-  const maxPos = Math.max(...pts.map((p) => p.cumNet), 1);
+  const maxPos = Math.max(...pts.map((p) => p.cumNet), 0);
   const minNeg = Math.min(...pts.map((p) => p.cumNet), 0);
-  const x0 = 55, x1 = 800, topY = 16, baseY = 72; // baseY = break-even
+  const x0 = 55, x1 = 800, topY = 16, floorY = 118;
   const xFor = (m: number) => x0 + (m / months) * (x1 - x0);
-  const yFor = (v: number) => {
-    if (v >= 0) return baseY - (v / maxPos) * (baseY - topY);
-    const floor = 118;
-    return minNeg < 0 ? baseY + (v / minNeg) * (floor - baseY) : baseY;
-  };
+
+  /**
+   * ONE linear scale across the whole domain.
+   *
+   * This used to normalise positives against maxPos and negatives against
+   * minNeg, each into its own fixed band. That pins the trough to the floor and
+   * the peak to the ceiling no matter what the numbers are: a -$50K trough and a
+   * -$5M trough draw identically, and the depth of the dip carries no
+   * information at all.
+   *
+   * It read as roughly -$1.1M on a model whose facing table says year-one net is
+   * -$113K against $425K of investment, so the curve could not go below -$425K
+   * at any point. Peak cumulative outflow is the number a CFO sizes the funding
+   * ask from, so overstating it by ~10x one page after the table that
+   * contradicts it is the kind of thing that ends a deal review.
+   *
+   * Break-even is now drawn where zero actually falls on that scale, rather than
+   * at a hardcoded y.
+   */
+  const span = maxPos - minNeg;
+  const yFor = (v: number) =>
+    span > 0 ? topY + ((maxPos - v) / span) * (floorY - topY) : (topY + floorY) / 2;
+  const baseY = yFor(0);
   const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${xFor(p.month).toFixed(1)},${yFor(p.cumNet).toFixed(1)}`).join(" ");
   // payback = first month cumNet crosses to >= 0 after being negative
   let payback: number | null = null;
@@ -767,6 +841,7 @@ function CashFlowCurve({ data }: { data: ProformaPdfData }): JSX.Element {
   }
   const pbX = payback != null ? xFor(payback) : null;
   const end = pts[pts.length - 1];
+  const trough = pts.reduce<PfCashPoint | null>((lo, p) => (lo == null || p.cumNet < lo.cumNet ? p : lo), null);
   return (
     <svg viewBox="0 0 820 158" style={{ width: "100%" }}>
       <line x1="40" y1={baseY} x2="800" y2={baseY} stroke="var(--hair)" strokeDasharray="4 3" />
@@ -776,6 +851,22 @@ function CashFlowCurve({ data }: { data: ProformaPdfData }): JSX.Element {
         <>
           <circle cx={pbX} cy={baseY} r="4.5" fill="#fff" stroke="var(--coral)" strokeWidth="2.5" />
           <text x={pbX} y={baseY + 18} fontSize="10" fill="var(--muted)" textAnchor="middle">Month {payback}</text>
+        </>
+      )}
+      {/* Peak cumulative outflow: what the deal has to be funded through. It was
+          the only unlabelled point on the chart and the most useful one. */}
+      {trough != null && trough.cumNet < 0 && (
+        <>
+          <circle cx={xFor(trough.month)} cy={yFor(trough.cumNet)} r="3" fill="var(--muted)" />
+          <text
+            x={xFor(trough.month)}
+            y={yFor(trough.cumNet) + 15}
+            fontSize="9.5"
+            fill="var(--muted)"
+            textAnchor={xFor(trough.month) < 120 ? "start" : "middle"}
+          >
+            deepest {fmtM(trough.cumNet)} · month {trough.month}
+          </text>
         </>
       )}
       <text x="800" y="12" fontSize="12" fill="var(--coral)" textAnchor="end" className="abr">+{fmtM(end.cumNet)}</text>
@@ -901,8 +992,27 @@ const RHEAD_H = 38;
 const HEADER_FIRST = 112;
 const HEADER_CONT = 54;
 const DOMHEAD_H = 38;
-const TRAILER_H = 246; // ramp + signals + margins
-const PAGE_H = 982;
+// Measured off a rendered page: the year table plus the signals block. The old
+// 246 was ~180px short, so the packer kept deciding the trailer would fit on a
+// page where it then ran into the footer.
+//
+// The honest figure matters in BOTH directions. Set it too low and the trailer
+// collides; set it above the space actually available and the trailer takes a
+// page to itself while the page it left keeps the ~430px hole it was meant to
+// fill — two half-empty pages instead of one full one. It fits; it just needed
+// the room, which the tightened signals margin below provides.
+const TRAILER_H = 246;
+/**
+ * Usable content height, DERIVED from the page padding rather than restated.
+ *
+ * This was the literal 982, which happened to equal 1056 - 44 - 30 for the
+ * padding of the day. Raising the bottom padding to reserve a gap above the
+ * running footer silently invalidated it, and the per-setting detail page ran
+ * its signals block 32px into the reserved zone — the same class of bug as the
+ * Explore PDF's inverted page budgets, where a packer trusted a number that no
+ * longer described the box it was packing into.
+ */
+const PAGE_H = 1056 - PAD_TOP - PAD_BOTTOM;
 
 interface Atom {
   h: number;
@@ -949,7 +1059,10 @@ function SettingTrailer({ s }: { s: PfSetting }): JSX.Element {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 36 }}>
+      {/* 36 -> 20: the trailer needed ~16px to clear the running footer with a
+          real gap rather than the 5px it had. Taken from the space above the
+          signals label, which had the most to give. */}
+      <div style={{ marginTop: 20 }}>
         <div className="lbl" style={{ marginBottom: 9 }}>Signals to track · quality, not counted</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 30px" }}>
           {s.signals.map((sig, i) => (
@@ -1013,6 +1126,10 @@ function buildSettingInner(s: PfSetting, chapterNum: string): ReactNode[] {
   }
   // Place the trailer (ramp + signals): on the last driver page if it fits,
   // otherwise on its own continuation page.
+  //
+  // Packing it as an atom instead was tried and is worse: reserving its full
+  // ~430px up front spills drivers a page early every time, which traded one
+  // tight page for four half-empty ones.
   let trailerOwnPage = false;
   if (budget - used < TRAILER_H) trailerOwnPage = true;
 

@@ -17,6 +17,7 @@ import { PDFExportModal } from "@/components/switch/PDFExportModal";
 import { generateExplorePDF, type ExplorePDFData, type ExplorePDFQuadrantData } from "@/components/explore/ExplorePDFExport";
 import { useToast } from "@/hooks/use-toast";
 import { PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
+import { DOMAIN_COLORS } from "@/lib/domainColors";
 
 /**
  * Drop-in editorial replacement for ExploreModel.tsx — identical props.
@@ -270,12 +271,12 @@ export default function EdModel({
   // reverse). Read it from the single source so the recap can never label the
   // wrong quadrant as proof or show a misleading $0.
   const proofForSetting = PROOF_LAYER[state.careSetting ?? ""] ?? {};
-  const quadFill: Record<string, string> = {
-    Revenue: "bg-[#EA2C00]",
-    Capacity: "bg-[#F0704E]",
-    Workforce: "bg-[#F4A48C]",
-    Quality: "bg-[#F6B79E]",
-  };
+  // One palette. These four were a second, conflicting domain map: it made
+  // Revenue the deepest coral and Capacity mid, where lib/domainColors (which
+  // 15 other files import, and which declares itself the single source of
+  // truth) has it the other way round. The same domain carried two identities
+  // depending on which screen you were looking at.
+  const quadFill: Record<string, string> = DOMAIN_COLORS;
   const quadrantMax = Math.max(
     valueByQuadrant.Revenue,
     valueByQuadrant.Capacity,
@@ -604,7 +605,7 @@ export default function EdModel({
                       <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmtCurrency(value)}</span>
                     </div>
                     <div className="h-[8px] bg-[#F2EFEA] rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${quadFill[q]}`} style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
+                      <div className="h-full rounded-full" style={{ background: quadFill[q], width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
                     </div>
                   </div>
                 );
