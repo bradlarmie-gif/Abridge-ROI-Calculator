@@ -63,6 +63,18 @@ const GUARDRAILS = [
   "Does not autonomously code, change, or submit a claim",
 ];
 
+/**
+ * What the checkpoint is worth, verbatim from the cleared deck. Operational
+ * outcomes, not dollars — The Case never carries a number. This is the
+ * commercial reasoning: the alternative to finding out here is finding out
+ * from a denial letter, by which point the claim has already gone.
+ */
+const WHAT_IT_IS_WORTH = [
+  "Visibility into what is unresolved, while there is still time to act on it",
+  "CDI and coding teams get something specific to work with, instead of finding out from a denial letter",
+  "A cleaner handoff between clinical documentation and coding",
+];
+
 /** Where the checkpoint sits. `here` marks Pre-Bill's moment in the stay. */
 const TIMELINE: { label: string; sub: string; here?: boolean }[] = [
   { label: "Admission", sub: "The stay begins" },
@@ -86,10 +98,8 @@ export default function PreBillStory({ onBack, onHome }: Props) {
             The claim goes out on a <span className="text-[#EA2C00]">summary</span>.
           </h1>
           <p className="mt-5 text-[15px] sm:text-[17px] leading-[1.55] text-[#5E534A] max-w-[640px]">
-            Abridge captures and documents how the clinical story develops from admission through discharge. After
-            discharge, coding translates the completed record into the diagnoses, procedures, and DRG on the claim. The
-            stay often documented more than the summary carries. Pre-Bill compares the coded case with the documented
-            stay, helping CDI and coding confirm that the claim is accurate and supported before submission.
+            After discharge, coding translates the completed record into the diagnoses, procedures, and DRG on the
+            claim. The stay often documented more than the summary carries.
           </p>
           <CaseProvenance>
             Every finding points back to a note captured at the bedside. The comparison is not reconstructed from the
@@ -151,9 +161,6 @@ export default function PreBillStory({ onBack, onHome }: Props) {
               </div>
             ))}
           </div>
-          <div className="flex justify-end mt-3.5">
-            <span className="text-[12.5px] italic text-[#B4A896]">a review, not a rewrite</span>
-          </div>
         </div>
 
         {/* guardrails — the load-bearing section, so it gets the widest slot */}
@@ -198,6 +205,16 @@ export default function PreBillStory({ onBack, onHome }: Props) {
               </li>
             ))}
           </ol>
+
+          {/* the commercial close */}
+          <ul className="mt-9 space-y-3 max-w-[720px]">
+            {WHAT_IT_IS_WORTH.map((w) => (
+              <li key={w} className="flex gap-3.5 text-[14.5px] leading-[1.6] text-[#443A32]">
+                <span aria-hidden="true" className="text-[#EA2C00] flex-none">&rarr;</span>
+                {w}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

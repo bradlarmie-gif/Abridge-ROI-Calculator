@@ -77,7 +77,6 @@ const GUARDRAILS = [
   "Surfaces relevant medical information for clinician review at the point of care",
   "The clinician decides what information matters, what goes in the note, and what happens next",
   "Every insight connects back to trusted clinical literature, cited and traceable",
-  "Runs inside the contract, security review, and BAA the organization already holds, so there is nothing new to procure, integrate, or govern",
 ];
 
 /**
@@ -90,10 +89,12 @@ const GUARDRAILS = [
  * dropping it would misstate the relationship.
  */
 const SOURCES = [
-  "The New England Journal of Medicine",
+  "NEJM",
   "JAMA",
   "American Heart Association*",
   "American Diabetes Association",
+  "American Family Physician",
+  "Journal of Clinical Oncology",
 ];
 
 export default function CdsStory({ onBack, onHome }: Props) {
@@ -104,14 +105,17 @@ export default function CdsStory({ onBack, onHome }: Props) {
       <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-14">
         {/* hero */}
         <div className="pt-12 sm:pt-16 pb-8 sm:pb-10">
-          <div className="text-[11.5px] font-extrabold tracking-[0.15em] uppercase text-[#EA2C00]">The question</div>
+          {/* Was "The answer comes back generic." Next to Abridge branding that
+              reads at a glance as though Abridge is the one answering generically.
+              The subject is now the literature, which is unarguable and cannot be
+              misread as a claim about this product. */}
+          <div className="text-[11.5px] font-extrabold tracking-[0.15em] uppercase text-[#EA2C00]">The evidence</div>
           <h1 className="font-abridge text-[34px] sm:text-[44px] lg:text-[52px] leading-[1.06] text-[#1A1A1A] mt-4 max-w-[860px]">
-            The answer comes back <span className="text-[#EA2C00]">generic</span>.
+            Guidelines are written for <span className="text-[#EA2C00]">populations</span>.
           </h1>
           <p className="mt-5 text-[15px] sm:text-[17px] leading-[1.55] text-[#5E534A] max-w-[640px]">
-            A question comes up mid-visit. The reference that answers it does not know this patient: not the
-            medications, not the labs, not what changed since the last visit. So the answer is about a population, and
-            carrying it back to the person in the room is left to the clinician, in the minutes they do not have.
+            The patient in front of you is one person, with their own medications, labs, and history. Closing that
+            distance is left to the clinician, mid-visit.
           </p>
           <CaseProvenance>
             Three things answer the question at once: the live conversation, the patient's chart, and cited medical
@@ -178,9 +182,6 @@ export default function CdsStory({ onBack, onHome }: Props) {
               </div>
             ))}
           </div>
-          <div className="flex justify-end mt-3.5">
-            <span className="text-[12.5px] italic text-[#B4A896]">support for the thinking, not a substitute for it</span>
-          </div>
         </div>
 
         {/* guardrails */}
@@ -201,28 +202,37 @@ export default function CdsStory({ onBack, onHome }: Props) {
           </div>
         </div>
 
-        {/* where the evidence comes from */}
+        {/* where the evidence comes from — a logo wall, not a row of pills.
+            Small bordered chips made these read like tags rather than the
+            institutions they are. Set as wordmarks in one band, evenly spaced and
+            desaturated, which is how a real source wall reads. Swap in the actual
+            SVGs when they exist: same grid, replace the <span> with an <img>. */}
         <div className="mt-16 sm:mt-[66px] mb-16 sm:mb-24">
           <div className="text-[11.5px] font-extrabold tracking-[0.14em] uppercase text-[#443A32]">Where the evidence comes from</div>
           <p className="mt-2 text-[14px] leading-[1.5] text-[#8C8073] max-w-[640px]">
-            Insights connect back to leading sources of medical evidence, so a clinician can follow any answer to the
-            literature behind it. A few of them:
+            Every insight connects back to the literature behind it, so a clinician can follow it to the source.
           </p>
-          <div className="flex flex-wrap gap-2.5 mt-[22px]">
-            {SOURCES.map((s) => (
-              <span
-                key={s}
-                className="border border-[#E8E2DA] bg-[#FDFBF8] rounded-[12px] px-4 py-[11px] text-[13.5px] text-[#1A1A1A]"
-              >
-                {s}
-              </span>
-            ))}
-            {/* Says there are more without committing this page to naming them. */}
-            <span className="border border-dashed border-[#DCD3C6] rounded-[12px] px-4 py-[11px] text-[13.5px] text-[#8C8073]">
-              and further specialty sources, added on a rolling basis
-            </span>
+          <div className="mt-6 border border-[#E8E2DA] rounded-[18px] bg-[#FDFBF8] px-6 sm:px-10 py-9">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-8 items-center">
+              {SOURCES.map((src) => (
+                <div key={src} className="flex items-center justify-center text-center">
+                  <span className="font-abridge text-[17px] sm:text-[19px] leading-[1.2] text-[#8C8073]">{src}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 pt-6 border-t border-[#EFE9E0] flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              <span className="text-[13.5px] text-[#5E534A]">and further specialty sources, added on a rolling basis</span>
+              <span className="text-[12px] text-[#B4A896]">*American Heart Association licenses selected scientific content to Abridge.</span>
+            </div>
           </div>
-          <p className="text-[12px] text-[#B4A896] mt-4">*American Heart Association licenses selected scientific content to Abridge.</p>
+
+          {/* the commercial close, and the one that actually moves a CIO */}
+          <div className="mt-7 border-l-2 border-[#EA2C00] pl-5 max-w-[620px]">
+            <p className="text-[14.5px] leading-[1.6] text-[#443A32]">
+              It runs inside the contract, security review, and BAA the organization already holds. Nothing new to
+              procure, integrate, or govern.
+            </p>
+          </div>
         </div>
       </div>
     </div>
