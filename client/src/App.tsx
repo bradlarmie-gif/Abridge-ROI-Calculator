@@ -365,7 +365,16 @@ export default function App() {
   // paths' back/home targets point at the new hub instead of the legacy journey.
   // The Value Attainment Hub is now the default home (Phase 3 flip). hubMode is
   // always on: the splash enters the hub, and every flow's back/home targets the
-  // hub / its sub-hubs. The legacy JourneySelector ("journey") is now unreachable.
+  // hub / its sub-hubs.
+  //
+  // The legacy JourneySelector ("journey") must stay unreachable. It was NOT:
+  // the Data Request Builder's Back and Measure's Back both targeted it, and the
+  // Data Request Builder is reachable from the Explore header on all nine steps.
+  // So hub > The Numbers > Explore > Data request > Back dropped the user into
+  // the whole retired IA (Measure, Switch, legacy Attain, the Forecast selector)
+  // in four clicks. One of those call sites used single quotes, which is why
+  // every grep for navigateTo("journey") — including the one behind this very
+  // comment — reported it unreachable. Guarded now by hubJourneyUnreachable.test.
   const hubMode = true;
 
   // Track navigation history for browser back button support
@@ -815,7 +824,7 @@ export default function App() {
 
             {currentView === "measure" && (
               <MeasureFlow onBackToJourney={() => {
-                const dest = measureFromForecastMode ? "forecast-mode" : "journey";
+                const dest = measureFromForecastMode ? "forecast-mode" : hubMode ? "hub" : "journey";
                 setMeasureFromForecastMode(false);
                 navigateTo(dest);
               }} />
@@ -872,7 +881,7 @@ export default function App() {
             )}
 
             {currentView === "data-request-builder" && (
-              <DataRequestBuilder onBack={() => navigateTo('journey')} />
+              <DataRequestBuilder onBack={() => navigateTo(hubMode ? "financial-hub" : "journey")} />
             )}
 
             {(currentView === "proforma-hub" || currentView === "proforma-view") && (
