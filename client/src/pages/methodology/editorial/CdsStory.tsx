@@ -80,21 +80,38 @@ const GUARDRAILS = [
 ];
 
 /**
- * A few of the published sources, not the whole list.
+ * The published CDS sources, from the internal "CDS Sources List — Commercial"
+ * register (Notion, owner Katie Kahn) rather than from memory.
  *
- * The list moves: specialty sources are added on a rolling basis, and the
- * internal and public lists already disagree. Naming all of them makes this page
- * wrong the week one changes, so it names the heavyweights and says openly that
- * there are more. The AHA footnote is theirs and is reproduced exactly:
- * dropping it would misstate the relationship.
+ * Two columns on that register govern what may appear here:
+ *
+ *   "Can I discuss this?"  Yes on every source below. That column exists to
+ *                          answer exactly this question, so it is the clearance.
+ *   "Product Status"       Only `Live in production` is listed. The American
+ *                          Heart Association is `Building`, so it is NOT here —
+ *                          the page used to name AHA as a current source with a
+ *                          licensing footnote, which claimed a relationship that
+ *                          is not shipped yet. That was the error.
+ *
+ * Names are trimmed for a wall (the register's "CDC Publications (includes CDC,
+ * ACIP, and MMWR)" reads as "CDC" plus its parenthetical) but not renamed.
+ *
+ * When AHA goes live, add it. When a source is added to the register with
+ * "Can I discuss this? = Yes" and "Live in production", add it.
  */
 const SOURCES = [
   "NEJM",
-  "JAMA",
-  "American Heart Association*",
-  "American Diabetes Association",
+  "PubMed",
+  "JAMA Network",
+  "DailyMed",
+  "UpToDate",
+  "CDC · ACIP · MMWR",
+  "U.S. Preventive Services Task Force",
   "American Family Physician",
-  "Journal of Clinical Oncology",
+  "EBMCalc",
+  "American Diabetes Association",
+  "American Academy of Neurology",
+  "American Society of Clinical Oncology",
 ];
 
 export default function CdsStory({ onBack, onHome }: Props) {
@@ -213,16 +230,20 @@ export default function CdsStory({ onBack, onHome }: Props) {
             Every insight connects back to the literature behind it, so a clinician can follow it to the source.
           </p>
           <div className="mt-6 border border-[#E8E2DA] rounded-[18px] bg-[#FDFBF8] px-6 sm:px-10 py-9">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-8 items-center">
+            {/* items-start, not items-center: three of the twelve names wrap to
+                two lines, and centring them put the single-line names on a
+                different baseline from the first line of their wrapping
+                neighbours. Top-aligned, every name in a row starts on the same
+                line. */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-9 items-start">
               {SOURCES.map((src) => (
                 <div key={src} className="flex items-center justify-center text-center">
                   <span className="font-abridge text-[17px] sm:text-[19px] leading-[1.2] text-[#8C8073]">{src}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-8 pt-6 border-t border-[#EFE9E0] flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <div className="mt-8 pt-6 border-t border-[#EFE9E0]">
               <span className="text-[13.5px] text-[#5E534A]">and further specialty sources, added on a rolling basis</span>
-              <span className="text-[12px] text-[#B4A896]">*American Heart Association licenses selected scientific content to Abridge.</span>
             </div>
           </div>
 
