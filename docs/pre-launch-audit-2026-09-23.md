@@ -250,6 +250,32 @@ highest-value clusters:
 The three full reviews are long and specific (file, region, measured pixel values,
 suggested fix). Ask and I'll paste any of them in full.
 
+### C2. PDF pass — done in a later sitting
+
+Worked from measurement, not the review's sample. All committed and verified.
+
+| finding | outcome |
+|---|---|
+| Cash-flow chart scaled positives and negatives against different extremes, overstating peak outflow ~10x | Fixed. One linear scale; dip now draws at 8.3% of the peak, matching -$129K vs +$1.56M. Trough labelled. |
+| Live path could fall back to a FABRICATED cash-flow curve (invented 2.4x multiplier on a hardcoded $100K) | Fixed. Renders nothing rather than something untrue. |
+| p4 bar chart: value label struck through by the investment line; line invisible inside dark bars; brown palette; legend mismatch | All four fixed. |
+| Domain colours forked — Capacity and Revenue inverted between the bar and the cards ON THE SAME PAGE, plus two more files | Fixed, all three converted to the canonical map, guarded by `oneDomainPalette.test.ts` |
+| Explore printed a bold "$330,000 true outlay" beside a return computed on $270K | Both now shown: 5.1x recurring, 4.2x including implementation |
+| Plan closing page: only dark page in a white document, 14.9% ink, two slogans | Rebuilt white with a real outcomes recap. 24.8% ink. |
+| `outcomeLabel` rendered "Provider Retention" on a nursing plan | Fixed at source; the field had been exempted from the vocabulary scan as "internal", and is now scanned |
+| Footer clearance 3px on every Plan page | 25-28px, no page-count change. USABLE_H now derives from the padding so it cannot drift. |
+| Explore p4/p5 at 32% / 19% ink | Already resolved by the earlier pagination fix: now 43% / 63% |
+| Three Explore scenario cards not sharing a baseline | Fixed |
+
+**Not fixed, and why.** Two of the proforma's eight pages still sit ~1px off the
+running footer. I tried the same padding fix that worked on the Plan PDF; on
+this document it cost two extra pages and left four of them half empty, so I
+reverted it. It is a real content-vs-space constraint on those two layouts, and
+every version I measured traded it for something worse.
+
+**Still open:** the two pitch pages (Explore p2 at 22% ink, proforma p2 at 25%)
+are the sparsest body pages. Filling them is a layout decision, not a defect fix.
+
 ### D. An axe accessibility pass
 I wrote a dependency-free baseline instead, targeting the specific risk: the hub's
 rows are not `<button>`s but hand-rolled `role="button"` + `tabIndex` + `onKeyDown`,
