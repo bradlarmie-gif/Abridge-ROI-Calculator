@@ -20,12 +20,17 @@ export function MethodologyHeader({
   onBack,
   onHome,
   onNavigate,
+  railLabel = "The Value Methodology",
 }: {
-  active: MethodologyNavKey;
+  active?: MethodologyNavKey;
   activeLabel: string;
   onBack: () => void;
   onHome: () => void;
+  /** Omit to render the chrome WITHOUT the switcher — a standalone story page
+   *  (Pre-Bill) has nowhere to switch to, and an empty tab group reads broken. */
   onNavigate?: (key: MethodologyNavKey) => void;
+  /** The small rail caption beside the wordmark. */
+  railLabel?: string;
 }) {
   const tab = (isActive: boolean) =>
     isActive
@@ -45,8 +50,9 @@ export function MethodologyHeader({
           </button>
           <button onClick={onHome} className="font-abridge text-[22px] text-[#EA2C00] tracking-[0.03em]">ABRIDGE</button>
           <span className="hidden sm:inline text-[#B4A896]">|</span>
-          <span className="hidden sm:inline text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">The Value Methodology</span>
+          <span className="hidden sm:inline text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">{railLabel}</span>
         </div>
+        {onNavigate && (
         <div className="hidden md:flex items-center gap-1 bg-[#F2EDE5] rounded-[12px] p-1">
           <button onClick={() => onNavigate?.("overview")} className={tab(active === "overview")}>
             The Methodology
@@ -62,6 +68,7 @@ export function MethodologyHeader({
             Across settings
           </button>
         </div>
+        )}
         <span className="md:hidden text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">{activeLabel}</span>
       </div>
     </div>
