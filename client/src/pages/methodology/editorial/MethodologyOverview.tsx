@@ -1,5 +1,6 @@
 import { METHODOLOGY_SETTINGS } from "@/lib/methodologyContent";
 import { MethodologyHeader, type MethodologyNavKey } from "./MethodologyHeader";
+import { CaseProvenance } from "./CaseProvenance";
 
 interface Props {
   onBack: () => void;
@@ -38,6 +39,10 @@ export default function MethodologyOverview({ onBack, onHome, onNavigate }: Prop
           <p className="mt-5 text-[15px] sm:text-[17px] leading-[1.55] text-[#5E534A] max-w-[640px]">
             It gets written after the visit, in whatever time is left, so it holds a fraction of what happened: the level of care given, the conditions addressed, the reason behind a decision. That work is real. It just never reaches the record. Ambient documentation captures the visit as it happens, so the note reflects the care actually delivered.
           </p>
+          <CaseProvenance>
+            Everything downstream inherits whatever the record holds: the coding case, the quality signal, the denial
+            defense. None of them can be better than what was captured in the room.
+          </CaseProvenance>
         </div>
 
         {/* the two-card record graphic */}

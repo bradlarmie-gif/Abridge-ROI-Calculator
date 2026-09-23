@@ -19,7 +19,7 @@ interface StrategyHubProps {
  */
 export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onHome }: StrategyHubProps) {
   return (
-    <HubPage pageName="The Case" onHome={onHome} header={<HubHeader eyebrow="The Case" title="Start with the why" />}>
+    <HubPage pageName="The Case" onHome={onHome} header={<HubHeader eyebrow="The Case" title="Start with the why" lead="The record is the asset. Each story here is a different claim on it: how it gets created, and what becomes possible once it exists." />}>
       <HubList wide>
         <HubRow
           index={1}

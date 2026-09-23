@@ -1,4 +1,5 @@
 import { MethodologyHeader } from "./MethodologyHeader";
+import { CaseProvenance } from "./CaseProvenance";
 
 interface Props {
   onBack: () => void;
@@ -90,6 +91,10 @@ export default function PreBillStory({ onBack, onHome }: Props) {
             stay often documented more than the summary carries. Pre-Bill compares the coded case with the documented
             stay, helping CDI and coding confirm that the claim is accurate and supported before submission.
           </p>
+          <CaseProvenance>
+            Every finding points back to a note captured at the bedside. The comparison is not reconstructed from the
+            claim. It is read from the record that produced it.
+          </CaseProvenance>
         </div>
 
         {/* the two-record graphic: the claim is a subset of the stay */}

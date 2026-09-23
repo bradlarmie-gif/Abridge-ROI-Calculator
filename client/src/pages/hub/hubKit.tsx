@@ -70,7 +70,7 @@ export function HubPage({
   );
 }
 
-export function HubHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
+export function HubHeader({ eyebrow, title, lead }: { eyebrow: string; title: string; lead?: string }) {
   return (
     <>
       <p className="text-xs uppercase text-[#999999] font-medium mb-3" style={{ letterSpacing: "3px" }}>
@@ -79,6 +79,9 @@ export function HubHeader({ eyebrow, title }: { eyebrow: string; title: string }
       <h1 className="text-3xl sm:text-4xl font-bold text-black font-abridge uppercase" style={{ letterSpacing: "0.025em" }}>
         {title}
       </h1>
+      {/* Optional. The Case uses it to state the spine once, so its rows read as
+          chapters of one argument rather than a menu of unrelated documents. */}
+      {lead && <p className="mt-5 text-[15px] leading-relaxed text-[#666666] max-w-[520px]">{lead}</p>}
     </>
   );
 }
