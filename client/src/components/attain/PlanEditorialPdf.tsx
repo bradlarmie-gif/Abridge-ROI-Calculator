@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
 import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
 import { buildOutcomePlan, type OutcomePlan, type PlanOwner, type PlanStep } from "@/lib/attain/planBuild";
-import { SETTING_GOAL_MATRIX, goalDisplayLabel } from "@/lib/attain/attainGoals";
+import { SETTING_GOAL_MATRIX, goalDisplayLabel, GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting } from "@/lib/attain/attainTypes";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -380,6 +380,144 @@ function buildOutcomeAtoms(plan: OutcomePlan): OutcomeAtom[] {
  * then one orphaned row." In practice, every goal in the current catalog
  * fits on a single page once owners are paired up; this is the safety net
  * for any future goal whose chain produces more owners than one page holds. */
+
+/**
+ * EXPERIMENT: the chain rendered as a chain.
+ *
+ * The model is an ordered causal argument — 7 links, each handing to the next,
+ * with links 3 and 4 flagged `fragile` ("the make-or-break middle links, where
+ * plans die"). Grouping those links by OWNER scatters that sequence into a grid
+ * of cards, five of which hold exactly one step, so the grouping groups nothing
+ * and the direction, the order and the make-or-break middle all disappear.
+ *
+ * Here the chain is the spine and the owner hangs off each link.
+ */
+function ChainLinkRow({ step, owner, isLast }: { step: PlanStep; owner: string; isLast: boolean }): JSX.Element {
+  const isOutcome = step.layer === "outcome";
+  const accent = step.fragile ? C.fragile : step.isAbridge ? C.coral : C.hair;
+  return (
+    <div style={{ display: "flex", gap: 14, alignItems: "stretch" }}>
+      {/* the spine: number + connector */}
+      <div style={{ width: 26, flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: 99,
+            border: `1.5px solid ${accent}`,
+            background: step.fragile ? "#FCF4EA" : isOutcome ? C.coral : "#FFFFFF",
+            color: isOutcome ? "#FFFFFF" : step.fragile ? C.fragile : C.faint,
+            fontSize: 10,
+            fontWeight: 800,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {step.n}
+        </div>
+        {!isLast && <div style={{ width: 1.5, flex: 1, background: C.hair, marginTop: 3, marginBottom: 3 }} />}
+      </div>
+
+      <div style={{ minWidth: 0, flex: 1, paddingBottom: isLast ? 0 : 13 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+          <span style={{ fontSize: 13.5, lineHeight: 1.3, fontWeight: isOutcome ? 700 : 600, color: isOutcome ? C.coral : C.ink }}>
+            {step.name}
+          </span>
+          <SourceChip source={step.source} />
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", columnGap: 16, rowGap: 1, marginTop: 3 }}>
+          <span style={{ fontSize: 10.5, color: C.muted }}>
+            <b style={{ color: C.label, fontWeight: 700 }}>{owner}</b>
+          </span>
+          <span style={{ fontSize: 10.5, color: C.faint }}>Watch: {step.signal}</span>
+        </div>
+        {step.fragile && (
+          <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".07em", textTransform: "uppercase", color: C.fragile, marginTop: 3 }}>
+            Make-or-break · plans stall here
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function buildChainAtoms(plan: OutcomePlan): OutcomeAtom[] {
+  const steps = plan.owners
+    .flatMap((o) => o.steps.map((st) => ({ st, owner: o.person || o.role })))
+    .sort((a, b) => a.st.n - b.st.n);
+
+  const atoms: OutcomeAtom[] = [];
+  const leading = steps.filter((x) => x.st.isAbridge);
+  const rest = steps.filter((x) => !x.st.isAbridge);
+
+  const section = (label: string, note: string, rows: typeof steps, key: string) => {
+    const h = 34 + rows.reduce((a, r) => a + (r.st.fragile ? 78 : 64), 0);
+    atoms.push({
+      h,
+      node: (
+        <div key={key}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 10 }}>
+            <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".11em", textTransform: "uppercase", color: C.label }}>
+              {label}
+            </span>
+            <span style={{ fontSize: 10.5, color: C.faint }}>{note}</span>
+          </div>
+          {rows.map((r, i) => (
+            <ChainLinkRow key={r.st.n} step={r.st} owner={r.owner} isLast={i === rows.length - 1} />
+          ))}
+        </div>
+      ),
+    });
+  };
+
+  if (leading.length) {
+    section("Abridge proves this first", `${leading.length} leading ${leading.length === 1 ? "signal" : "signals"}, visible in weeks`, leading, "lead");
+  }
+  if (rest.length) {
+    section("Then your team carries it", "each link hands to the next", rest, "rest");
+  }
+
+  /*
+    The three authored mechanisms, which the PDF was not using at all.
+
+    They are typed in the catalog as "3, for the hardest-link page" and they
+    answer the fragile links directly — "Make the gap a shift task, not an audit
+    finding" is the answer to "Real-time gaps acted on"; "Tie the signal to a
+    response" is the answer to "Deterioration response".
+
+    Without them the document lists what will be watched and never says what
+    anyone actually DOES, which is the difference between a dashboard spec and a
+    plan. They are also what earns the space the chain frees up.
+  */
+  const mechanisms = GOAL_CATALOG[plan.goal]?.mechanisms ?? [];
+  if (mechanisms.length) {
+    atoms.push({
+      h: 44 + mechanisms.length * 52,
+      node: (
+        <div key="mech" style={{ marginTop: 4, borderTop: `2px solid ${C.ink}`, paddingTop: 14 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 11 }}>
+            <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: ".11em", textTransform: "uppercase", color: C.label }}>
+              How the middle actually gets done
+            </span>
+            <span style={{ fontSize: 10.5, color: C.faint }}>the practices that keep links 3 and 4 alive</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+            {mechanisms.map((m: { heading: string; body: string }, i: number) => (
+              <div key={i}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.ink, lineHeight: 1.3, marginBottom: 4 }}>{m.heading}</div>
+                <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.45 }}>{m.body}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    });
+  }
+  return atoms;
+}
+
 function packAtomsIntoPages(atoms: OutcomeAtom[]): OutcomeAtom[][] {
   const pages: OutcomeAtom[][] = [[]];
   let used = 0;
@@ -515,7 +653,7 @@ function ClosingPage({ data, plans, pgnum }: { data: PlanPdfData; plans: Outcome
 export function PlanEditorialPdfDocument({ data }: { data: PlanPdfData }): JSX.Element {
   const goals = SETTING_GOAL_MATRIX[data.setting];
   const plans = data.plans && data.plans.length ? data.plans : goals.map((g) => buildOutcomePlan(data.setting, g));
-  const atomPagesPerPlan = plans.map((plan) => packAtomsIntoPages(buildOutcomeAtoms(plan)));
+  const atomPagesPerPlan = plans.map((plan) => packAtomsIntoPages(buildChainAtoms(plan)));
   const totalOutcomePages = atomPagesPerPlan.reduce((a, pages) => a + pages.length, 0);
   const total = 1 /* cover */ + totalOutcomePages + 1 /* closing */;
   const pg = (n: number) => `Abridge · Value Attainment Plan · ${n} of ${total}`;
