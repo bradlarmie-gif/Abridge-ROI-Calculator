@@ -3,6 +3,7 @@ import { HubPage, HubHeader, HubList, HubRow } from "./hubKit";
 interface StrategyHubProps {
   onSelectValueStory: () => void;
   onSelectPreBill: () => void;
+  onSelectCds: () => void;
   onHome?: () => void;
 }
 
@@ -17,7 +18,7 @@ interface StrategyHubProps {
  * the content never once says "clinical notes", and every number in it traces
  * back to ambient capture.
  */
-export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onHome }: StrategyHubProps) {
+export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSelectCds, onHome }: StrategyHubProps) {
   return (
     <HubPage pageName="The Case" onHome={onHome} header={<HubHeader eyebrow="The Case" title="Start with the why" lead="The record is the asset. Each story here is a different claim on it: how it gets created, and what becomes possible once it exists." />}>
       <HubList wide>
@@ -39,16 +40,14 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onHom
           testId="strategy-card-prebill"
           delay={0.22}
         />
-        {/* Deliberately description-less until the real copy exists: a placeholder
-            sentence here would be a product claim nobody has written or checked. */}
         <HubRow
           index={3}
           tagline="The narrative"
-          title="CDS"
-          onClick={() => {}}
+          title="Clinical Decision Support"
+          description="Context-aware support in the room: how the patient's own record shapes the answer, and where the evidence behind it comes from."
+          onClick={onSelectCds}
           testId="strategy-card-cds"
           delay={0.29}
-          comingSoon
         />
       </HubList>
     </HubPage>
