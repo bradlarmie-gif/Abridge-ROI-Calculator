@@ -37,11 +37,10 @@ export default function FinancialHub({
   */
   return (
     <HubPage pageName="The Numbers" onHome={onHome} header={<HubHeader eyebrow="The Numbers" title="Put it in dollars" />}>
-      <HubList wide>
+      <HubList>
         <HubRow
           tagline="The fast read"
           title="Size the ROI"
-          description="A few figures from the impact analysis, turned straight into dollars."
           onClick={onSelectRoiCalculator}
           index={1}
           testId="financial-card-roi-calculator"
@@ -50,7 +49,6 @@ export default function FinancialHub({
         <HubRow
           tagline="The full build"
           title="Model the Value"
-          description="How the value is built, driver by driver, from your own figures before any data pull."
           onClick={onSelectExplore}
           index={2}
           testId="financial-card-explore"
@@ -59,7 +57,6 @@ export default function FinancialHub({
         <HubRow
           tagline="The three-year case"
           title="Build the Deal"
-          description="A full deployment: care settings, volumes, pricing, and a proposal to share."
           onClick={onSelectNewDeal}
           index={3}
           testId="financial-card-new-deal"
@@ -68,7 +65,6 @@ export default function FinancialHub({
         <HubRow
           tagline="The current stack"
           title="Offset the Cost"
-          description="The tool stack already being paid for, and how much of it Abridge can take on."
           onClick={onSelectAppRationalization}
           index={4}
           testId="financial-card-app-rationalization"

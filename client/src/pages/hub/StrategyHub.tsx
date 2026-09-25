@@ -29,7 +29,7 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
         <HubHeader
           eyebrow="The Case"
           title="Start with the why"
-          lead="The record is the asset. Each story here is a different claim on it: how it gets created, and what becomes possible once it exists."
+          lead="How each one works, and why it matters."
         />
       }
     >
@@ -38,7 +38,6 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           index={1}
           tagline="The record"
           title="Ambient Documentation"
-          description="How the conversation becomes the note, and what that note is worth."
           onClick={onSelectValueStory}
           testId="strategy-card-value-story"
           delay={0.15}
@@ -47,7 +46,6 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           index={2}
           tagline="The risk gap"
           title="Care Signals"
-          description="How a flagged condition gets addressed and evidenced in the room."
           onClick={onSelectCareSignals}
           testId="strategy-card-care-signals"
           delay={0.22}
@@ -56,14 +54,13 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           index={3}
           tagline="The evidence"
           title="Clinical Decision Support"
-          description="How the patient's own record shapes the answer, and where the evidence comes from."
           onClick={onSelectCds}
           testId="strategy-card-cds"
           delay={0.29}
         />
         <HubRow
           index={4}
-          tagline="The dictated note"
+          tagline="The spoken note"
           title="Dictation"
           testId="strategy-card-dictation"
           delay={0.36}
@@ -73,7 +70,6 @@ export default function StrategyHub({ onSelectValueStory, onSelectPreBill, onSel
           index={5}
           tagline="The claim"
           title="Pre-Bill"
-          description="How the coded case is compared with the documented stay, before the claim goes."
           onClick={onSelectPreBill}
           testId="strategy-card-prebill"
           delay={0.43}
