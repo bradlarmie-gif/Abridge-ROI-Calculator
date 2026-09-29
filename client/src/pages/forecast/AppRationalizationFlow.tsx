@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useFlowHistory } from "@/lib/useFlowHistory";
 import { UnifiedHeader } from "@/components/UnifiedHeader";
 import { type AppRatItem, type AppRatCategoryId, makeItem } from "@/lib/appRationalizationCalc";
 import ArApplicationsStep from "./appRationalization/ArApplicationsStep";
@@ -21,7 +22,10 @@ const STEP_INDEX: Record<ArStep, number> = { applications: 1, consolidation: 2, 
 const STEP_LABELS = ["Applications", "Consolidation", "When it lands", "Why only Abridge"];
 
 export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: AppRationalizationFlowProps) {
-  const [step, setStep] = useState<ArStep>("applications");
+  const [step, setStepState] = useState<ArStep>("applications");
+  // The four steps are real history entries, so the browser Back button steps
+  // back through them rather than exiting the tool outright.
+  const setStep = useFlowHistory("appRat", "applications", (s: string) => setStepState(s as ArStep));
   const [orgName, setOrgName] = useState("");
   const [abridgePrice, setAbridgePrice] = useState(0);
   const [horizonYears, setHorizonYears] = useState(3);

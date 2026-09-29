@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useFlowHistory } from "@/lib/useFlowHistory";
 import { ArrowRight, RotateCcw } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
@@ -56,7 +57,11 @@ export default function AttainFlowV2({
   // step; settings with saved work are badged there so they can resume one (see pickSetting)
   // or start a new one — a partner can hold a separate plan per care setting.
   const [saved, setSaved] = useState<AttainSnapshot | null>(null);
-  const [phase, setPhase] = useState<Phase>("partner");
+  const [phase, setPhaseState] = useState<Phase>("partner");
+  // The chapters are real history entries, so the browser Back button steps
+  // back through them rather than exiting the tool outright. Reset and resume
+  // below deliberately use setPhaseState: they are not back-able steps.
+  const setPhase = useFlowHistory("attain", "partner", (p: string) => setPhaseState(p as Phase));
   const [setting, setSetting] = useState<AttainSetting | null>(null);
   const [goals, setGoals] = useState<GoalId[]>([]);
   const [baseline, setBaseline] = useState<AttainBaseline>({});
@@ -117,7 +122,7 @@ export default function AttainFlowV2({
   const startOver = () => {
     clearSnapshot(partner, setting ?? undefined);
     expRef.current = null; discoveryRef.current = null; planBuildRef.current = null; setSaved(null); setConfirmingReset(false);
-    setPartner(""); setSetting(null); setGoals([]); setBaseline({}); setPhase("partner");
+    setPartner(""); setSetting(null); setGoals([]); setBaseline({}); setPhaseState("partner");
   };
 
   // Rehydrate the whole flow from a saved snapshot (used by both the type-the-name resume and the
@@ -143,7 +148,7 @@ export default function AttainFlowV2({
     // skip the interview they were halfway through, so send anyone with
     // discovery answers and no plan yet back to discovery.
     const midDiscovery = !!existing.discovery && !existing.planBuild;
-    setPhase(midDiscovery ? "discovery" : savedIdx > 0 ? PHASES[savedIdx] : "experience");
+    setPhaseState(midDiscovery ? "discovery" : savedIdx > 0 ? PHASES[savedIdx] : "experience");
   };
 
   // Planning entry (autoResume): skip the funnel and pick up the active saved plan

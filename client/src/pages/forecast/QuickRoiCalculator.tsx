@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { ArrowRight, ChevronDown, Download } from "lucide-react";
 import { QUICK_ROI_PDF_STORAGE_KEY } from "@/components/forecast/QuickRoiEditorialPdf";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
+import { useFlowHistory } from "@/lib/useFlowHistory";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
 import {
   type SettingKey,
@@ -84,6 +85,17 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
   const [setting, setSetting] = useState<SettingKey | null>(null);
   const [step, setStep] = useState(0); // 0 = account, 1 = lift, 2 = answer
   const inPicker = setting === null;
+
+  // The four screens here are real history entries, so the browser Back button
+  // steps back through them instead of exiting the tool from wherever you
+  // stood. "picker" | "<setting>:<step>".
+  const position = inPicker ? "picker" : `${setting}:${step}`;
+  const go = useFlowHistory("roiCalc", position, (next) => {
+    if (next === "picker") { setSetting(null); setStep(0); return; }
+    const [s, n] = next.split(":");
+    setSetting(s as SettingKey);
+    setStep(Number(n) || 0);
+  });
   // Every step change starts a new screen — always open it at the top. Without
   // this, advancing while scrolled down (e.g. Lift -> Answer) opens the next
   // screen mid-page. App-level scroll reset only fires on view changes, not on
@@ -93,12 +105,12 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
   }, [step, setting]);
   const goBack = () => {
     if (inPicker) onBack();
-    else if (step > 0) setStep(step - 1);
-    else { setSetting(null); setStep(0); }
+    else if (step > 0) go(`${setting}:${step - 1}`);
+    else go("picker");
   };
   const onStepClick = (n: number) => {
-    if (n === 1) { setSetting(null); setStep(0); }
-    else setStep(n - 2);
+    if (n === 1) go("picker");
+    else go(`${setting}:${n - 2}`);
   };
   return (
     <div className="min-h-screen bg-[#FFFFFF] text-[#5E534A] antialiased">
@@ -116,8 +128,8 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
       <UnifiedHeaderSpacer />
       <div className="max-w-[760px] mx-auto px-5 sm:px-8">
         {inPicker
-          ? <SettingPicker onPick={(s) => { setSetting(s); setStep(0); }} />
-          : <Wizard key={setting} setting={setting} step={step} setStep={setStep} onChangeSetting={() => { setSetting(null); setStep(0); }} />}
+          ? <SettingPicker onPick={(s) => go(`${s}:0`)} />
+          : <Wizard key={setting} setting={setting} step={step} setStep={(n) => go(`${setting}:${n}`)} onChangeSetting={() => go("picker")} />}
       </div>
     </div>
   );

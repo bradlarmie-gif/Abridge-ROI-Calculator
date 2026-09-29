@@ -110,6 +110,36 @@ describe("navigation integrity", () => {
     expect(read("App.tsx")).toMatch(/const onOwnEntry = window\.history\.state\?\.idx === idx;/);
   });
 
+  it("every live tool makes its internal steps history entries", () => {
+    // Four of the five tools had no history integration at all, so the browser
+    // Back button skipped the whole flow and exited the tool from wherever you
+    // stood. They now share one hook; Explore predates it and rolls its own.
+    const wired: [string, string[]][] = [
+      ["Size the ROI", ["pages", "forecast", "QuickRoiCalculator.tsx"]],
+      ["Build the Deal", ["pages", "proforma", "editorial", "ProformaEditorialHost.tsx"]],
+      ["Offset the Cost", ["pages", "forecast", "AppRationalizationFlow.tsx"]],
+      ["Build the Plan", ["pages", "attain", "AttainFlowV2.tsx"]],
+    ];
+    for (const [name, file] of wired) {
+      expect(read(...file), `${name} no longer uses useFlowHistory`).toMatch(/useFlowHistory\(/);
+    }
+  });
+
+  it("the shared hook unwinds on a back-step and keeps App's guard intact", () => {
+    const hook = read("lib", "useFlowHistory.ts");
+    expect(hook, "must detect a step onto the previous position").toMatch(
+      /stackRef\.current\[idx - 1\] === next/,
+    );
+    expect(hook).toMatch(/window\.history\.back\(\)/);
+    // Only unwind while parked on an entry this flow pushed.
+    expect(hook).toMatch(/state\[IDX\] === idx/);
+    // Entries must DROP App's idx, or App.navigateTo will unwind into the tool
+    // when it meant to leave it.
+    expect(hook, "pushed entries must not carry App's idx").toMatch(
+      /const \{ idx: _appIdx, \.\.\.carried \} = state/,
+    );
+  });
+
   it("Explore's Back lands on The Numbers, alongside its three sibling tools", () => {
     // It went to the top-level hub, skipping a level, while Size the ROI /
     // Build the Deal / Offset the Cost all returned to financial-hub.

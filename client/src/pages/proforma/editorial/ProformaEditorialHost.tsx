@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useFlowHistory } from "@/lib/useFlowHistory";
 import type { ProformaSettingSnapshot, ProformaConfig } from "../proformaTypes";
 import ProformaWorkbench from "./ProformaWorkbench";
 import ProformaCaseView from "./ProformaCaseView";
@@ -37,10 +38,9 @@ export default function ProformaEditorialHost({
 }: ProformaEditorialHostProps) {
   const [chapter, setChapter] = useState<Chapter>("build");
 
-  const navigate = (c: Chapter) => {
-    setChapter(c);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
-  };
+  // The three chapters are real history entries, so the browser Back button
+  // steps back through them rather than exiting the tool outright.
+  const navigate = useFlowHistory("proforma", "build", (c) => setChapter(c as Chapter));
 
   // Resolve driver on/off once, so Case and Present count exactly what Build does.
   const resolved = useMemo(() => applyExclusions(settings), [settings]);
