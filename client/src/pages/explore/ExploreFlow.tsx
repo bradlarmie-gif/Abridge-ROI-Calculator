@@ -1026,6 +1026,10 @@ export function resolveExplorePhase(requested: string, editing: boolean): Explor
 
 interface ExploreFlowProps {
   onBackToJourney?: () => void;
+  /** The wordmark's destination — the top-level hub. Distinct from
+   *  onBackToJourney, which is one level up (The Numbers, or the proforma you
+   *  came in from). Sharing one handler made the logo a back button. */
+  onHome?: () => void;
   onBackToProforma?: () => void;
   initialCareSetting?: ExploreCareSetting;
   initialPhase?: ExplorePhase;
@@ -1043,7 +1047,7 @@ interface ExploreFlowProps {
   onExitToDiscovery?: () => void;
 }
 
-export default function ExploreFlow({ onBackToJourney, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest, editorial = false, lockCareSetting = false, onExitToDiscovery }: ExploreFlowProps) {
+export default function ExploreFlow({ onBackToJourney, onHome, onBackToProforma, initialCareSetting, initialPhase, initialExploreState, onAddToProforma, disabledCareSettings = [], onDataRequest, editorial = false, lockCareSetting = false, onExitToDiscovery }: ExploreFlowProps) {
   const [phase, setPhase] = useState<ExplorePhase>(() => {
     const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
     return resolveExplorePhase(requested, !!initialExploreState && !!onAddToProforma);
@@ -1170,6 +1174,12 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
     }
   }, [onBackToProforma, onBackToJourney]);
 
+  // The wordmark leaves Explore entirely; goHome only steps up one level.
+  const goToHub = useCallback(() => {
+    if (onHome) onHome();
+    else goHome();
+  }, [onHome, goHome]);
+
   const navigate = useCallback((nextPhase: ExplorePhase) => {
     // When editing an existing proforma setting, the proforma owns deployment/
     // expansion — the Explore "investment" (expansion) page is irrelevant and its
@@ -1266,7 +1276,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           }}
           onNext={() => navigate('practice')}
           onBack={goHome}
-          onHome={goHome}
+          onHome={goToHub}
           disabledSettings={disabledCareSettings}
           onDataRequest={onDataRequest}
         />
@@ -1279,7 +1289,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           }}
           onNext={() => navigate('practice')}
           onBack={goHome}
-          onHome={goHome}
+          onHome={goToHub}
           disabledSettings={disabledCareSettings}
           onDataRequest={onDataRequest}
         />
@@ -1293,7 +1303,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           updateState={updateState}
           onNext={() => navigate('timeSavings')}
           onBack={() => (lockCareSetting && onExitToDiscovery ? onExitToDiscovery() : navigate('careSetting'))}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       ) : (
@@ -1302,7 +1312,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           updateState={updateState}
           onNext={() => navigate('timeSavings')}
           onBack={() => (lockCareSetting && onExitToDiscovery ? onExitToDiscovery() : navigate('careSetting'))}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
@@ -1317,7 +1327,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
             navigate('capacity');
           }}
           onBack={() => navigate('practice')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       ) : (
@@ -1328,7 +1338,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
             navigate('capacity');
           }}
           onBack={() => navigate('practice')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
@@ -1344,7 +1354,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('workforce')}
           onBack={() => navigate('timeSavings')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       ) : (
@@ -1355,7 +1365,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('workforce')}
           onBack={() => navigate('timeSavings')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
@@ -1375,7 +1385,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('revenue')}
           onBack={() => navigate('capacity')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       ) : (
@@ -1386,7 +1396,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('revenue')}
           onBack={() => navigate('capacity')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
@@ -1408,7 +1418,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('quality')}
           onBack={() => navigate('workforce')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       ) : (
@@ -1419,7 +1429,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('quality')}
           onBack={() => navigate('workforce')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
@@ -1443,7 +1453,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('investment')}
           onBack={() => navigate('revenue')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       ) : (
@@ -1454,7 +1464,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           priorQuadrants={priorQuadrants}
           onNext={() => navigate('investment')}
           onBack={() => navigate('revenue')}
-          onHome={goHome}
+          onHome={goToHub}
           onReturnToBusinessCase={cameFromProforma ? fastExitToProforma : undefined}
         />
       );
@@ -1471,7 +1481,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           documentationValue={exploreTotals.documentationValue}
           onNext={() => navigate('model')}
           onBack={() => navigate('quality')}
-          onHome={goHome}
+          onHome={goToHub}
         />
       ) : (
         <ExploreInvestment
@@ -1482,7 +1492,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           documentationValue={exploreTotals.documentationValue}
           onNext={() => navigate('model')}
           onBack={() => navigate('quality')}
-          onHome={goHome}
+          onHome={goToHub}
         />
       );
       break;
@@ -1520,7 +1530,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           annualInvestment={annualInvestment}
           onEdit={() => navigate('practice')}
           onBack={() => navigate(isEditingProforma ? 'quality' : 'investment')}
-          onHome={goHome}
+          onHome={goToHub}
           onAddToProforma={onAddToProforma}
           onStepClick={(step: number) => navigate(stepPhaseMap[step - 1])}
           stepLabels={stepLabels}
@@ -1536,7 +1546,7 @@ export default function ExploreFlow({ onBackToJourney, onBackToProforma, initial
           annualInvestment={annualInvestment}
           onEdit={() => navigate('practice')}
           onBack={() => navigate(isEditingProforma ? 'quality' : 'investment')}
-          onHome={goHome}
+          onHome={goToHub}
           onAddToProforma={onAddToProforma}
           onStepClick={(step: number) => navigate(stepPhaseMap[step - 1])}
           stepLabels={stepLabels}

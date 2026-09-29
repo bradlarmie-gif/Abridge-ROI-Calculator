@@ -93,22 +93,20 @@ export function UnifiedHeader({
 }: UnifiedHeaderProps) {
   const [, setLocation] = useLocation();
   
+  // The wordmark goes home or does nothing. It used to fall back to onBack,
+  // which turned it into a second back button on any screen that omitted
+  // onHome — the affordance said "home" and the app went up one level.
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onHome) {
-      onHome();
-    } else if (onBack) {
-      onBack();
-    }
+    onHome?.();
   };
 
+  // No window.history.back() fallback: this app's views are not history
+  // entries one-for-one, so it could walk off the app entirely. A header with
+  // no onBack simply has no back control (see showBack below).
   const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      window.history.back();
-    }
+    onBack?.();
   };
 
   const pathLabel = pathLabelOverride ?? PATH_LABELS[pathType];
@@ -122,7 +120,7 @@ export function UnifiedHeader({
           <a 
             href="#" 
             onClick={handleLogoClick}
-            className="flex items-center transition-opacity hover:opacity-70 cursor-pointer flex-shrink-0"
+            className={`flex items-center flex-shrink-0 ${onHome ? "transition-opacity hover:opacity-70 cursor-pointer" : "cursor-default"}`}
             data-testid="link-logo-home"
           >
             <img 
@@ -132,7 +130,7 @@ export function UnifiedHeader({
             />
           </a>
           
-          {showBack && (
+          {showBack && onBack && (
             <>
               <div className="w-px h-5 bg-slate-200 hidden sm:block" />
               <button

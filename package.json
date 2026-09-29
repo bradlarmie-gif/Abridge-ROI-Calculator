@@ -14,6 +14,7 @@
     "test:e2e": "playwright test",
     "layout:smoke": "node scripts/layout-smoke.mjs",
     "visual:sweep": "node scripts/visual-sweep.mjs",
+    "nav:sweep": "node scripts/nav-sweep.mjs",
     "sweep:interaction": "node scripts/interaction-sweep.mjs",
     "fuzz:pdf": "node scripts/explore-pdf-nobleed/fuzz.mjs",
     "sweep:geometry": "node scripts/geometry-sweep.mjs"

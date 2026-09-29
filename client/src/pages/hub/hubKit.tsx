@@ -44,7 +44,17 @@ export function HubPage({
   return (
     <div className="min-h-screen bg-[#FFFFFF] relative overflow-hidden">
       {watermark && <BackgroundShape />}
-      <UnifiedHeader pathType="forecast" pathLabel={pageName} onHome={onHome} showBack={showBack} />
+      {/* A sub-hub's only parent IS home, so Back and the wordmark share a
+          destination. Passing onBack explicitly matters: the header no longer
+          falls back to window.history.back(), which used to leave this button
+          walking the raw browser stack. */}
+      <UnifiedHeader
+        pathType="forecast"
+        pathLabel={pageName}
+        onHome={onHome}
+        onBack={showBack ? onHome : undefined}
+        showBack={showBack}
+      />
       <div
         className={
           centered

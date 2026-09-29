@@ -48,11 +48,12 @@ export function MethodologyHeader({
           <button
             onClick={onBack}
             aria-label="Back"
+            data-testid="button-back"
             className="w-8 h-8 rounded-full border border-[#E8E2DA] bg-white flex items-center justify-center text-[#5E534A] hover:text-[#EA2C00] hover:border-[#EA2C00] transition-colors flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <button onClick={onHome} className="font-abridge text-[22px] text-[#EA2C00] tracking-[0.03em]">ABRIDGE</button>
+          <button onClick={onHome} data-testid="link-logo-home" className="font-abridge text-[22px] text-[#EA2C00] tracking-[0.03em]">ABRIDGE</button>
           <span className="hidden sm:inline text-[#B4A896]">|</span>
           <span className="hidden sm:inline text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">{railLabel}</span>
         </div>

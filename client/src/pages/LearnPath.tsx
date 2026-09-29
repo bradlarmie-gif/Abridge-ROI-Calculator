@@ -5,6 +5,9 @@ import MethodologyOverview from "./methodology/editorial/MethodologyOverview";
 
 interface LearnPathProps {
   onBack: () => void;
+  /** The wordmark goes HOME, not back. Passing onBack for both made the logo a
+   *  second back button, which is what it used to do. */
+  onHome: () => void;
   onStartCalculator?: (setting: CareSettingType) => void;
   initialScreen?: LearnScreen;
 }
@@ -18,7 +21,7 @@ export type { LearnScreen };
 
 const SETTINGS: CareSettingType[] = ["outpatient", "ed", "inpatient", "nursing"];
 
-export default function LearnPath({ onBack, onStartCalculator, initialScreen }: LearnPathProps) {
+export default function LearnPath({ onBack, onHome, onStartCalculator, initialScreen }: LearnPathProps) {
   // Land directly on a setting; the switcher moves between settings and the
   // continuum capstone. Legacy "framework"/"home" entries fall through to it.
   const resolveInitial = (s?: LearnScreen): LearnScreen =>
@@ -39,11 +42,11 @@ export default function LearnPath({ onBack, onStartCalculator, initialScreen }: 
   };
 
   if (currentScreen === "overview") {
-    return <MethodologyOverview onBack={onBack} onHome={onBack} onNavigate={handleNavigate} />;
+    return <MethodologyOverview onBack={onBack} onHome={onHome} onNavigate={handleNavigate} />;
   }
 
   if (currentScreen === "continuum") {
-    return <MethodologyContinuum onBack={onBack} onHome={onBack} onNavigate={handleNavigate} />;
+    return <MethodologyContinuum onBack={onBack} onHome={onHome} onNavigate={handleNavigate} />;
   }
 
   const setting = (SETTINGS.includes(currentScreen as CareSettingType) ? currentScreen : "outpatient") as CareSettingType;
@@ -51,7 +54,7 @@ export default function LearnPath({ onBack, onStartCalculator, initialScreen }: 
     <MethodologyEditorialFor
       setting={setting}
       onBack={onBack}
-      onHome={onBack}
+      onHome={onHome}
       onNavigateToSetting={handleNavigate}
       onBuildModel={() => onStartCalculator?.(setting)}
     />

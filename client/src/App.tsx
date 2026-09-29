@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
@@ -377,8 +377,20 @@ export default function App() {
   // comment — reported it unreachable. Guarded now by hubJourneyUnreachable.test.
   const hubMode = true;
 
-  // Track navigation history for browser back button support
-  const [viewHistory, setViewHistory] = useState<AppView[]>(["splash"]);
+  /**
+   * Mirror of the history entries this app pushed, plus where we currently sit
+   * in them. Needed because `navigateTo` is the ONLY navigation primitive: an
+   * in-app "Back" is just `navigateTo(previousView)`, indistinguishable from a
+   * forward move unless we remember what the previous view was.
+   *
+   * It used to push unconditionally, so going back appended a duplicate entry
+   * (`[hub, financial-hub, tool]` + Back -> `[hub, financial-hub, tool,
+   * financial-hub]`). The browser Back button then popped to `tool`, sending
+   * you FORWARD into the screen you had just left, and repeated presses
+   * ping-ponged between the two.
+   */
+  const navStackRef = useRef<AppView[]>(["splash"]);
+  const navIndexRef = useRef(0);
 
   // Scroll to top on every view change (global mobile fix)
   useEffect(() => {
@@ -393,6 +405,8 @@ export default function App() {
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state?.view) {
+        // Trust the entry's own index so Back and Forward both land correctly.
+        if (typeof event.state.idx === 'number') navIndexRef.current = event.state.idx;
         setCurrentView(event.state.view);
         window.scrollTo({ top: 0, behavior: 'instant' });
       }
@@ -403,17 +417,31 @@ export default function App() {
     
     // Initialize history state
     if (!window.history.state?.view) {
-      window.history.replaceState({ view: currentView }, '', window.location.href);
+      navStackRef.current = [currentView];
+      navIndexRef.current = 0;
+      window.history.replaceState({ view: currentView, idx: 0 }, '', window.location.href);
     }
     
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentView]);
 
   const navigateTo = useCallback((view: AppView) => {
+    const idx = navIndexRef.current;
+
+    // Stepping onto the view we came from is a BACK, so unwind the real history
+    // entry instead of stacking another one. popstate then sets the view.
+    if (idx > 0 && navStackRef.current[idx - 1] === view) {
+      window.history.back();
+      return;
+    }
+
+    // A new destination truncates anything we had gone "forward" past, the same
+    // way a browser drops the forward stack when you navigate from mid-history.
+    navStackRef.current = [...navStackRef.current.slice(0, idx + 1), view];
+    navIndexRef.current = idx + 1;
+
     setCurrentView(view);
-    setViewHistory(prev => [...prev, view]);
-    // Push to browser history so back button works
-    window.history.pushState({ view }, '', window.location.href);
+    window.history.pushState({ view, idx: idx + 1 }, '', window.location.href);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -713,7 +741,8 @@ export default function App() {
             {currentView === "explore" && (
               <ExploreFlow
                 editorial
-                onBackToJourney={hubMode ? () => navigateTo("hub") : handleBackToJourney}
+                onBackToJourney={hubMode ? () => navigateTo("financial-hub") : handleBackToJourney}
+                onHome={() => navigateTo(hubMode ? "hub" : "journey")}
                 onBackToProforma={(proformaAddCareSetting || proformaEditExploreState) ? handleBackToProforma : undefined}
                 initialCareSetting={proformaAddCareSetting || exploreInitialSettings.careSetting}
                 initialPhase={exploreInitialSettings.phase}
@@ -813,6 +842,7 @@ export default function App() {
             {currentView === "learn" && (
               <LearnPath
                 onBack={hubMode ? () => navigateTo("strategy-hub") : handleBackToJourney}
+                onHome={() => navigateTo(hubMode ? "hub" : "journey")}
                 initialScreen={learnInitialScreen}
                 onStartCalculator={(setting) => {
                   setSelectionState({ selectedSettings: [setting as CareSettingType], selectedLevers: [] });
