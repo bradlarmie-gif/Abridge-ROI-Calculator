@@ -85,6 +85,31 @@ describe("navigation integrity", () => {
     }
   });
 
+  it("ExploreFlow unwinds its own step history too, not just App's", () => {
+    // Explore is the one tool that makes its internal steps history entries,
+    // and its navigate() had the identical defect: every in-app Back is
+    // navigate(previousPhase), so pushing unconditionally duplicated the entry
+    // and browser Back then walked FORWARD into the step just left.
+    const flow = read("pages", "explore", "ExploreFlow.tsx");
+    const body = flow.slice(flow.indexOf("const navigate = useCallback"));
+    const fn = body.slice(0, body.indexOf("}, [initialExploreState, onAddToProforma]);"));
+
+    expect(fn, "navigate must detect a step onto the previous phase").toMatch(
+      /phaseStackRef\.current\[idx - 1\] === target/,
+    );
+    expect(fn).toMatch(/window\.history\.back\(\)/);
+    expect(fn, "pushed entries must carry their step index").toMatch(/exploreIdx: idx \+ 1/);
+    // Only unwind while parked on an entry this flow pushed.
+    expect(fn).toMatch(/window\.history\.state\?\.exploreIdx === idx/);
+  });
+
+  it("App only unwinds history while parked on an entry it pushed itself", () => {
+    // ExploreFlow pushes entries of its own on top. Those carry no `idx`, so
+    // App must fall through to a normal push rather than stepping back INSIDE
+    // the tool when it meant to leave it.
+    expect(read("App.tsx")).toMatch(/const onOwnEntry = window\.history\.state\?\.idx === idx;/);
+  });
+
   it("Explore's Back lands on The Numbers, alongside its three sibling tools", () => {
     // It went to the top-level hub, skipping a level, while Size the ROI /
     // Build the Deal / Offset the Cost all returned to financial-hub.

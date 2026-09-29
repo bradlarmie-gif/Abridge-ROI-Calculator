@@ -1052,6 +1052,10 @@ export default function ExploreFlow({ onBackToJourney, onHome, onBackToProforma,
     const requested = initialPhase || (initialExploreState ? 'practice' : 'careSetting');
     return resolveExplorePhase(requested, !!initialExploreState && !!onAddToProforma);
   });
+  // Mirror of the phase entries this flow pushed, plus where we sit in them.
+  // Needed to tell a Back (navigate to the previous phase) from a forward move.
+  const phaseStackRef = useRef<ExplorePhase[]>([]);
+  const phaseIdxRef = useRef(0);
   const [state, setState] = useState<ExploreState>(() => {
     if (initialExploreState) {
       return { ...DEFAULT_EXPLORE_STATE, ...initialExploreState };
@@ -1139,6 +1143,7 @@ export default function ExploreFlow({ onBackToJourney, onHome, onBackToProforma,
       if (event.state?.view === 'explore' && event.state?.explorePhase) {
         const requested = event.state.explorePhase as string;
         const resolved = resolveExplorePhase(requested, !!initialExploreState && !!onAddToProforma);
+        if (typeof event.state.exploreIdx === 'number') phaseIdxRef.current = event.state.exploreIdx;
         setPhase(resolved);
         window.scrollTo({ top: 0, behavior: 'instant' });
       } else if (event.state?.view === 'journey' || !event.state?.view) {
@@ -1154,10 +1159,13 @@ export default function ExploreFlow({ onBackToJourney, onHome, onBackToProforma,
 
     const currentState = window.history.state || {};
     if (!currentState.explorePhase || currentState.view !== 'explore') {
+      phaseStackRef.current = [phase];
+      phaseIdxRef.current = 0;
       window.history.replaceState({
         ...currentState,
         view: 'explore',
-        explorePhase: phase
+        explorePhase: phase,
+        exploreIdx: 0
       }, '');
     }
 
@@ -1186,10 +1194,25 @@ export default function ExploreFlow({ onBackToJourney, onHome, onBackToProforma,
     // output is discarded on merge. Make it unreachable so users can't land on it
     // and think a ramp change there will stick. Redirect to the model summary.
     const target = resolveExplorePhase(nextPhase, !!initialExploreState && !!onAddToProforma);
+    const idx = phaseIdxRef.current;
+
+    // Every in-app Back here is navigate(previousPhase), so pushing
+    // unconditionally duplicated the entry and left the browser Back button
+    // walking FORWARD into the step just left. Same defect as App.navigateTo,
+    // one level down, in the deepest flow in the app. Unwind instead.
+    if (window.history.state?.exploreIdx === idx && idx > 0 && phaseStackRef.current[idx - 1] === target) {
+      window.history.back();
+      return;
+    }
+
+    phaseStackRef.current = [...phaseStackRef.current.slice(0, idx + 1), target];
+    phaseIdxRef.current = idx + 1;
+
     setPhase(target);
     window.history.pushState({
       view: 'explore',
-      explorePhase: target
+      explorePhase: target,
+      exploreIdx: idx + 1
     }, '');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [initialExploreState, onAddToProforma]);

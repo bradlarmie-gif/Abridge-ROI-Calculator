@@ -430,7 +430,13 @@ export default function App() {
 
     // Stepping onto the view we came from is a BACK, so unwind the real history
     // entry instead of stacking another one. popstate then sets the view.
-    if (idx > 0 && navStackRef.current[idx - 1] === view) {
+    //
+    // Guarded on being parked on OUR OWN entry: a tool can push entries of its
+    // own on top (ExploreFlow pushes one per internal step), and unwinding then
+    // would step back inside the tool rather than leave it. Those entries carry
+    // no `idx`, so the check fails and we fall through to a normal push.
+    const onOwnEntry = window.history.state?.idx === idx;
+    if (onOwnEntry && idx > 0 && navStackRef.current[idx - 1] === view) {
       window.history.back();
       return;
     }
