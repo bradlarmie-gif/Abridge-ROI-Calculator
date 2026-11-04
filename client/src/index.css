@@ -1038,3 +1038,14 @@ input[type="range"]:focus::-moz-range-thumb {
   from { stroke-dashoffset: 110; }
   to { stroke-dashoffset: 0; }
 }
+
+/* Size the ROI upside sliders: a coral-filled track with a white, coral-ringed
+   thumb. Scoped with input[type=range] so it outranks the global slider skin;
+   the track is transparent so the input's own gradient (set inline from the
+   value) shows as the fill. */
+input[type="range"].roi-range { height: 6px; background-color: #E4D8C8; }
+input[type="range"].roi-range::-webkit-slider-runnable-track { height: 6px; background: transparent; }
+input[type="range"].roi-range::-moz-range-track { height: 6px; background: transparent; }
+input[type="range"].roi-range::-moz-range-progress { background: transparent; }
+input[type="range"].roi-range::-webkit-slider-thumb { width: 22px; height: 22px; margin-top: -8px; border: 2px solid #EA2C00; box-shadow: 0 2px 8px rgba(26,26,26,0.18); }
+input[type="range"].roi-range::-moz-range-thumb { width: 20px; height: 20px; border: 2px solid #EA2C00; box-shadow: 0 2px 8px rgba(26,26,26,0.18); }

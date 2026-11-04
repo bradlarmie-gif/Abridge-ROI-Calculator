@@ -498,7 +498,11 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
           targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct} showUtilDial isNursing={isNursing}
-          price={price} setPrice={setPrice} onBack={() => setStep(1)} onExport={onExportPdf} />
+          price={price} setPrice={setPrice} onBack={() => setStep(1)} onExport={onExportPdf}
+          groups={domains.map((dom) => ({
+            dom,
+            items: DRIVERS[setting].filter((dr) => dr.domain === dom && enabled[dr.id] && (today.valueById[dr.id] ?? 0) > 0).map((dr) => ({ title: dr.title, value: today.valueById[dr.id] ?? 0 })),
+          }))} />
       )}
     </div>
   );
@@ -1117,6 +1121,7 @@ function AnswerStep(p: {
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
   showUtilDial: boolean; isNursing?: boolean; price: number; setPrice: (n: number) => void; onBack: () => void; onExport: () => void;
+  groups: { dom: string; items: { title: string; value: number }[] }[];
 }) {
   const todayShown = useCountUp(p.todayValue);
   const potentialShown = useCountUp(p.potentialValue);
@@ -1143,89 +1148,114 @@ function AnswerStep(p: {
     );
   }
 
+  const groups = p.groups.map((g) => ({ ...g, value: g.items.reduce((sum, i) => sum + i.value, 0) }));
+  const maxGroup = Math.max(1, ...groups.map((g) => g.value));
+  const driverCount = groups.reduce((n, g) => n + g.items.length, 0);
+  const CARD = "rounded-[22px] border border-[#E9E0D4] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-26px_rgba(26,26,26,0.22)]";
+
   return (
-    <div>
-      {/* Beat 1 — what it's worth today */}
-      <div className={EYEBROW}>The answer</div>
-      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] mt-4">{p.partnerName ? `To ${p.partnerName}, Abridge is worth` : "Abridge is worth"}</h1>
-      <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
-      <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
-        {makeup ? <>From {makeup}, at today&rsquo;s {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% {p.isNursing ? "use per patient" : "utilization"}.</> : "Turn on the drivers your data supports to build the number."}
-      </p>
-
-      {/* Beat 2 — the upside */}
-      <div className="mt-14 pt-1">
-        <div className={EYEBROW}>The upside, with more of the organization on Abridge</div>
-        <div className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <span className="font-abridge text-[44px] sm:text-[56px] leading-[0.9] text-[#1A1A1A]">{fmtShort(potentialShown)}<span className="text-[20px] text-[#9A8C7A] font-normal"> a year</span></span>
-          <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.headroom)} on the table</span>
+    <div className="space-y-5">
+      {/* THE ANSWER */}
+      <section className={`${CARD} bg-white overflow-hidden`} data-testid="roi-answer-hero">
+        <div className="px-6 sm:px-9 pt-8 pb-8 bg-[linear-gradient(180deg,#F6F1EA_0%,#FFFFFF_100%)]">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#EA2C00]">The answer</div>
+          <h1 className="font-abridge text-[24px] sm:text-[30px] leading-[1.14] text-[#1A1A1A] mt-3">{p.partnerName ? `To ${p.partnerName}, Abridge is worth` : "Abridge is worth"}</h1>
+          <div className="font-abridge text-[64px] sm:text-[96px] leading-[0.9] text-[#EA2C00] mt-2 tabular-nums">{fmtShort(todayShown)}<span className="text-[24px] sm:text-[28px] text-[#6B6259] font-normal"> a year</span></div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className="rounded-full bg-white border border-[#E2D8CB] px-3 py-1 text-[12.5px] font-semibold text-[#443A32]">{driverCount} {driverCount === 1 ? "driver" : "drivers"}</span>
+            <span className="rounded-full bg-white border border-[#E2D8CB] px-3 py-1 text-[12.5px] font-semibold text-[#443A32]">today&rsquo;s {Math.round(p.adoptionNow)}% rollout</span>
+            <span className="rounded-full bg-white border border-[#E2D8CB] px-3 py-1 text-[12.5px] font-semibold text-[#443A32]">{Math.round(p.utilNow)}% {p.isNursing ? "use per patient" : "utilization"}</span>
+            {p.hoursReclaimed > 0 && <span className="rounded-full bg-white border border-[#E2D8CB] px-3 py-1 text-[12.5px] font-semibold text-[#443A32]">plus {fmtInt(p.hoursReclaimed)} clinician hours back</span>}
+          </div>
         </div>
+      </section>
 
-        {/* the meter: solid coral = already made, light = reachable headroom */}
-        <div className="mt-7">
-          <div className="h-3 rounded-full bg-[#EDE5D8] overflow-hidden flex">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-5 items-stretch">
+        {/* WHERE IT COMES FROM */}
+        <section className={`${CARD} bg-[#F6F1EA]/90 p-5 sm:p-6`} data-testid="roi-answer-breakdown">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-4">Where it comes from</div>
+          <div className="space-y-2.5">
+            {groups.map((g) => (
+              <div key={g.dom} className={`rounded-[16px] border px-3.5 py-3 ${g.value > 0 ? "bg-white border-[#E9E0D4]" : "bg-[#FBF8F4]/70 border-[#EBE3D8]"}`}>
+                <div className="flex items-center gap-3">
+                  <div className="flex-none w-[56px] h-[36px] rounded-[9px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1 py-0.5 max-sm:hidden">{DOMAIN_ART[g.dom]}</div>
+                  <span className="w-[86px] max-sm:w-[78px] flex-none text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#443A32]">{g.dom}</span>
+                  <div className="flex-1 h-2.5 rounded-full bg-[#EFE7DC] overflow-hidden">
+                    <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700 ease-out" style={{ width: `${(g.value / maxGroup) * 100}%` }} />
+                  </div>
+                  <span className={`min-w-[64px] text-right font-abridge text-[17px] tabular-nums whitespace-nowrap ${g.value > 0 || (g.dom === "Capacity" && p.hoursReclaimed > 0) ? "text-[#1A1A1A]" : "text-[#C9BDAD]"}`}>
+                    {g.value > 0 ? fmtShort(g.value) : g.dom === "Capacity" && p.hoursReclaimed > 0 ? `${fmtInt(p.hoursReclaimed)} hrs` : "—"}
+                  </span>
+                </div>
+                {g.items.length > 0 && (
+                  <div className="mt-2 pl-[154px] max-sm:pl-0 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-[#565250]">
+                    {g.items.map((i) => (
+                      <span key={i.title}>{i.title} <span className="font-semibold text-[#1A1A1A] tabular-nums">{fmtShort(i.value)}</span></span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* THE RETURN: price in, multiple and net out. No payback month. */}
+        <section className={`${CARD} bg-white p-5 sm:p-6 flex flex-col`} data-testid="roi-answer-return">
+          <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32]">The return</div>
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="text-[14px] font-semibold text-[#1A1A1A]">Abridge price<div className="text-[12px] font-normal text-[#6B6259] mt-0.5">per year</div></div>
+            <div className={`${BOX} w-[180px]`}>
+              <span className="text-[15px] text-[#6B6259]">$</span>
+              <FormattedNumberInput value={p.price} onChange={p.setPrice} className={UINPUT_CLASS} placeholder="contract rate" />
+            </div>
+          </div>
+          <div className="mt-6 pt-5 border-t border-[#EFE8DE] flex-1 flex flex-col justify-center">
+            {p.price > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="font-abridge text-[52px] sm:text-[60px] leading-none text-[#EA2C00] tabular-nums">{roi.toFixed(1)}×</div>
+                  <div className="text-[12.5px] font-semibold text-[#443A32] mt-2">return on the Abridge spend</div>
+                </div>
+                <div>
+                  <div className="font-abridge text-[52px] sm:text-[60px] leading-none text-[#1A1A1A] tabular-nums">{fmtShort(p.todayValue - p.price)}</div>
+                  <div className="text-[12.5px] font-semibold text-[#443A32] mt-2">net a year, after the price</div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[14px] text-[#6B6259] leading-relaxed">Add the Abridge price to see the return multiple and the net.</p>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {/* THE UPSIDE */}
+      <section className={`${CARD} bg-white p-5 sm:p-7`} data-testid="roi-answer-upside">
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32]">The upside, with more of the organization on Abridge</div>
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-5 gap-y-1">
+          <span className="font-abridge text-[40px] sm:text-[52px] leading-[0.95] text-[#1A1A1A] tabular-nums">{fmtShort(potentialShown)}<span className="text-[18px] text-[#6B6259] font-normal"> a year</span></span>
+          <span className="font-abridge text-[20px] text-[#EA2C00]">+{fmtShort(p.headroom)} on the table</span>
+        </div>
+        <div className="mt-6">
+          <div className="h-3.5 rounded-full bg-[#EFE7DC] overflow-hidden flex">
             <div className="h-full bg-[#EA2C00] transition-all duration-500" style={{ width: `${todayPct}%` }} />
             <div className="h-full bg-[#F6B7A6] transition-all duration-500" style={{ width: `${headroomPct}%` }} />
           </div>
           <div className="flex justify-between mt-2.5 text-[12.5px]">
-            <span className="flex items-center gap-1.5 text-[#565250]"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> Made today {fmtShort(p.todayValue)}</span>
-            <span className="flex items-center gap-1.5 text-[#565250]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> On the table {fmtShort(p.headroom)}</span>
+            <span className="flex items-center gap-1.5 text-[#443A32] font-semibold"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> Today {fmtShort(p.todayValue)}</span>
+            <span className="flex items-center gap-1.5 text-[#443A32] font-semibold"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> On the table {fmtShort(p.headroom)}</span>
           </div>
         </div>
-
-        {/* the dials */}
-        <div className={`mt-9 grid grid-cols-1 ${p.showUtilDial ? "sm:grid-cols-2" : ""} gap-x-10 gap-y-6`}>
+        <div className={`mt-7 grid grid-cols-1 ${p.showUtilDial ? "md:grid-cols-2" : ""} gap-4`}>
           <Slider label={p.isNursing ? "More nurses on Abridge" : "More providers on Abridge"} value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
           {p.showUtilDial && (
             <Slider label={p.isNursing ? "Using Abridge with more patients" : "Documenting more encounters with Abridge"} value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
           )}
         </div>
-        <p className="mt-6 text-[13.5px] leading-[1.6] text-[#565250] max-w-[560px]">
-          The measured effect stays exactly where the data put it. Only the volume it runs on grows.
-        </p>
-      </div>
+        <p className="mt-5 text-[13px] leading-[1.6] text-[#565250]">The measured effect stays where the data put it. Only the volume it runs on grows.</p>
+      </section>
 
-      {/* THE RETURN — the payoff a CFO actually reads: price in, multiple + net out */}
-      <div className="mt-16 pt-8 border-t-2 border-[#E7E2DB]">
-        <div className={EYEBROW}>The return</div>
-        <div className="mt-5 flex flex-wrap items-end gap-x-12 gap-y-6">
-          <div>
-            <div className="text-[12.5px] text-[#565250] mb-2">Abridge price</div>
-            <div className="w-[180px] inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
-              <span className="text-[16px] text-[#A69A88]">$</span>
-              <FormattedNumberInput value={p.price} onChange={p.setPrice}
-                className="flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-[24px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[16px] placeholder:text-[#C9BDAD]"
-                placeholder="your contract rate" />
-            </div>
-          </div>
-          {p.price > 0 ? (
-            <>
-              <div>
-                <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#EA2C00]">{roi.toFixed(1)}×</div>
-                <div className="text-[12.5px] text-[#565250] mt-2">return on the Abridge spend</div>
-              </div>
-              <div>
-                <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#1A1A1A]">{fmtShort(p.todayValue - p.price)}</div>
-                <div className="text-[12.5px] text-[#565250] mt-2">net a year, after the price</div>
-              </div>
-            </>
-          ) : (
-            <div className="text-[15px] text-[#A69A88] italic pb-2">Enter the Abridge price to see the return.</div>
-          )}
-        </div>
-      </div>
-
-      {/* quiet breakdown of where the value came from */}
-      <div className="mt-10 pt-5 border-t border-[#E8E2DA] flex flex-wrap items-baseline gap-x-6 gap-y-1">
-        {dollarLevers.map((r) => (
-          <span key={r.title} className="text-[13px] text-[#565250]">{r.title} <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtShort(r.value)}</span></span>
-        ))}
-        {p.hoursReclaimed > 0 && <span className="text-[13px] text-[#565250]">Hours back <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtInt(p.hoursReclaimed)}</span></span>}
-      </div>
-
-      <div className="mt-10 pt-7 border-t border-[#E8E2DA] flex items-center justify-between gap-4 flex-wrap">
-        <span />
-        <button onClick={p.onExport} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">
+      <div className="pt-3 flex items-center justify-end">
+        <button onClick={p.onExport} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[15px] font-bold px-8 py-4 hover:bg-[#d12800] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2 shadow-[0_10px_24px_-12px_rgba(234,44,0,0.6)]">
           <Download className="w-4 h-4" /> Export the one-pager
         </button>
       </div>
@@ -1234,14 +1264,18 @@ function AnswerStep(p: {
 }
 
 function Slider({ label, value, min, onChange, right }: { label: string; value: number; min: number; onChange: (n: number) => void; right: string }) {
+  const lo = Math.max(0, Math.floor(min));
+  const pct = 100 > lo ? ((value - lo) / (100 - lo)) * 100 : 100;
   return (
-    <div>
-      <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[14px] font-medium text-[#1A1A1A]">{label}</span>
-        <span className="font-abridge text-[15px] text-[#EA2C00]">{right}</span>
+    <div className="rounded-[16px] border border-[#E9E0D4] bg-[#F6F1EA]/80 px-4 py-3.5">
+      <div className="flex items-baseline justify-between mb-3">
+        <span className="text-[14px] font-semibold text-[#1A1A1A]">{label}</span>
+        <span className="font-abridge text-[16px] text-[#EA2C00] tabular-nums">{right}</span>
       </div>
-      <input type="range" step={1} min={Math.max(0, Math.floor(min))} max={100} value={value}
-        onChange={(e) => onChange(parseInt(e.target.value, 10))} className="w-full accent-[#EA2C00] h-1 cursor-pointer" />
+      <input type="range" step={1} min={lo} max={100} value={value}
+        onChange={(e) => onChange(parseInt(e.target.value, 10))}
+        style={{ background: `linear-gradient(90deg, #EA2C00 ${pct}%, #E4D8C8 ${pct}%)` }}
+        className="roi-range w-full h-1.5 rounded-full appearance-none cursor-pointer" />
     </div>
   );
 }
