@@ -23,7 +23,13 @@ import { HubTile, HubTileGrid } from "@/pages/hub/hubKit";
 import { useAnimatedNumber } from "@/pages/proforma/editorial/editorialShared";
 import { CapacityGoalArt, QualityGoalArt, RetentionGoalArt, RevenueGoalArt } from "@/pages/hub/hubArt";
 
-// One drawing per value group on the lift step, from the goal-tile set.
+/** Drivers whose value is built on another driver's numbers. */
+const DEPENDS_ON: Record<string, string> = {
+  physicianLocumAgency: "providerWellbeing",
+  nursingAgency: "nursingRetention",
+};
+
+// One drawing per value group on the drivers step, from the goal-tile set.
 const DOMAIN_ART: Record<string, JSX.Element> = {
   Revenue: <RevenueGoalArt />,
   Capacity: <CapacityGoalArt />,
@@ -98,7 +104,7 @@ function useCountUp(value: number, ms = 550): number {
 }
 
 const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#565250]";
-const STEPS = ["The account", "The lift", "The answer"];
+const STEPS = ["The account", "The drivers", "The answer"];
 
 interface Props { onBack: () => void; onHome: () => void; pathLabel?: string; }
 
@@ -144,7 +150,7 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
         onBack={goBack}
         onHome={onHome}
         onStepClick={onStepClick}
-        stepLabels={["Care setting", "The account", "The lift", "The answer"]}
+        stepLabels={["Care setting", "The account", "The drivers", "The answer"]}
       />
       <UnifiedHeaderSpacer />
       {/* The picker is four tiles across, so it takes the hub's wide column; the
@@ -221,10 +227,26 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   const [timeAfter, setTimeAfter] = useState(0);
 
   // ── drivers ──────────────────────────────────────────────────────────────
-  const [vals, setVals] = useState<Record<string, number>>(() => defaultVals(setting));
+  // Before/after readings start BLANK: they are the partner's own measurements,
+  // so a pre-filled example would read as their data. The example shows as the
+  // placeholder instead, and the driver reads $0 until real numbers go in.
+  const [vals, setVals] = useState<Record<string, number>>(() => {
+    const v = defaultVals(setting);
+    for (const dr of DRIVERS[setting]) if (dr.beforeAfter) { v[dr.beforeAfter.beforeK] = 0; v[dr.beforeAfter.afterK] = 0; }
+    return v;
+  });
   const [enabled, setEnabled] = useState<Record<string, boolean>>(() => defaultEnabled(setting));
   const setVal = (k: string, v: number) => setVals((p) => ({ ...p, [k]: v }));
-  const toggle = (id: string) => setEnabled((p) => ({ ...p, [id]: !p[id] }));
+  // Locum/agency is valued on the departures Retention avoids, so it cannot stand
+  // alone: switching it on also switches Retention on, and switching Retention
+  // off takes it with it. The row says so (see DEPENDS_ON).
+  const toggle = (id: string) => setEnabled((p) => {
+    const next = { ...p, [id]: !p[id] };
+    const parent = DEPENDS_ON[id];
+    if (parent && next[id]) next[parent] = true;
+    for (const [child, par] of Object.entries(DEPENDS_ON)) if (par === id && !next[id]) next[child] = false;
+    return next;
+  });
 
   // ── headroom dials ────────────────────────────────────────────────────────
   const adoptionNow = totalProviders > 0 ? (onAbridge / totalProviders) * 100 : 0;
@@ -381,7 +403,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             />
             </div>
           </div>
-          <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
+          <NavRow onNext={() => setStep(1)} nextLabel="Next: the drivers" />
         </div>
       )}
 
@@ -421,6 +443,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                       )}
                       {drivers.map((dr) => (
                         <DriverCard key={dr.id} driver={dr} vals={vals} setVal={setVal}
+                          buildsOn={DEPENDS_ON[dr.id] ? DRIVERS[setting].find((x) => x.id === DEPENDS_ON[dr.id])?.title : undefined}
                           on={!!enabled[dr.id]} onToggle={() => toggle(dr.id)} eligibleEncounters={Math.round(encToday)}
                           hoursReclaimed={hoursReclaimed} providersOnAbridge={onAbridge}
                           value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
@@ -493,9 +516,9 @@ function LiftPanel({ total, groups, items, hours }: { total: number; groups: { d
   const max = Math.max(1, ...groups.map((g) => g.value));
   const counted = items.filter((i) => i.value > 0);
   return (
-    <div className="lg:sticky lg:top-24 rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="roi-lift-panel">
+    <div className="lg:sticky lg:top-24 rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="roi-opportunity-panel">
       <div className="px-6 pt-5 pb-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF]">
-        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">The lift</div>
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">The opportunity</div>
       </div>
       <div className="p-6">
         <div className={`font-abridge text-[52px] leading-none tabular-nums ${total > 0 ? "text-[#1A1A1A]" : "text-[#D6CABA]"}`}>{fmtShort(shown)}</div>
@@ -530,7 +553,7 @@ function LiftPanel({ total, groups, items, hours }: { total: number; groups: { d
               ))}
             </ul>
           ) : (
-            <p className="text-[13.5px] text-[#6B6259] leading-relaxed">Turn on what was measured. The lift builds here.</p>
+            <p className="text-[13.5px] text-[#6B6259] leading-relaxed">Turn on what was measured. The opportunity builds here.</p>
           )}
         </div>
       </div>
@@ -688,12 +711,12 @@ function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, ste
       <div className="flex items-baseline gap-4 flex-wrap">
         <div>
           <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#6B6259] mb-1">Before</div>
-          <NumInput value={before} onChange={onBefore} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderBefore} />
+          <NumInput value={before} onChange={onBefore} step={step} suffix={unit} w="w-[150px]" placeholder={placeholderBefore} />
         </div>
         <ArrowRight className="w-4 h-4 text-[#C9BDAD] self-end mb-3.5" />
         <div>
           <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#EA2C00] mb-1">After</div>
-          <NumInputAccent value={after} onChange={onAfter} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderAfter} />
+          <NumInputAccent value={after} onChange={onAfter} step={step} suffix={unit} w="w-[150px]" placeholder={placeholderAfter} />
         </div>
         {bothEntered && (
           <span className={`self-end mb-3 ml-1 text-[14px] font-bold whitespace-nowrap ${good ? "text-[#B02200]" : "text-[#B4A896]"}`}>
@@ -741,15 +764,16 @@ function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; la
  * and the boundary between one driver and the next is unmistakable. The card's
  * own annual total sits in the header so the list is scannable.
  */
-function DriverShell({ title, on, onToggle, value, children, note }: {
-  title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode; note?: string;
+function DriverShell({ title, on, onToggle, value, children, note, buildsOn }: {
+  title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode; note?: string; buildsOn?: string;
 }) {
   return (
     <div className={`rounded-[16px] border transition-all duration-200 ${on ? "bg-white border-[#E9E0D4] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_22px_-16px_rgba(26,26,26,0.16)]" : "bg-[#FBF8F4]/80 border-[#EBE3D8] hover:border-[#DDD2C4]"}`}>
       <div className="flex items-center justify-between gap-4 px-4 sm:px-5 py-3.5">
         <button type="button" onClick={onToggle} className="flex-1 min-w-0 text-left outline-none">
           <span className={`block text-[15.5px] font-semibold ${on ? "text-[#1A1A1A]" : "text-[#443A32]"}`}>{title}</span>
-          {!on && note && <span className="block text-[12.5px] text-[#6B6259] mt-0.5 leading-snug line-clamp-1">{note}</span>}
+          {!on && buildsOn && <span className="block text-[12.5px] font-semibold text-[#8A6D3B] mt-0.5">Builds on {buildsOn}. Turning this on turns that on too.</span>}
+          {!on && !buildsOn && note && <span className="block text-[12.5px] text-[#6B6259] mt-0.5 leading-snug line-clamp-1">{note}</span>}
         </button>
         <div className="flex items-center gap-3.5">
           {on && <span className={`font-abridge text-[17px] tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}</span>}
@@ -762,7 +786,8 @@ function DriverShell({ title, on, onToggle, value, children, note }: {
 }
 
 /** Renders one engine driver: before/after (if any) + its editable fields + the worked math. */
-function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters, hoursReclaimed, providersOnAbridge }: {
+function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligibleEncounters, hoursReclaimed, providersOnAbridge, buildsOn }: {
+  buildsOn?: string;
   driver: RoiDriver; vals: Record<string, number>; setVal: (k: string, v: number) => void;
   on: boolean; onToggle: () => void; value: number; summary: string; eligibleEncounters: number;
   hoursReclaimed: number; providersOnAbridge: number;
@@ -779,14 +804,20 @@ function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligib
   const workStr = driver.work ? driver.work(vals, eligibleEncounters) : summary;
   const ba = driver.beforeAfter;
   return (
-    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value} note={driver.note}>
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value} note={driver.note} buildsOn={buildsOn}>
       {driver.note && <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[560px] mb-1">{driver.note}</p>}
+      {buildsOn && (
+        <p className="mt-2 mb-1 inline-flex items-center gap-2 rounded-full bg-[#F6F1EA] border border-[#E2D8CB] px-3 py-1 text-[12px] font-semibold text-[#443A32]">
+          Uses the turnover numbers in {buildsOn}
+        </p>
+      )}
       {ba && (
         <div className={driver.note ? "mt-5" : ""}>
           <BeforeAfter label={ba.label} table={ba.table} unit={ba.unit} step={ba.step ?? 0.01}
             before={vals[ba.beforeK]} after={vals[ba.afterK]}
             onBefore={(v) => setVal(ba.beforeK, v)} onAfter={(v) => setVal(ba.afterK, v)}
-            lowerIsBetter={ba.lowerIsBetter} />
+            lowerIsBetter={ba.lowerIsBetter}
+            placeholderBefore={String(ba.beforeDef)} placeholderAfter={String(ba.afterDef)} />
         </div>
       )}
       {driver.fields.map((f) => (

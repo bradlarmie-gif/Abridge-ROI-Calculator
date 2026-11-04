@@ -242,7 +242,7 @@ try {
   await page.click('[data-testid="hub-card-financial"]'); await page.waitForTimeout(500);
   await page.click('[data-testid="financial-card-roi-calculator"]'); await page.waitForTimeout(600);
   await page.click('button:has-text("Inpatient")'); await page.waitForTimeout(250);
-  await page.click('button:has-text("Next: the lift")'); await page.waitForTimeout(350);
+  await page.click('button:has-text("Next: the drivers")'); await page.waitForTimeout(350);
   // scroll to the bottom of the lift, then advance — the answer must land at top
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(150);
