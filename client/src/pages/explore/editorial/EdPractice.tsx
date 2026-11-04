@@ -4,6 +4,7 @@ import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import { type ExploreState } from "../ExploreFlow";
 import { useCountUp } from "@/lib/useCountUp";
 import { quickFillChip } from "./quickFillChip";
+import { EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
 
 interface EdPracticeProps {
   state: ExploreState;
@@ -93,18 +94,35 @@ function QuickFillChip({
 // a nested definition remounts the subtree on every keystroke and drops input focus.
 function Row({ label, desc, children, controls }: { label: string; desc: string; children: ReactNode; controls?: ReactNode }) {
   return (
-    <div className="py-[22px] border-b border-[#EDE8E1]">
-      <div className="flex justify-between items-end gap-6">
+    <div className="py-4 border-b border-[#E6DCCF] last:border-b-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
         <div className="min-w-0">
-          <div className="font-abridge text-[16px] font-bold text-[#1A1A1A] whitespace-nowrap">{label}</div>
-          <div className="text-[13px] text-[#8C8073] mt-1 leading-[1.45] max-w-[320px]">{desc}</div>
+          <div className="text-[15px] font-semibold text-[#1A1A1A]">{label}</div>
+          <div className="text-[12.5px] text-[#6B6259] mt-1 leading-[1.45] max-w-[340px]">{desc}</div>
         </div>
         <div className="flex-shrink-0">{children}</div>
       </div>
-      {controls && <div className="mt-[14px] flex items-center gap-[7px] flex-wrap">{controls}</div>}
+      {controls && <div className="mt-3 flex items-center gap-[7px] flex-wrap">{controls}</div>}
     </div>
   );
 }
+
+/** A tan group card on the left: a dark label, then rows split by hairlines. */
+function Group({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded-[20px] border border-[#E9E0D4] bg-[#F6F1EA]/90 px-5 sm:px-6 pt-5 pb-1">
+      <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-1">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const SETTING_ART: Record<string, ReactNode> = {
+  outpatient: <OutpatientArt />,
+  ed: <EmergencyArt />,
+  inpatient: <InpatientArt />,
+  nursing: <NursingArt />,
+};
 
 export default function EdPractice({ state, updateState, onNext, onBack, onHome }: EdPracticeProps) {
   const isED = state.careSetting === "ed";
@@ -290,9 +308,9 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
   // Fixed-width, right-aligned underline: every editable figure gets the SAME
   // line length and shares a right edge, so they read as a clean aligned column
   // (not a per-number hug). Number + unit right-align inside the fixed width.
-  const entryWrap = "flex items-baseline justify-end gap-[5px] border-b-2 border-[#EA2C00] pb-[2px] whitespace-nowrap w-[168px]";
-  const entryInput = "max-w-full [field-sizing:content] text-right bg-transparent border-0 p-0 font-abridge text-[30px] md:text-[30px] text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#C7BFB4] placeholder:font-sans placeholder:text-[15px]";
-  const entryUnit = "font-sans text-[13px] text-[#8C8073]";
+  const entryWrap = "flex items-baseline justify-end gap-[6px] whitespace-nowrap w-[176px] rounded-[12px] border border-[#E2D8CB] bg-white px-3.5 py-2 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors";
+  const entryInput = "w-full min-w-0 text-right bg-transparent border-0 p-0 text-[19px] font-bold text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#B5AA9B] placeholder:font-normal placeholder:text-[15px]";
+  const entryUnit = "font-sans text-[13px] text-[#6B6259]";
 
   // shared right-column derived readouts
   const pct = Math.round(state.utilizationPercent);
@@ -304,7 +322,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
   return (
     <EditorialShell>
       <EditorialHeader stepName="Practice" stepIndex={2} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1080px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">
           Value Model · Step 2 of 9
         </div>
@@ -312,15 +330,14 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
           How big is the {settingHeadline}?
         </h1>
         <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[600px] leading-[1.5]">
-          A few real numbers about your volume. Everything downstream is built on these, so use your figures, not
-          round estimates.
+          Everything after this builds on these numbers.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_1px_1fr] gap-x-[56px] gap-y-10 mt-[46px]">
-          {/* LEFT — inputs */}
-          <div>
-            <div className={sectLabel}>Your {settingName}</div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] gap-6 lg:gap-8 items-start mt-9">
+          {/* LEFT: the inputs, grouped (same handlers and saved values as before) */}
+          <div className="space-y-4">
+            {isNursing ? (
+              <Group title="The unit">
             {isNursing && (
               <Row label="Staffed beds" desc="Licensed beds with active nursing staff.">
                 <span className={entryWrap}>
@@ -343,7 +360,43 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                 <FormattedNumberInput value={state.numberOfProviders} onChange={handleProvidersChange} placeholder={isNursing ? "e.g. 300" : "e.g. 50"} className={entryInput} data-testid="ed-input-providers" />
               </span>
             </Row>
-
+            {/* Bed occupancy (nursing) */}
+            {isNursing && (
+              <Row
+                label="Bed occupancy"
+                desc="Average census as a share of staffed beds."
+                controls={
+                  <input type="range" min={50} max={100} value={state.nursingOccupancyRate} onChange={(e) => handleOccupancyChange(Number(e.target.value))}
+                    style={{ background: `linear-gradient(90deg, #EA2C00 ${((state.nursingOccupancyRate - 50) / 50) * 100}%, #E4D8C8 ${((state.nursingOccupancyRate - 50) / 50) * 100}%)` }}
+                    className="roi-range w-full rounded-full appearance-none cursor-pointer" data-testid="ed-slider-occupancy" />
+                }
+              >
+                <span className={entryWrap}>
+                  <span className="text-[19px] font-bold text-[#1A1A1A] tabular-nums">{state.nursingOccupancyRate}</span>
+                  <span className={entryUnit}>%</span>
+                </span>
+              </Row>
+            )}
+              </Group>
+            ) : (
+              <>
+                <Group title="The people">
+            {/* Providers */}
+            <Row
+              label={providerLabel}
+              desc={providersDesc}
+              controls={isNursing && state.nursingStaffedBeds > 0
+                ? FTE_ESTIMATES.map(({ label, multiplier }) => (
+                    <QuickFillChip key={label} label={label} value={Math.round(state.nursingStaffedBeds * multiplier)} active={appliedEstimate === label} onClick={() => applyFteEstimate(multiplier, label)} />
+                  ))
+                : undefined}
+            >
+              <span className={entryWrap}>
+                <FormattedNumberInput value={state.numberOfProviders} onChange={handleProvidersChange} placeholder={isNursing ? "e.g. 300" : "e.g. 50"} className={entryInput} data-testid="ed-input-providers" />
+              </span>
+            </Row>
+                </Group>
+                <Group title="The volume">
             {/* Annual encounters / discharges (non-nursing) */}
             {!isNursing && (
               <Row
@@ -351,9 +404,9 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                 desc={volumeDesc}
                 controls={
                   <>
-                    <div className="inline-flex gap-[2px] bg-[#F2EFEA] border border-[#E7E2DB] rounded-[9px] p-[3px]">
-                      <button type="button" onClick={() => setUsingTotalInput(true)} className={`text-[11px] font-bold px-[10px] py-[5px] rounded-[6px] transition-colors ${usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"}`}>Total</button>
-                      <button type="button" onClick={() => setUsingTotalInput(false)} className={`text-[11px] font-bold px-[10px] py-[5px] rounded-[6px] transition-colors ${!usingTotalInput ? "bg-[#2E2822] text-white" : "text-[#565250]"}`}>Per provider</button>
+                    <div className="inline-flex rounded-full bg-[#EBE2D6] p-[3px]">
+                      <button type="button" onClick={() => setUsingTotalInput(true)} className={`rounded-full px-3 py-1 text-[11.5px] font-bold transition-all ${usingTotalInput ? "bg-white text-[#1A1A1A] shadow-[0_1px_2px_rgba(26,26,26,0.10),0_2px_6px_-2px_rgba(26,26,26,0.12)]" : "text-[#7A6F63] hover:text-[#1A1A1A]"}`}>Total</button>
+                      <button type="button" onClick={() => setUsingTotalInput(false)} className={`rounded-full px-3 py-1 text-[11.5px] font-bold transition-all ${!usingTotalInput ? "bg-white text-[#1A1A1A] shadow-[0_1px_2px_rgba(26,26,26,0.10),0_2px_6px_-2px_rgba(26,26,26,0.12)]" : "text-[#7A6F63] hover:text-[#1A1A1A]"}`}>Per provider</button>
                     </div>
                     {!usingTotalInput && BUSYNESS_PRESETS.map((preset) => (
                       <QuickFillChip key={preset.label} label={preset.label} value={preset.value} active={isPresetSelected(preset.value)} onClick={() => handleBusynessChange(preset.value)} />
@@ -391,22 +444,10 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
               </Row>
             )}
 
-            {/* Bed occupancy (nursing) */}
-            {isNursing && (
-              <Row
-                label="Bed occupancy"
-                desc="Average census as a share of staffed beds."
-                controls={
-                  <input type="range" min={50} max={100} value={state.nursingOccupancyRate} onChange={(e) => handleOccupancyChange(Number(e.target.value))} className="w-full h-[3px] bg-[#EBE6DE] rounded-full appearance-none cursor-pointer accent-[#EA2C00]" data-testid="ed-slider-occupancy" />
-                }
-              >
-                <span className={entryWrap}>
-                  <span className="font-abridge text-[30px] text-[#1A1A1A] tabular-nums">{state.nursingOccupancyRate}</span>
-                  <span className={entryUnit}>%</span>
-                </span>
-              </Row>
+                </Group>
+              </>
             )}
-
+            <Group title="Abridge use">
             {/* Share documented */}
             <Row
               label="Share documented with Abridge"
@@ -421,39 +462,30 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
               </span>
             </Row>
 
-            {/* How it adds up */}
-            {rightReady && (
-              <div className="mt-8">
-                <div className="text-[15px] text-[#3A342E] leading-[1.6]">
-                  <b className="font-bold text-[#1A1A1A]">{formatNumber(rightTotal)}</b> {documentedUnit} a year, <b className="font-bold text-[#1A1A1A]">{pct}%</b> documented with Abridge
-                </div>
-                <div className="text-[14px] text-[#8C8073] mt-[9px]">
-                  Documented · {formatNumber(rightTotal)} × {pct}% = <b className="font-bold text-[#1A1A1A]">{formatNumber(rightEnabled)}</b>
-                </div>
-                <div className="text-[14px] text-[#8C8073] mt-[9px]">
-                  Not yet on Abridge · {formatNumber(rightTotal)} − {formatNumber(rightEnabled)} = <b className="font-bold text-[#1A1A1A]">{formatNumber(notYet)}</b>
-                </div>
-              </div>
-            )}
+            </Group>
           </div>
 
-          {/* vertical hairline */}
-          <div className="hidden lg:block bg-[#E8E2DA]" />
-
-          {/* RIGHT — result */}
-          <div>
-            <div className={sectLabel}>What the value is built on</div>
+          {/* RIGHT: what the value is built on, drawn live */}
+          <div className="lg:self-stretch">
+          <div className="lg:sticky lg:top-24 rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="ed-practice-panel">
+            <div className="px-6 pt-5 pb-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF]">
+              <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">What the value is built on</div>
+            </div>
+            <div className="p-6">
+            <div className={`h-[120px] rounded-[16px] border px-4 py-3 transition-colors ${rightReady ? "border-[#F0CDBF] bg-[#FBEDE6]" : "border-[#E6DCCE] bg-[#EFE7DC]/60"}`}>
+              {state.careSetting ? SETTING_ART[state.careSetting] : null}
+            </div>
             {rightReady ? (
               <>
-                <div className="font-abridge text-[64px] sm:text-[88px] text-[#EA2C00] leading-[0.88] tabular-nums mt-[22px]">
+                <div className="font-abridge text-[56px] text-[#1A1A1A] leading-[0.9] tabular-nums mt-6">
                   {formatNumber(shownEnabled)}
                 </div>
-                <div className="font-abridge text-[20px] text-[#1A1A1A] mt-3">documented {documentedUnit} a year</div>
-                <div className="text-[15.5px] text-[#565250] mt-[18px] leading-[1.5]">
+                <div className="text-[15px] font-semibold text-[#1A1A1A] mt-2.5">documented {documentedUnit} a year</div>
+                <div className="text-[13.5px] text-[#565250] mt-2 leading-[1.5]">
                   {!isNursing && perProvider > 0 && (<>≈ <b className="font-bold text-[#1A1A1A]">{formatNumber(perProvider)}</b> per provider · </>)}
                   <b className="font-bold text-[#1A1A1A]">{pct}%</b> of the book documented with Abridge
                 </div>
-                <div className="flex h-[10px] rounded-full overflow-hidden gap-[2px] mt-[30px] max-w-[460px]">
+                <div className="flex h-[10px] rounded-full overflow-hidden gap-[2px] mt-6">
                   <span className="block rounded-[3px] bg-[#EA2C00]" style={{ flex: rightEnabled || 1 }} />
                   <span className="block rounded-[3px]" style={{ flex: notYet || 0.0001, background: "repeating-linear-gradient(45deg,#E8E2DA,#E8E2DA 3px,#F5F1EB 3px,#F5F1EB 6px)" }} />
                 </div>
@@ -461,25 +493,17 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   <span className="flex items-center gap-[7px]"><span className="w-[9px] h-[9px] rounded-full bg-[#EA2C00]" />Documented with Abridge · <b className="font-bold text-[#1A1A1A]">{formatNumber(rightEnabled)}</b></span>
                   <span className="text-[#B0A99E]">Not yet · {formatNumber(notYet)}</span>
                 </div>
-                <div className="mt-9 border-t border-[#EDE8E1] pt-5 text-[13.5px] text-[#8C8073] leading-[1.55] max-w-[420px]">
-                  Everything downstream is built on this documented volume, not the full book. The other {formatNumber(notYet)} are not yet on Abridge.
+                <div className="mt-5 border-t border-[#EFE8DE] pt-4 text-[13px] text-[#565250] leading-[1.55]">
+                  {formatNumber(rightTotal)} × {pct}% = <b className="font-bold text-[#1A1A1A]">{formatNumber(rightEnabled)}</b>. Everything after this builds on the documented {documentedUnit}, not the full book.
                 </div>
               </>
             ) : (
-              <div className="mt-[22px] max-w-[360px]">
-                <div className="font-abridge text-[23px] text-[#3A342E] leading-[1.2]">The volume your value is built on</div>
-                <p className="text-[14px] text-[#8A8073] leading-[1.6] mt-3">
-                  Your annual {documentedUnit} times the share documented with Abridge. Enter your numbers on the left and it fills in here.
-                </p>
-                <div className="mt-7 flex flex-col gap-[11px]">
-                  {[providerLabel, `Annual ${documentedUnit}`, "Documented share"].map((l) => (
-                    <div key={l} className="flex items-center gap-[10px] text-[13px] text-[#B0A99E]">
-                      <span className="w-[6px] h-[6px] rounded-full bg-[#DDD5C9] flex-shrink-0" /> {l}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <p className="mt-5 text-[14px] text-[#6B6259] leading-relaxed">
+                Your annual {documentedUnit} times the share documented with Abridge. Fill in the numbers and it builds here.
+              </p>
             )}
+            </div>
+          </div>
           </div>
         </div>
 
@@ -490,7 +514,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
             disabled={!isValid}
             onClick={onNext}
             data-testid="ed-practice-continue"
-            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
+            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-full hover:bg-[#d12800] transition-colors shadow-[0_10px_24px_-12px_rgba(234,44,0,0.6)] disabled:opacity-40 disabled:shadow-none"
           >
             Continue →
           </button>
