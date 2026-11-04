@@ -1,5 +1,26 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft, Check, Download } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Download, Plus } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  AccessGoalArt,
+  CapacityGoalArt,
+  ExperienceGoalArt,
+  MapOutcomeArt,
+  QualityGoalArt,
+  RetentionGoalArt,
+  RevenueGoalArt,
+} from "@/pages/hub/hubArt";
+
+// The goal drawings from the "Pick the goals" tiles, reused small in the ledger so
+// each section reads as the tile they chose.
+const GOAL_ART: Record<GoalId, JSX.Element> = {
+  access: <AccessGoalArt />,
+  retention: <RetentionGoalArt />,
+  revenue: <RevenueGoalArt />,
+  quality: <QualityGoalArt />,
+  capacity: <CapacityGoalArt />,
+  experience: <ExperienceGoalArt />,
+};
 import { goalDisplayLabel } from "@/lib/attain/attainGoals";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import {
@@ -73,8 +94,10 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   const [pos, setPos] = useState<Pos>(() => (authoredAll.length ? { kind: "ground", idx: 0 } : { kind: "brief" }));
   const [history, setHistory] = useState<Pos[]>([]);
   const [reflect, setReflect] = useState<string | null>(null);
+  // The "add it in their words" field opens on demand (or when a note exists).
+  const [noteOpen, setNoteOpen] = useState(false);
 
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [pos]);
+  useEffect(() => { window.scrollTo({ top: 0 }); setNoteOpen(false); }, [pos]);
 
   const persist = (next: DiscoveryAnswers) => { setAnswers(next); onPersistAnswers(next); };
   const advance = (from: Pos, to: Pos, refl: string | null = null) => {
@@ -197,7 +220,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
   // activeIdx marks which goal is being walked: earlier goals collapse to a checked
   // line, later goals show faint. Before any goal (ground/triage) nothing is active.
   const activeIdx = pos.kind === "goal" ? pos.goalIdx : pos.kind === "brief" ? order.length : -1;
-  const ledger = buildLedger(setting, ground, order, answers, activeIdx);
+  const ledger = buildLedger(setting, ground, order, answers, activeIdx, pos.kind === "ground");
 
   if (pos.kind === "brief") {
     return <Brief setting={setting} settingLabel={settingLabel} partner={partner} order={order} pending={pending} answers={answers} triaged={multi} onFinish={onFinish} onContinueToPlan={onContinueToPlan} />;
@@ -283,28 +306,36 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
       ? (selectedIds.length === 0 && !hasNote)
       : false;
 
-  const contextLabel =
-    pos.kind === "goal"
-      ? `${settingLabel} · ${goalDisplayLabel(setting, order[pos.goalIdx])}${order.length > 1 ? ` · Priority ${pos.goalIdx + 1} of ${order.length}` : ""}`
-      : settingLabel;
+  // One line says where you are: the section, and how far through it.
+  const sectionLine =
+    pos.kind === "ground"
+      ? `Grounding · ${pos.idx + 1} of ${ground.length}`
+      : pos.kind === "triage"
+        ? "Your priorities"
+        : `${goalDisplayLabel(setting, order[pos.goalIdx])}${order.length > 1 ? ` · priority ${pos.goalIdx + 1} of ${order.length}` : ""}${stepEyebrow && stepEyebrow !== goalDisplayLabel(setting, order[pos.goalIdx]) ? ` · ${stepEyebrow}` : ""}`;
+  const pickHint = rankMode ? "Tap in order of priority." : multiSelect ? "Pick any that apply." : "Pick one.";
 
   return (
     <div className="max-w-[1080px] mx-auto px-6 py-8 md:py-12">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_320px] gap-x-[52px] gap-y-8">
         {/* LEFT — the question */}
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#B4A896] mb-5">{contextLabel}</p>
+
           {reflect && (
             <div className="mb-6 flex items-center gap-2.5">
               <Check className="w-4 h-4 text-[#EA2C00] flex-shrink-0" strokeWidth={2.5} />
               <p className="text-[14px] text-[#5A5248] leading-snug">{reflect}</p>
             </div>
           )}
-          {stepEyebrow && <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">{stepEyebrow}</p>}
+          <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3" data-testid="discovery-section">{sectionLine}</p>
           <h1 className="font-abridge text-[28px] md:text-[36px] text-[#1A1A1A] leading-[1.13] mb-3">{prompt}</h1>
-          {teach && <p className="text-[15px] text-[#5A5248] leading-relaxed max-w-[540px] mb-8">{teach}</p>}
+          {teach && <p className="text-[15px] text-[#565250] leading-relaxed max-w-[560px]">{teach}</p>}
+          <p className="text-[12.5px] font-bold text-[#443A32] mt-4 mb-4">{pickHint}</p>
 
-          <div className="border-t border-[#E8E2DA]">
+          {/* Answers as rounded tan options. The marker says how to answer: a
+              circle is pick one, a square is pick any, a number is a rank. The
+              chosen answer turns coral. */}
+          <div className="flex flex-col gap-2.5">
             {options.map((o) => {
               const rnk = rankMode ? rankOf(o.id) : 0;
               const on = rankMode ? rnk > 0 : multiSelect ? selectedIds.includes(o.id) : selected === o.id;
@@ -316,36 +347,55 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
                   onClick={() => pickIt(o.id)}
                   data-testid={testId(pos, o.id)}
                   aria-pressed={rankMode || multiSelect ? on : undefined}
-                  className={`group relative w-full text-left flex items-center gap-4 pl-4 pr-3 py-5 border-b border-[#E8E2DA] transition-all cursor-pointer ${rankMode || multiSelect ? "" : "hover:pl-5"} ${on ? "bg-[#F3EEE7]" : "hover:bg-[#F9F6F1]"}`}
+                  className={`group relative w-full text-left flex items-center gap-4 rounded-[16px] border px-4 py-4 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2 ${
+                    on
+                      ? "bg-[#FDF6F2] border-[#EA2C00] ring-1 ring-[#EA2C00]"
+                      : "bg-[#F6F1EA]/90 border-[#E9E0D4] hover:border-[#D9CDBD] hover:bg-[#F3EDE4]"
+                  }`}
                 >
-                  {on && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-[#C4B9A8]" aria-hidden />}
-                  <div className="min-w-0 flex-1">
-                    <div className={`text-[17px] leading-snug ${on ? "font-semibold text-[#1A1A1A]" : "font-medium text-[#1A1A1A]"}`}>{o.label}</div>
-                    {o.teach && <div className="text-[13px] text-[#8C8073] leading-snug mt-1 max-w-[520px]">{o.teach}</div>}
-                  </div>
                   {rankMode ? (
-                    <span className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center flex-shrink-0 text-[13px] font-bold transition-colors ${rnk > 0 ? "bg-[#8C8073] border-[#8C8073] text-white" : "border-[#CDBFAF] text-transparent group-hover:border-[#8C8073]"}`}>{rnk > 0 ? rnk : "0"}</span>
+                    <span className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center flex-shrink-0 text-[13px] font-bold transition-colors ${rnk > 0 ? "bg-[#EA2C00] border-[#EA2C00] text-white" : "bg-white border-[#CDBFAF] text-transparent group-hover:border-[#8C8073]"}`}>{rnk > 0 ? rnk : "0"}</span>
                   ) : multiSelect ? (
-                    <span className={`w-[22px] h-[22px] rounded-[6px] border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${on ? "bg-[#8C8073] border-[#8C8073]" : "border-[#CDBFAF] group-hover:border-[#8C8073]"}`}>
+                    <span className={`w-[22px] h-[22px] rounded-[6px] border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${on ? "bg-[#EA2C00] border-[#EA2C00]" : "bg-white border-[#CDBFAF] group-hover:border-[#8C8073]"}`}>
                       {on && <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.75} />}
                     </span>
                   ) : (
-                    <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${on ? "text-[#6E675C]" : "text-[#C9BDAD] group-hover:text-[#8C8073] group-hover:translate-x-1"}`} strokeWidth={1.8} />
+                    <span className={`w-[22px] h-[22px] rounded-full border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${on ? "border-[#EA2C00]" : "bg-white border-[#CDBFAF] group-hover:border-[#8C8073]"}`}>
+                      {on && <span className="w-[10px] h-[10px] rounded-full bg-[#EA2C00]" />}
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[16.5px] leading-snug font-medium text-[#1A1A1A]">{o.label}</div>
+                    {o.teach && <div className="text-[13px] text-[#565250] leading-snug mt-1 max-w-[520px]">{o.teach}</div>}
+                  </div>
+                  {/* A pick-one answer moves on as soon as it is tapped; the arrow says so. */}
+                  {!rankMode && !multiSelect && (
+                    <ArrowRight className={`w-[18px] h-[18px] flex-shrink-0 transition-all ${on ? "text-[#EA2C00]" : "text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1"}`} strokeWidth={1.8} />
                   )}
                 </button>
               );
             })}
           </div>
-          {customKey && (
+          {customKey && (noteOpen || hasNote ? (
             <input
               type="text"
               value={noteVal}
+              autoFocus={noteOpen && !hasNote}
               onChange={(e) => setNote(e.target.value)}
               data-testid="discovery-note-input"
-              placeholder="Add your own, in their words (a note for us, not the ROI)"
-              className="mt-5 w-full bg-transparent border-b border-[#EDE8E1] focus:border-[#C4B9A8] py-2.5 text-[15px] text-[#1A1A1A] placeholder:text-[#C4B9A8] placeholder:italic outline-none transition-colors"
+              placeholder="In their words. A note for us, not the ROI."
+              className="mt-4 w-full rounded-[14px] bg-white border border-[#E2D8CB] focus:border-[#EA2C00] px-4 py-3 text-[15px] text-[#1A1A1A] placeholder:text-[#B5AA9B] outline-none transition-colors"
             />
-          )}
+          ) : (
+            <button
+              type="button"
+              onClick={() => setNoteOpen(true)}
+              data-testid="discovery-note-open"
+              className="mt-4 inline-flex items-center gap-2 rounded-full border border-dashed border-[#D6CABA] px-4 py-2 text-[13px] font-semibold text-[#6B6259] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add it in their words
+            </button>
+          ))}
           {showContinue && (
             <div className="mt-7 flex items-center gap-5">
               <button
@@ -371,7 +421,7 @@ const ValueStrategyExperience = forwardRef<VSEHandle, Props>(function ValueStrat
         <div className="hidden lg:block bg-[#E8E2DA]" />
 
         {/* RIGHT — what we're hearing */}
-        <Ledger groups={ledger} />
+        <Ledger groups={ledger} partner={partner} />
       </div>
     </div>
   );
@@ -385,9 +435,9 @@ export default ValueStrategyExperience;
 // headline, and upcoming goals show faint — so the rail stays short and doubles
 // as "where am I in the walk."
 type LedgerState = "context" | "done" | "active" | "upcoming";
-interface LedgerGroup { label: string; items: string[]; notes: string[]; state: LedgerState }
+interface LedgerGroup { label: string; items: string[]; notes: string[]; state: LedgerState; goal?: GoalId; keepItems?: boolean }
 
-function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order: GoalId[], answers: DiscoveryAnswers, activeIdx: number): LedgerGroup[] {
+function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order: GoalId[], answers: DiscoveryAnswers, activeIdx: number, inGround: boolean): LedgerGroup[] {
   const groups: LedgerGroup[] = [];
   const groundItems: string[] = [];
   for (const q of ground) {
@@ -399,85 +449,78 @@ function buildLedger(setting: AttainSetting, ground: GroundingQuestion[], order:
     }
   }
   const gNotes = groundingNotes(setting, answers);
-  if (groundItems.length || gNotes.length) groups.push({ label: "Grounding", items: groundItems, notes: gNotes, state: "context" });
+  // Grounding is always listed so the card shows its whole shape from question one.
+  groups.push({ label: "Grounding", items: groundItems, notes: gNotes, state: inGround ? "active" : "done", goal: undefined, keepItems: true });
 
   order.forEach((goal, i) => {
     const res = resolveResult(setting, goal, answers);
     const items = res?.narrative ?? [];
     const state: LedgerState = i < activeIdx ? "done" : i === activeIdx ? "active" : "upcoming";
-    groups.push({ label: goalDisplayLabel(setting, goal), items, notes: goalNotes(setting, goal, answers), state });
+    groups.push({ label: goalDisplayLabel(setting, goal), items, notes: goalNotes(setting, goal, answers), state, goal });
   });
   return groups;
 }
 
-function Ledger({ groups }: { groups: LedgerGroup[] }) {
-  const answered = groups.some((g) => g.items.length || g.notes.length);
+/**
+ * "What we're hearing": a live notes card. Every section is laid out from the
+ * first question (Grounding, then one per goal, each with that goal's drawing), so
+ * the card is never blank and doubles as "where am I". New lines arrive coral and
+ * settle to ink. Finished sections get a check; Grounding keeps its lines because
+ * every later section leans on them.
+ */
+function Ledger({ groups, partner }: { groups: LedgerGroup[]; partner: string }) {
   return (
     <div className="lg:pt-1">
-      <div className="text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#8C8073]">What we're hearing</div>
-      {!answered ? (
-        <p className="text-[13px] text-[#B4A896] italic mt-4 leading-relaxed">We will assemble the picture here as we go.</p>
-      ) : (
-        <div className="mt-4 space-y-5">
+      <div className="rounded-[20px] border border-[#E9E0D4] bg-[#FDFBF8] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_10px_28px_-18px_rgba(26,26,26,0.16)] overflow-hidden lg:sticky lg:top-24">
+        <div className="px-5 py-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF]">
+          <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#EA2C00]">What we&rsquo;re hearing</div>
+          {partner.trim() && <div className="font-abridge text-[18px] text-[#1A1A1A] mt-0.5 truncate">{partner.trim()}</div>}
+        </div>
+        <div className="divide-y divide-[#EFE8DE]">
           {groups.map((g) => {
-            // Completed goal: one calm checked line, not its full list.
-            if (g.state === "done") {
-              return (
-                <div key={g.label} className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#B0A48F] flex-shrink-0" strokeWidth={2.5} />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#B4A896]">{g.label}</span>
-                </div>
-              );
-            }
-            // Upcoming goal: faint header only.
-            if (g.state === "upcoming") {
-              return (
-                <div key={g.label} className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#D6CBBA]">{g.label}</div>
-              );
-            }
-            // The active goal: a filled marker + darker header make it clearly "you are
-            // here," and a placeholder line orients before the first pick lands.
-            if (g.state === "active") {
-              return (
-                <div key={g.label}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-[6px] h-[6px] rounded-full bg-[#8C8073] flex-shrink-0" />
-                    <span className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#4A4238]">{g.label}</span>
-                  </div>
-                  {g.items.length ? (
-                    <ul className="space-y-2 pl-[14px]">
-                      {g.items.map((it, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-snug text-[#3A342E]">
-                          <span className="mt-[7px] w-[5px] h-[5px] rounded-full flex-shrink-0 bg-[#C4B9A8]" />
-                          <span>{cap(it)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : g.notes.length === 0 ? (
-                    <p className="text-[13px] text-[#C4B9A8] italic leading-snug pl-[14px]">Building as you answer.</p>
-                  ) : null}
-                  <NoteLines notes={g.notes} pad />
-                </div>
-              );
-            }
-            // Grounding (context): expanded, muted header.
+            const done = g.state === "done";
+            const active = g.state === "active";
+            const upcoming = g.state === "upcoming";
+            const showItems = active || (done && g.keepItems);
             return (
-              <div key={g.label}>
-                <div className="text-[10px] font-bold uppercase tracking-[0.06em] mb-2 text-[#B4A896]">{g.label}</div>
-                <ul className="space-y-2">
-                  {g.items.map((it, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-[13.5px] leading-snug text-[#3A342E]">
-                      <span className="mt-[7px] w-[5px] h-[5px] rounded-full flex-shrink-0 bg-[#D8CFC0]" />
-                      <span>{cap(it)}</span>
-                    </li>
-                  ))}
-                </ul>
-                <NoteLines notes={g.notes} />
+              <div key={g.label} className={`px-5 py-4 transition-opacity ${upcoming ? "opacity-55" : ""}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`flex-none w-[46px] h-[30px] rounded-[8px] border px-1 py-0.5 ${active ? "border-[#F0CDBF] bg-[#FBEDE6]" : "border-[#E6DCCE] bg-[#EFE7DC]/70"}`}>
+                    {g.goal ? GOAL_ART[g.goal] : <MapOutcomeArt />}
+                  </div>
+                  <span className={`flex-1 min-w-0 text-[11px] font-extrabold uppercase tracking-[0.07em] ${active ? "text-[#1A1A1A]" : "text-[#6B6259]"}`}>{g.label}</span>
+                  {done && (
+                    <span className="flex-none w-5 h-5 rounded-full bg-[#EA2C00] flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                    </span>
+                  )}
+                  {active && <span className="flex-none text-[10px] font-bold uppercase tracking-[0.08em] text-[#EA2C00]">Now</span>}
+                </div>
+                {showItems && (g.items.length || g.notes.length) ? (
+                  <ul className="mt-3 space-y-2 pl-[58px]">
+                    {g.items.map((it, i) => (
+                      <motion.li
+                        key={`${g.label}:${it}`}
+                        initial={{ opacity: 0, y: 6, color: "#EA2C00" }}
+                        animate={{ opacity: 1, y: 0, color: "#3A342E" }}
+                        transition={{ duration: 0.35, color: { duration: 1.6, delay: 0.3 } }}
+                        className="text-[13.5px] leading-snug"
+                      >
+                        {cap(it)}
+                      </motion.li>
+                    ))}
+                    {g.notes.length > 0 && <li><NoteLines notes={g.notes} /></li>}
+                  </ul>
+                ) : active ? (
+                  <p className="mt-2.5 pl-[58px] text-[12.5px] text-[#9A8F82]">Building as they answer.</p>
+                ) : upcoming ? (
+                  <p className="mt-1.5 pl-[58px] text-[12px] text-[#9A8F82]">Coming up</p>
+                ) : null}
               </div>
             );
           })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -487,7 +530,7 @@ function Ledger({ groups }: { groups: LedgerGroup[] }) {
 function NoteLines({ notes, pad }: { notes: string[]; pad?: boolean }) {
   if (!notes.length) return null;
   return (
-    <ul className={`space-y-1.5 mt-2 ${pad ? "pl-[14px]" : ""}`}>
+    <ul className={`space-y-1.5 ${pad ? "pl-[14px] mt-2" : ""}`}>
       {notes.map((n, i) => (
         <li key={i} className="text-[13px] leading-snug text-[#8C8073] italic">&ldquo;{n}&rdquo;</li>
       ))}
@@ -565,24 +608,34 @@ function Brief({
       {/* goal pills — shown in ranked priority order, one goal read at a time */}
       {order.length > 1 && (
         <div className="mt-8">
-          <p className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#B4A896] mb-3">Your priorities, in order</p>
-          <div className="flex flex-wrap gap-2.5">
-          {order.map((goal) => {
+          <p className="text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-[#443A32] mb-3">Your priorities, in order</p>
+          {/* One drawn tab per goal, in priority order. The small line under the
+              name says what kind of value it is, the same three-way split as the
+              sentence above (dollars / proof / not documentation's to fix). */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {order.map((goal, i) => {
             const on = goal === active;
             const c = classOf(goal);
-            const dot = c === "counted" ? "bg-[#EA2C00]" : c === "proof" ? "bg-[#B78A5A]" : "bg-[#C4B8A8]";
+            const kind = c === "counted" ? "Carries the dollars" : c === "proof" ? "Proof, tracked" : "Not documentation's to fix";
             return (
               <button
                 key={goal}
                 type="button"
                 onClick={() => setSelected(goal)}
                 data-testid={`brief-pill-${goal}`}
-                className={`inline-flex items-center gap-2 rounded-full pl-3 pr-4 py-2 text-[13px] font-semibold border transition-colors ${
-                  on ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#4A4238] border-[#E8E2DA] hover:border-[#B4A896]"
+                aria-pressed={on}
+                className={`group flex items-center gap-3 rounded-[16px] border p-2 pr-4 text-left transition-all ${
+                  on ? "bg-[#FDF6F2] border-[#EA2C00] ring-1 ring-[#EA2C00]" : "bg-[#F6F1EA]/90 border-[#E9E0D4] hover:border-[#D9CDBD] hover:-translate-y-0.5"
                 }`}
               >
-                <span className={`w-[7px] h-[7px] rounded-full ${dot}`} />
-                {goalDisplayLabel(setting, goal)}
+                <span className={`flex-none w-[64px] h-[42px] rounded-[10px] border px-1 py-0.5 ${on ? "border-[#F0CDBF] bg-[#FBEDE6]" : "border-[#E6DCCE] bg-[#EFE7DC]/70"}`}>
+                  {GOAL_ART[goal]}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#6B6259]">#{i + 1}</span>
+                  <span className="block text-[14.5px] font-semibold text-[#1A1A1A] leading-tight truncate">{goalDisplayLabel(setting, goal)}</span>
+                  <span className={`block text-[11.5px] mt-0.5 ${c === "counted" ? "text-[#EA2C00] font-semibold" : "text-[#6B6259]"}`}>{kind}</span>
+                </span>
               </button>
             );
           })}
@@ -592,7 +645,7 @@ function Brief({
 
       {gNotes.length > 0 && (
         <div className="mt-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#B4A896] mb-3">In your words · on the ground</p>
+          <p className="text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-[#443A32] mb-3">In your words · on the ground</p>
           <ul className="space-y-2 max-w-[880px]">
             {gNotes.map((n, i) => (
               <li key={i} className="text-[15px] leading-snug text-[#5A5248] italic">&ldquo;{n}&rdquo;</li>
@@ -629,7 +682,7 @@ function Brief({
           type="button"
           onClick={onContinueToPlan ?? onFinish}
           data-testid={onContinueToPlan ? "discovery-continue-to-plan" : "discovery-build-roi"}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] transition-colors"
+          className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-6 py-3 hover:bg-[#d12800] transition-colors"
         >
           {onContinueToPlan ? "Continue to the plan" : counted.length > 0 ? "Build the ROI on this" : "Take this into the ROI"} <ArrowRight className="w-4 h-4" />
         </button>
@@ -658,7 +711,7 @@ function GoalBrief({
       <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={{ ...foundation, current }} />
       {notes.length > 0 && (
         <div className="mt-8 pt-6 border-t border-[#EAE4DB] max-w-[880px]">
-          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#B4A896] mb-3">In your words · a note for us, not the ROI</p>
+          <p className="text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-[#443A32] mb-3">In your words · a note for us, not the ROI</p>
           <ul className="space-y-2">
             {notes.map((n, i) => (
               <li key={i} className="text-[15px] leading-snug text-[#5A5248] italic">&ldquo;{n}&rdquo;</li>
@@ -688,53 +741,58 @@ function triedFoundationRow(setting: AttainSetting, answers: DiscoveryAnswers): 
 // from typography, whitespace, and one center hairline. Multi-select fields render as
 // clean stacked lines, not comma run-ons.
 function FoundationCard({ settingLabel, goalLabel, foundation }: { settingLabel: string; goalLabel: string; foundation: FoundationRead }) {
+  // Today and the target as two cards with an arrow between, the same "two
+  // records" shape the Case pages use: tan for where they are, white with a coral
+  // edge for where they want to go.
   return (
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-[1.9px] text-[#8C8073] mb-8">{goalLabel.toLowerCase().startsWith(settingLabel.toLowerCase()) ? goalLabel : `${settingLabel} · ${goalLabel}`}</p>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-14 gap-y-10">
-        {/* WHERE YOU ARE */}
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[1.9px] text-[#4A4238] mb-7">Where you are</p>
-          <div className="space-y-7">
+      <p className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-4">{goalLabel.toLowerCase().startsWith(settingLabel.toLowerCase()) ? goalLabel : `${settingLabel} · ${goalLabel}`}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_44px_1fr] items-stretch gap-y-3">
+        <div className="rounded-[20px] border border-[#E9E0D4] bg-[#F6F1EA]/90 p-6 md:p-7">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-6">Where you are</p>
+          <div className="space-y-6">
             {foundation.current.map((it) => (
               <FoundationRow key={it.label} label={it.label} value={it.value} />
             ))}
           </div>
         </div>
-        {/* center hairline */}
-        <div className="hidden lg:block bg-[#EAE4DB]" />
-        {/* WHERE YOU WANT TO GO */}
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[1.9px] text-[#B78A5A] mb-7">Where you want to go</p>
-          <div className="space-y-7">
+        <div className="hidden lg:flex items-center justify-center">
+          <span className="w-9 h-9 rounded-full bg-white border border-[#E2D8CB] text-[#EA2C00] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(26,26,26,0.12)]">
+            <ArrowRight className="w-4 h-4" />
+          </span>
+        </div>
+        <div className="rounded-[20px] border border-[#E9E0D4] border-l-[3px] border-l-[#EA2C00] bg-white p-6 md:p-7 shadow-[0_1px_2px_rgba(26,26,26,0.04),0_10px_28px_-18px_rgba(26,26,26,0.16)]">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00] mb-6">Where you want to go</p>
+          <div className="space-y-6">
             {foundation.desired.map((it) => (
-              <FoundationRow key={it.label} label={it.label} value={it.value} coral={it.label === foundation.signalLabel} />
+              <FoundationRow key={it.label} label={it.label} value={it.value} signal={it.label === foundation.signalLabel} />
             ))}
           </div>
         </div>
       </div>
-      {/* the bridge: quiet, hairline-separated — the gap goes to ROI, honesty lives here */}
-      <div className="mt-11 pt-6 border-t border-[#EAE4DB] max-w-[880px]">
-        <p className="text-[14px] text-[#5A5248] leading-relaxed">
-          <span className="font-bold uppercase tracking-[0.08em] text-[#B4A896] text-[10px] mr-2 align-[1px]">Next</span>
-          {foundation.bridge}
-        </p>
+      {/* the bridge: what happens next */}
+      <div className="mt-4 rounded-[16px] border border-[#E9E0D4] bg-[#FDFBF8] px-5 py-4 flex items-start gap-3">
+        <span className="flex-none text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00] pt-[3px]">Next</span>
+        <p className="text-[14.5px] text-[#3A342E] leading-relaxed">{foundation.bridge}</p>
       </div>
     </div>
   );
 }
 
-function FoundationRow({ label, value, coral }: { label: string; value: string | string[]; coral?: boolean }) {
-  // `coral` marks the success signal — a leading metric, not money or an action, so it
-  // gets the warm accent. A multi-select value comes as a list: each pick its own line
-  // (capitalized), so it reads as structure, not a comma run-on.
+function FoundationRow({ label, value, signal }: { label: string; value: string | string[]; signal?: boolean }) {
+  // `signal` marks the success signal (a leading metric): a small coral dot beside
+  // each line rather than coloured text, so coral stays for money and actions. A
+  // multi-select value comes as a list: each pick its own line.
   const items = (Array.isArray(value) ? value : [value]).map((v) => cap(v));
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#B4A896] mb-2">{label}</div>
+      <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6B6259] mb-2">{label}</div>
       <div className="space-y-1.5">
         {items.map((v, i) => (
-          <div key={i} className={`text-[16px] leading-snug ${coral ? "text-[#8A6D3B] font-semibold" : "text-[#1A1A1A] font-medium"}`}>{v}</div>
+          <div key={i} className="flex items-start gap-2 text-[16px] leading-snug text-[#1A1A1A] font-medium">
+            {signal && <span className="mt-[8px] w-[6px] h-[6px] rounded-full bg-[#EA2C00] flex-none" />}
+            <span>{v}</span>
+          </div>
         ))}
       </div>
     </div>
