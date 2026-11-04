@@ -19,6 +19,7 @@ import {
 } from "./roiEngine";
 import { stashAndOpenPdf, PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
 import { HubTile, HubTileGrid } from "@/pages/hub/hubKit";
+import { useAnimatedNumber } from "@/pages/proforma/editorial/editorialShared";
 import { EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
 
 // The same drawings the Value Model's setting step uses, so a care setting looks
@@ -138,7 +139,10 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
       <UnifiedHeaderSpacer />
       {/* The picker is four tiles across, so it takes the hub's wide column; the
           wizard keeps its narrow reading measure. */}
-      <div className={`${inPicker ? "max-w-[1200px]" : "max-w-[760px]"} mx-auto px-5 sm:px-8`}>
+      {/* One column width for every step, so the eyebrow and headline keep the
+          same left edge from the picker onward. Steps that read better narrow
+          (the lift, the answer) cap their own content inside it. */}
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8">
         {inPicker
           ? <SettingPicker onPick={(s) => go(`${s}:0`)} />
           : <Wizard key={setting} setting={setting} step={step} setStep={(n) => go(`${setting}:${n}`)} onChangeSetting={() => go("picker")} />}
@@ -306,49 +310,67 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   };
 
   return (
-    <div className="pt-10 pb-28">
-      <div className="mb-7 text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#565250]">
+    <div className="pt-12 sm:pt-16 pb-28">
+      <div className="mb-4 text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#565250]">
         {meta.label} · Step {step + 2} of 4 <button onClick={onChangeSetting} className="text-[#8A8580] hover:text-[#EA2C00] transition-colors">· change</button>
       </div>
 
       {step === 0 && (
-        <StepShell title="Who is this partner, and how big are they?" sub="These come from the impact analysis, on its methodology and utilization pages.">
-          <div className="border-t border-[#E8E2DA]">
-            <Row label="Partner name">
-              <TextInput value={partner} onChange={setPartner} placeholder="e.g., Abridge Healthcare" />
-            </Row>
-            <Row label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
-              <NumInput value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
-            </Row>
-            <Row label="How many are on Abridge today?" hint={totalProviders > 0 ? `of ${fmtInt(totalProviders)} ${scopeWord} with a go-live date` : `${scopeWord} with a go-live date`}>
-              <NumInput value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60" />
-            </Row>
-            <Row label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
-              <NumInput value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
-            </Row>
-            <Row label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
-              <NumInput value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
-            </Row>
-            {isNursing && (
-              <>
-                <Row label="How many staffed beds?" hint="drives the patient-days behind the quality math">
-                  <NumInput value={staffedBeds} onChange={setStaffedBeds} placeholder="e.g., 300" />
-                </Row>
-                <Row label="Average occupancy?">
-                  <NumInput value={occupancy} onChange={setOccupancy} suffix="%" />
-                </Row>
-              </>
-            )}
+        <div>
+          <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#1A1A1A] max-w-[640px]">Who is this partner, and how big are they?</h1>
+          <p className="mt-3 text-[15.5px] leading-[1.55] text-[#565250] max-w-[560px]">These come from the impact analysis, on its methodology and utilization pages.</p>
+
+          <div className="mt-9 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] gap-6 lg:gap-8 items-start">
+            {/* LEFT: the inputs, grouped. Same values and handlers as before. */}
+            <div className="space-y-4">
+              <FieldCard title="The partner">
+                <Field label="Partner name">
+                  <BoxText value={partner} onChange={setPartner} placeholder="e.g., Abridge Healthcare" />
+                </Field>
+              </FieldCard>
+              <FieldCard title="The people">
+                <Field label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
+                  <BoxNum value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
+                </Field>
+                <Field label="How many are on Abridge today?" hint={totalProviders > 0 ? `of ${fmtInt(totalProviders)} ${scopeWord} with a go-live date` : `${scopeWord} with a go-live date`}>
+                  <BoxNum value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60" />
+                </Field>
+              </FieldCard>
+              <FieldCard title={`The ${meta.encWord}`}>
+                <Field label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
+                  <BoxNum value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
+                </Field>
+                <Field label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
+                  <BoxNum value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
+                </Field>
+              </FieldCard>
+              {isNursing && (
+                <FieldCard title="The unit">
+                  <Field label="How many staffed beds?" hint="drives the patient-days behind the quality math">
+                    <BoxNum value={staffedBeds} onChange={setStaffedBeds} placeholder="e.g., 300" />
+                  </Field>
+                  <Field label="Average occupancy?">
+                    <BoxNum value={occupancy} onChange={setOccupancy} suffix="%" />
+                  </Field>
+                </FieldCard>
+              )}
+            </div>
+
+            {/* RIGHT: today's footprint, built live from the inputs on the left. */}
+            <Footprint
+              total={totalProviders}
+              onAbridge={onAbridge}
+              util={utilNow}
+              encToday={encToday}
+              totalEnc={totalProviders * encPerProvider}
+              adoption={adoptionNow}
+              scopeWord={scopeWord}
+              encWord={meta.encWord}
+              settingWord={settingWord}
+            />
           </div>
-          <p className="mt-7 text-[15px] leading-[1.6] text-[#5E534A]">
-            {encToday > 0 ? (
-              <>So Abridge is on about <span className="font-abridge text-[#1A1A1A]">{fmtInt(encToday)}</span> {meta.encWord} a year in {settingWord} right now. That is {Math.round(adoptionNow)}% of {scopeWord}, on {Math.round(utilNow)}% of their {meta.encWord}.</>
-            ) : (
-              <span className="italic text-[#A69A88]">Enter the numbers above and we'll show today's Abridge footprint.</span>
-            )}
-          </p>
           <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
-        </StepShell>
+        </div>
       )}
 
       {step === 1 && (
@@ -400,7 +422,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
 function StepShell({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div className="max-w-[760px]">
       <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] max-w-[600px]">{title}</h1>
       <p className="mt-3 mb-9 text-[15px] leading-[1.55] text-[#565250] max-w-[560px]">{sub}</p>
       {children}
@@ -416,6 +438,110 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
         {hint && <div className="text-[12.5px] text-[#A69A88] mt-1 leading-snug">{hint}</div>}
       </div>
       <div className="flex-shrink-0">{children}</div>
+    </div>
+  );
+}
+
+// ── The account step's parts ────────────────────────────────────────────────
+function FieldCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-[20px] border border-[#E9E0D4] bg-[#F6F1EA]/90 px-5 sm:px-6 pt-5 pb-2">
+      <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-1">{title}</div>
+      <div className="divide-y divide-[#E6DCCF]">{children}</div>
+    </div>
+  );
+}
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6 py-4">
+      <div className="min-w-0">
+        <div className="text-[15px] font-semibold text-[#1A1A1A] leading-snug">{label}</div>
+        {hint && <div className="text-[12.5px] text-[#6B6259] mt-1 leading-snug">{hint}</div>}
+      </div>
+      <div className="flex-shrink-0">{children}</div>
+    </div>
+  );
+}
+const BOX = "inline-flex items-baseline gap-1.5 rounded-[12px] border border-[#E2D8CB] bg-white px-3.5 py-2.5 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors";
+function BoxNum({ value, onChange, suffix, placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; placeholder?: string }) {
+  return (
+    <div className={`${BOX} w-[168px]`}>
+      <FormattedNumberInput value={value} onChange={onChange} step={1} className={UINPUT_CLASS} placeholder={placeholder} />
+      {suffix && <span className="text-[14px] text-[#6B6259]">{suffix}</span>}
+    </div>
+  );
+}
+function BoxText({ value, onChange, placeholder }: { value: string; onChange: (s: string) => void; placeholder?: string }) {
+  return (
+    <div className={`${BOX} w-full sm:w-[300px]`}>
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full bg-transparent outline-none text-left text-[17px] font-bold text-[#1A1A1A] placeholder:font-normal placeholder:text-[15px] placeholder:text-[#B5AA9B]" />
+    </div>
+  );
+}
+
+/**
+ * Today's Abridge footprint, drawn live: one figure per slice of the provider
+ * population (coral = on Abridge), a bar for the share of visits documented, and
+ * the visits-on-Abridge number every later dollar multiplies off. The "room to
+ * grow" line is plain arithmetic on their inputs (everyone x their visits).
+ */
+function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scopeWord, encWord, settingWord }: {
+  total: number; onAbridge: number; util: number; encToday: number; totalEnc: number; adoption: number; scopeWord: string; encWord: string; settingWord: string;
+}) {
+  const FIG = 40;
+  const ready = encToday > 0;
+  const on = total > 0 ? Math.round((Math.min(onAbridge, total) / total) * FIG) : 0;
+  const shown = useAnimatedNumber(encToday);
+  const utilPct = Math.max(0, Math.min(100, util || 0));
+  return (
+    <div className="lg:sticky lg:top-24 rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="roi-footprint">
+      <div className="px-6 pt-5 pb-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF]">
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">Today&rsquo;s Abridge footprint</div>
+      </div>
+      <div className="p-6">
+        {/* the people */}
+        <div className="rounded-[16px] border border-[#E6DCCE] bg-[#EFE7DC]/60 px-4 py-4">
+          <div className="grid grid-cols-10 gap-x-2 gap-y-2.5">
+            {Array.from({ length: FIG }).map((_, i) => (
+              <svg key={i} viewBox="0 0 12 16" className="w-full h-auto" aria-hidden="true">
+                <circle cx="6" cy="4" r="3" className={`transition-colors duration-500 ${i < on ? "fill-[#EA2C00]" : "fill-[#D9CCBB]"}`} style={{ transitionDelay: `${i * 12}ms` }} />
+                <path d="M1 15.5 C1 10.5 3.2 8.6 6 8.6 S11 10.5 11 15.5 Z" className={`transition-colors duration-500 ${i < on ? "fill-[#EA2C00]" : "fill-[#E2D6C6]"}`} style={{ transitionDelay: `${i * 12}ms` }} />
+              </svg>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center justify-between text-[12.5px]">
+            <span className="font-semibold text-[#443A32]">{total > 0 ? `${fmtInt(Math.min(onAbridge, total))} of ${fmtInt(total)} ${scopeWord} on Abridge` : `Your ${scopeWord}`}</span>
+            {total > 0 && <span className="font-bold text-[#EA2C00]">{Math.round(adoption)}%</span>}
+          </div>
+        </div>
+        {/* the visits */}
+        <div className="mt-3 rounded-[16px] border border-[#E6DCCE] bg-[#EFE7DC]/60 px-4 py-4">
+          <div className="h-3 rounded-full bg-[#E2D6C6] overflow-hidden">
+            <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700 ease-out" style={{ width: `${utilPct}%` }} />
+          </div>
+          <div className="mt-3 flex items-center justify-between text-[12.5px]">
+            <span className="font-semibold text-[#443A32]">Their {encWord} documented with Abridge</span>
+            {util > 0 && <span className="font-bold text-[#EA2C00]">{Math.round(utilPct)}%</span>}
+          </div>
+        </div>
+        {/* the number */}
+        <div className="mt-6">
+          {ready ? (
+            <>
+              <div className="font-abridge text-[52px] leading-none text-[#1A1A1A] tabular-nums">{fmtInt(shown)}</div>
+              <div className="mt-2 text-[15px] font-semibold text-[#1A1A1A]">{encWord} a year on Abridge today, in {settingWord}</div>
+              {totalEnc > 0 && (
+                <div className="mt-1.5 text-[13.5px] text-[#565250]">
+                  of {fmtInt(totalEnc)} {encWord} a year across all {fmtInt(total)} {scopeWord}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-[14px] text-[#6B6259] leading-relaxed">Fill in the numbers and the footprint builds here.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
