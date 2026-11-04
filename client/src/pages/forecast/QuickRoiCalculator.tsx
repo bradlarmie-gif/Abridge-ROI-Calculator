@@ -786,7 +786,8 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
 function NavRow({ onBack, onNext, nextLabel }: { onBack?: () => void; onNext: () => void; nextLabel: string }) {
   return (
     <div className="flex items-center justify-between mt-10">
-      {onBack ? <button onClick={onBack} className="text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors">Back</button> : <span />}
+      {/* Back lives in the header (top left), like every screen. */}
+      <span />
       <button onClick={onNext} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors">
         {nextLabel} <ArrowRight className="w-4 h-4" />
       </button>
@@ -907,7 +908,7 @@ function AnswerStep(p: {
       </div>
 
       <div className="mt-10 pt-7 border-t border-[#E8E2DA] flex items-center justify-between gap-4 flex-wrap">
-        <button onClick={p.onBack} className="text-[14px] font-semibold text-[#A69A88] hover:text-[#1A1A1A] transition-colors rounded outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">Back to the numbers</button>
+        <span />
         <button onClick={p.onExport} className="inline-flex items-center gap-2 rounded-full bg-[#EA2C00] text-white text-[14px] font-bold px-7 py-3.5 hover:bg-[#d12800] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2">
           <Download className="w-4 h-4" /> Export the one-pager
         </button>

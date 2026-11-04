@@ -975,6 +975,7 @@ export default function App() {
                   onRemoveSetting={handleRemoveFromProforma}
                   onBack={() => navigateTo(hubMode ? "financial-hub" : "journey")}
                   onHome={() => navigateTo(hubMode ? "hub" : "journey")}
+                  onOpenPlan={() => navigateTo("planning-hub")}
                 />
               )
             )}

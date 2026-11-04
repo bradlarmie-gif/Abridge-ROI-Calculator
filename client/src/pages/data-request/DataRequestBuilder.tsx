@@ -86,14 +86,19 @@ export default function DataRequestBuilder({ onBack }: Props) {
       {/* ── Header ── */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-sm border-b border-[#EDEBE6]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <button
-            onClick={step === 2 ? () => setStep(1) : onBack}
-            className="flex items-center gap-1.5 text-[#888888] text-sm hover:text-[#1A1A1A] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {step === 2 ? 'Change settings' : 'Back'}
-          </button>
-          <img src={abridgeLogo} alt="Abridge" className="h-5" />
+          {/* Same order and style as the app header: logo, divider, ← Back. */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <img src={abridgeLogo} alt="Abridge" className="h-5 sm:h-6" />
+            <div className="w-px h-5 bg-slate-200 hidden sm:block" />
+            <button
+              onClick={step === 2 ? () => setStep(1) : onBack}
+              data-testid="button-back"
+              className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors p-1.5 -ml-1 rounded-md hover:bg-slate-100"
+            >
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-sm font-medium hidden sm:inline">Back</span>
+            </button>
+          </div>
           <button
             onClick={onBack}
             className="flex items-center gap-1.5 text-[#888888] text-sm hover:text-[#1A1A1A] transition-colors"

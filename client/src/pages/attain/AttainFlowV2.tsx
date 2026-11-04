@@ -79,6 +79,7 @@ export default function AttainFlowV2({
   // The discovery experience exposes its back() so the header's single Back button
   // steps back through the interview, then exits to the funnel (no double Back).
   const vseRef = useRef<VSEHandle | null>(null);
+  const planBackRef = useRef<(() => void) | null>(null);
   // The rebuilt owner-grouped Plan (planning mode) keeps its state in its own ref
   // so it persists to the snapshot without touching the Align/Progress slice.
   const planBuildRef = useRef<PlanBuildState | null>(null);
@@ -195,6 +196,8 @@ export default function AttainFlowV2({
     // In the discovery interview, the header Back steps back through the questions
     // (and exits to the funnel from the first one) via the experience's handle.
     if (phase === "discovery" && vseRef.current) { vseRef.current.back(); return; }
+    // Same for the plan walk: header Back steps back through its steps.
+    if (phase === "experience" && planBackRef.current) { planBackRef.current(); return; }
     if (idx > 0) setPhase(PHASES[idx - 1]); else onBackToJourney?.();
   };
   const goNext = () => {
@@ -225,7 +228,7 @@ export default function AttainFlowV2({
       {phase === "discovery" ? (
         <><UnifiedHeaderSpacer /><ValueStrategyExperience ref={vseRef} key={`${partner}::${setting}`} setting={setting!} settingLabel={SETTING_LABEL[setting!]} goals={goals} partner={partner} initialAnswers={discoveryRef.current ?? {}} onPersistAnswers={onPersistAnswers} onFinish={onBuildRoi} onContinueToPlan={() => setPhase("scope")} onExit={() => setPhase("vision")} /></>
       ) : phase === "experience" ? (
-        <><UnifiedHeaderSpacer /><PlanBuildExperience key={`${partner}::${setting}`} embedded setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
+        <><UnifiedHeaderSpacer /><PlanBuildExperience key={`${partner}::${setting}`} embedded backRef={planBackRef} setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
       ) : (
         <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
           {phase === "partner" && (

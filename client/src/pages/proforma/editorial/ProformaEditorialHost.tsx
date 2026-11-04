@@ -22,6 +22,7 @@ export interface ProformaEditorialHostProps {
   onAddSetting: (careSetting?: string) => void;
   onBack: () => void;
   onHome?: () => void; // Abridge logo → top home hub
+  onOpenPlan?: () => void; // Present's "Build the plan together" → The Plan
   org?: string;
 }
 
@@ -34,6 +35,7 @@ export default function ProformaEditorialHost({
   onAddSetting,
   onBack,
   onHome,
+  onOpenPlan,
   org = "Your organization",
 }: ProformaEditorialHostProps) {
   const [chapter, setChapter] = useState<Chapter>("build");
@@ -49,7 +51,7 @@ export default function ProformaEditorialHost({
     return <ProformaCaseView settings={resolved} config={config} onNavigate={navigate} onHome={onHome} />;
   }
   if (chapter === "present") {
-    return <ProformaPresentView settings={resolved} config={config} org={org} onNavigate={navigate} onHome={onHome} />;
+    return <ProformaPresentView settings={resolved} config={config} org={org} onNavigate={navigate} onHome={onHome} onOpenPlan={onOpenPlan} />;
   }
 
   return (

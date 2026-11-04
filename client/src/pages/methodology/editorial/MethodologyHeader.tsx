@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
 
 export type MethodologyNavKey = "overview" | "outpatient" | "ed" | "inpatient" | "nursing" | "continuum";
 
@@ -45,15 +46,19 @@ export function MethodologyHeader({
     <div className="h-16 border-b border-[#E8E2DA]">
       <div className="max-w-[1120px] mx-auto h-full px-5 sm:px-8 lg:px-14 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
+          {/* Same order and style as the app header: wordmark, divider, ← Back. */}
+          <button onClick={onHome} data-testid="link-logo-home" className="flex items-center flex-shrink-0 transition-opacity hover:opacity-70">
+            <img src={abridgeLogo} alt="Abridge" className="h-5 sm:h-6" />
+          </button>
+          <div className="w-px h-5 bg-slate-200 hidden sm:block" />
           <button
             onClick={onBack}
-            aria-label="Back"
             data-testid="button-back"
-            className="w-8 h-8 rounded-full border border-[#E8E2DA] bg-white flex items-center justify-center text-[#5E534A] hover:text-[#EA2C00] hover:border-[#EA2C00] transition-colors flex-shrink-0"
+            className="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors p-1.5 -ml-1 rounded-md hover:bg-slate-100 flex-shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm font-medium hidden sm:inline">Back</span>
           </button>
-          <button onClick={onHome} data-testid="link-logo-home" className="font-abridge text-[22px] text-[#EA2C00] tracking-[0.03em]">ABRIDGE</button>
           <span className="hidden sm:inline text-[#B4A896]">|</span>
           <span className="hidden sm:inline text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#8C8073]">{railLabel}</span>
         </div>

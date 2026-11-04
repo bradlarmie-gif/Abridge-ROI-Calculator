@@ -160,9 +160,11 @@ export interface ProformaPresentViewProps {
   org: string;
   onNavigate: (c: Chapter) => void;
   onHome?: () => void;
+  /** "Build the plan together" → The Plan. */
+  onOpenPlan?: () => void;
 }
 
-export default function ProformaPresentView({ settings, config, org, onNavigate, onHome }: ProformaPresentViewProps) {
+export default function ProformaPresentView({ settings, config, org, onNavigate, onHome, onOpenPlan }: ProformaPresentViewProps) {
   const model = useMemo(() => computeCaseModel(settings, config), [settings, config]);
   const [isolatedId, setIsolatedId] = useState<string | null>(null);
   const [showStress, setShowStress] = useState(false);
@@ -196,7 +198,7 @@ export default function ProformaPresentView({ settings, config, org, onNavigate,
       <UnifiedHeader
         pathType="forecast"
         pathLabel="The Numbers"
-        showBack={false}
+        onBack={() => onNavigate("case")}
         onHome={onHome}
         centerContent={<ChapterNav active="present" onNavigate={onNavigate} />}
         rightAction={
@@ -314,16 +316,12 @@ export default function ProformaPresentView({ settings, config, org, onNavigate,
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 26, gap: 20, flexWrap: "wrap", borderTop: "1px solid #EFE8DE", paddingTop: 22 }}>
             <div style={{ fontSize: 12.5, color: T.muted }}>Prepared with your team · {monthLabel}</div>
-            <button style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 28px", borderRadius: 12, cursor: "pointer" }}>
+            <button data-testid="proforma-open-plan" onClick={onOpenPlan} style={{ background: T.coral, color: "#fff", border: "none", fontFamily: "Manrope", fontWeight: 700, fontSize: 15, padding: "14px 28px", borderRadius: 12, cursor: "pointer" }}>
               Build the plan together, in Value Attainment →
             </button>
           </div>
         </div>
 
-        {/* back nav */}
-        <div style={{ marginTop: 28 }}>
-          <button onClick={() => onNavigate("case")} style={{ background: "none", border: "none", color: T.faint, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>← Back to the case</button>
-        </div>
       </div>
     </div>
   );

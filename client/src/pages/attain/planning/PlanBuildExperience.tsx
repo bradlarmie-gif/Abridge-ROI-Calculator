@@ -133,8 +133,12 @@ const STEPS: { key: StepKey; label: string }[] = [
 
 export default function PlanBuildExperience({
   setting = "outpatient", partner = "your team",
-  initial, onPersist, goals: goalsProp, embedded = false, onExit, baseline, onTrackingChange,
+  initial, onPersist, goals: goalsProp, embedded = false, onExit, baseline, onTrackingChange, backRef,
 }: {
+  /** The host's header Back calls this, so Back lives in one place (top left)
+   * and still steps back through the walk: tracking → plan, step → previous
+   * step, first step → onExit. */
+  backRef?: { current: (() => void) | null };
   setting?: AttainSetting; partner?: string;
   initial?: PlanBuildState; onPersist?: (s: PlanBuildState) => void;
   /** the goals the partner picked in the funnel; defaults to the full matrix. */
@@ -164,6 +168,13 @@ export default function PlanBuildExperience({
   const [state, setState] = useState<PlanBuildState>(initial ?? EMPTY_STATE);
   const [pos, setPos] = useState(0);
   const [tracking, setTracking] = useState(false);
+  if (backRef) {
+    backRef.current = () => {
+      if (tracking) setTracking(false);
+      else if (pos > 0) setPos((p) => Math.max(0, p - 1));
+      else onExit?.();
+    };
+  }
   useEffect(() => { window.scrollTo({ top: 0 }); }, [pos, tracking]);
   useEffect(() => { onPersist?.(state); }, [state, onPersist]);
   useEffect(() => { onTrackingChange?.(tracking); }, [tracking, onTrackingChange]);
@@ -243,7 +254,8 @@ export default function PlanBuildExperience({
         </div>
         <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#EDE8E1]">
           <div className="max-w-[960px] mx-auto px-6 h-[68px] flex items-center justify-between">
-            <button onClick={() => setTracking(false)} className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#6E675C] hover:text-[#1A1A1A]"><ArrowLeft className="w-4 h-4" /> Back to the plan</button>
+            {/* Back to the plan lives in the header Back (backRef). */}
+            <span />
             <span className="text-[12px] text-[#8C8073]">Reviewed {state.cadence}{state.execOwner ? ` · ${state.execOwner} accountable` : ""}</span>
           </div>
         </div>
@@ -425,9 +437,8 @@ export default function PlanBuildExperience({
       {/* footer nav */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-[#EDE8E1]">
         <div className="max-w-[960px] mx-auto px-6 h-[68px] flex items-center justify-between">
-          <button onClick={() => (pos === 0 ? onExit?.() : setPos((p) => Math.max(0, p - 1)))} disabled={pos === 0 && !onExit} className={`inline-flex items-center gap-1.5 text-[14px] font-semibold ${pos === 0 && !onExit ? "text-[#C9BDAD]" : "text-[#6E675C] hover:text-[#1A1A1A]"}`}>
-            <ArrowLeft className="w-4 h-4" /> {pos === 0 ? "Back" : "Previous step"}
-          </button>
+          {/* Back lives in the header (backRef), top left, like every screen. */}
+          <span className="text-[12px] font-semibold text-[#8C8073]">Step {pos + 1} of {STEPS.length} · {STEPS[pos].label}</span>
           {pos < STEPS.length - 1 ? (
             <button onClick={() => setPos((p) => Math.min(STEPS.length - 1, p + 1))} className="inline-flex items-center gap-2 rounded-[10px] bg-[#EA2C00] text-white px-6 py-3 text-[14px] font-bold hover:bg-[#d12800]">
               {stepKey === "cadence" ? "See the plan" : "Continue"} <ArrowRight className="w-4 h-4" />
