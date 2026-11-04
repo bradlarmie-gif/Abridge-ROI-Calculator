@@ -317,8 +317,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
       {step === 0 && (
         <div>
-          <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#1A1A1A] max-w-[640px]">Who is this partner, and how big are they?</h1>
-          <p className="mt-3 text-[15.5px] leading-[1.55] text-[#565250] max-w-[560px]">These come from the impact analysis, on its methodology and utilization pages.</p>
+          <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#1A1A1A] max-w-[640px]">Where is Abridge today?</h1>
+          <p className="mt-3 text-[15.5px] leading-[1.55] text-[#565250] max-w-[560px]">{isNursing ? "Seven" : "Five"} numbers from the impact analysis, on its methodology and utilization pages.</p>
 
           <div className="mt-9 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)] gap-6 lg:gap-8 items-start">
             {/* LEFT: the inputs, grouped. Same values and handlers as before. */}
