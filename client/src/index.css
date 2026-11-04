@@ -696,9 +696,12 @@
    GLOBAL RESPONSIVE STYLES
    ======================================== */
 
-/* Prevent horizontal scroll + iOS text scaling fix */
+/* Prevent horizontal scroll + iOS text scaling fix. `clip`, not `hidden`:
+   hidden on both html and body turns body into a scroll container, which
+   silently breaks every position:sticky panel in the app (they stick to a box
+   that never scrolls). clip trims the overflow without that side effect. */
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
   width: 100%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;

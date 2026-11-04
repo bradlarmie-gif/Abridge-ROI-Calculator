@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown, Download } from "lucide-react";
 import { QUICK_ROI_PDF_STORAGE_KEY } from "@/components/forecast/QuickRoiEditorialPdf";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
@@ -20,6 +21,15 @@ import {
 import { stashAndOpenPdf, PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
 import { HubTile, HubTileGrid } from "@/pages/hub/hubKit";
 import { useAnimatedNumber } from "@/pages/proforma/editorial/editorialShared";
+import { CapacityGoalArt, QualityGoalArt, RetentionGoalArt, RevenueGoalArt } from "@/pages/hub/hubArt";
+
+// One drawing per value group on the lift step, from the goal-tile set.
+const DOMAIN_ART: Record<string, JSX.Element> = {
+  Revenue: <RevenueGoalArt />,
+  Capacity: <CapacityGoalArt />,
+  Workforce: <RetentionGoalArt />,
+  Quality: <QualityGoalArt />,
+};
 import { EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
 
 // The same drawings the Value Model's setting step uses, so a care setting looks
@@ -357,6 +367,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
             </div>
 
             {/* RIGHT: today's footprint, built live from the inputs on the left. */}
+            <div className="lg:self-stretch">
             <Footprint
               total={totalProviders}
               onAbridge={onAbridge}
@@ -368,44 +379,74 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
               encWord={meta.encWord}
               settingWord={settingWord}
             />
+            </div>
           </div>
           <NavRow onNext={() => setStep(1)} nextLabel="Next: the lift" />
         </div>
       )}
 
       {step === 1 && (
-        <StepShell title="What changed after Abridge went live?" sub="Read the before and after off the impact analysis. It was this, now it's this. Every number here is yours to edit.">
-          {/* section tabs — navigate between the domains */}
-          <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
-            {domains.map((dom, i) => {
-              const sum = tabSummary(dom);
-              const isNull = sum === "Off" || sum === "—";
-              return (
-              <button key={dom} onClick={() => setLiftTab(i)} className="relative flex items-baseline gap-2 pb-3 -mb-px outline-none group">
-                <span className={`text-[13px] font-bold tracking-[0.01em] transition-colors ${i === liftTab ? "text-[#1A1A1A]" : "text-[#A69A88] group-hover:text-[#5E534A]"}`}>{dom}</span>
-                <span className={`font-abridge text-[14px] transition-colors ${i === liftTab && !isNull ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{sum}</span>
-                {i === liftTab && <span className="absolute left-0 right-0 bottom-[-1px] h-[2px] bg-[#EA2C00]" />}
-              </button>
-              );
-            })}
-          </div>
+        <div>
+          <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#1A1A1A] max-w-[640px]">What changed after Abridge went live?</h1>
+          <p className="mt-3 text-[15.5px] leading-[1.55] text-[#565250] max-w-[560px]">Turn on what the impact analysis measured. Every number stays editable.</p>
 
-          <div className="pt-6 space-y-4">
-            {activeDomain === "Capacity" && !isNursing && meta.timeMetric && (
-              <TimeBackBlock table={meta.timeMetric.table} before={timeBefore} after={timeAfter}
-                onBefore={setTimeBefore} onAfter={setTimeAfter} encToday={encToday} hours={hoursReclaimed}
-                dollarized={setting === "outpatient"}
-                placeholderBefore={String(meta.timeMetric.before)} placeholderAfter={String(meta.timeMetric.after)} />
-            )}
-            {DRIVERS[setting].filter((dr) => dr.domain === activeDomain).map((dr) => (
-              <DriverCard key={dr.id} driver={dr} vals={vals} setVal={setVal}
-                on={!!enabled[dr.id]} onToggle={() => toggle(dr.id)} eligibleEncounters={Math.round(encToday)}
-                hoursReclaimed={hoursReclaimed} providersOnAbridge={onAbridge}
-                value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
-            ))}
+          <div className="mt-9 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)] gap-6 lg:gap-8 items-start">
+            {/* LEFT: every driver, grouped by where the value lands. No tabs, so
+                the whole picture is always on the page. */}
+            <div className="space-y-5">
+              {domains.map((dom) => {
+                const drivers = DRIVERS[setting].filter((dr) => dr.domain === dom);
+                const groupValue = drivers.filter((dr) => enabled[dr.id]).reduce((sum, dr) => sum + (today.valueById[dr.id] ?? 0), 0);
+                const showTime = dom === "Capacity" && !isNursing && meta.timeMetric;
+                return (
+                  <section key={dom} className="rounded-[22px] border border-[#E9E0D4] bg-[#F6F1EA]/90 overflow-hidden" data-testid={`lift-group-${dom}`}>
+                    <header className="group flex items-center gap-4 px-4 sm:px-5 py-3.5">
+                      <div className="flex-none w-[76px] h-[48px] rounded-[12px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1.5 py-1">{DOMAIN_ART[dom]}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#443A32]">{dom}</div>
+                        <div className="text-[12.5px] text-[#6B6259] mt-0.5">
+                          {drivers.length === 0 ? "Time back, shown as hours" : `${drivers.length} ${drivers.length === 1 ? "driver" : "drivers"}${showTime ? " · plus time back" : ""}`}
+                        </div>
+                      </div>
+                      <div className={`font-abridge text-[22px] tabular-nums ${groupValue > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>
+                        {groupValue > 0 ? fmtShort(groupValue) : dom === "Capacity" && hoursReclaimed > 0 ? `${fmtInt(hoursReclaimed)} hrs` : "—"}
+                      </div>
+                    </header>
+                    <div className="px-2.5 pb-2.5 space-y-2">
+                      {showTime && meta.timeMetric && (
+                        <TimeBackBlock table={meta.timeMetric.table} before={timeBefore} after={timeAfter}
+                          onBefore={setTimeBefore} onAfter={setTimeAfter} encToday={encToday} hours={hoursReclaimed}
+                          dollarized={setting === "outpatient"}
+                          placeholderBefore={String(meta.timeMetric.before)} placeholderAfter={String(meta.timeMetric.after)} />
+                      )}
+                      {drivers.map((dr) => (
+                        <DriverCard key={dr.id} driver={dr} vals={vals} setVal={setVal}
+                          on={!!enabled[dr.id]} onToggle={() => toggle(dr.id)} eligibleEncounters={Math.round(encToday)}
+                          hoursReclaimed={hoursReclaimed} providersOnAbridge={onAbridge}
+                          value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+
+            {/* RIGHT: the lift, adding up live as drivers go on. The wrapper
+                stretches to the full row height so the panel can stay in view. */}
+            <div className="lg:self-stretch">
+            <LiftPanel
+              total={todayValue}
+              groups={domains.map((dom) => ({
+                dom,
+                value: DRIVERS[setting].filter((dr) => dr.domain === dom && enabled[dr.id]).reduce((sum, dr) => sum + (today.valueById[dr.id] ?? 0), 0),
+              }))}
+              items={DRIVERS[setting].filter((dr) => enabled[dr.id]).map((dr) => ({ title: dr.title, value: today.valueById[dr.id] ?? 0 }))}
+              hours={hoursReclaimed}
+            />
+            </div>
           </div>
-          <NavRow onBack={() => setStep(0)} onNext={() => setStep(2)} nextLabel="See the answer" />
-        </StepShell>
+          <NavRow onNext={() => setStep(2)} nextLabel="See the answer" />
+        </div>
       )}
 
       {step === 2 && (
@@ -438,6 +479,61 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
         {hint && <div className="text-[12.5px] text-[#A69A88] mt-1 leading-snug">{hint}</div>}
       </div>
       <div className="flex-shrink-0">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * The lift, adding up live: the total counts up, each value group gets a bar,
+ * and every driver that is on is listed with its value. Empty until something
+ * is switched on, with a line saying what to do.
+ */
+function LiftPanel({ total, groups, items, hours }: { total: number; groups: { dom: string; value: number }[]; items: { title: string; value: number }[]; hours: number }) {
+  const shown = useAnimatedNumber(total);
+  const max = Math.max(1, ...groups.map((g) => g.value));
+  const counted = items.filter((i) => i.value > 0);
+  return (
+    <div className="lg:sticky lg:top-24 rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="roi-lift-panel">
+      <div className="px-6 pt-5 pb-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF]">
+        <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">The lift</div>
+      </div>
+      <div className="p-6">
+        <div className={`font-abridge text-[52px] leading-none tabular-nums ${total > 0 ? "text-[#1A1A1A]" : "text-[#D6CABA]"}`}>{fmtShort(shown)}</div>
+        <div className="mt-2 text-[14.5px] font-semibold text-[#1A1A1A]">
+          {counted.length > 0 ? `a year, from ${counted.length} ${counted.length === 1 ? "driver" : "drivers"}` : "a year"}
+        </div>
+        {hours > 0 && <div className="mt-1 text-[13px] text-[#565250]">plus {fmtInt(hours)} clinician hours given back</div>}
+
+        <div className="mt-6 space-y-3">
+          {groups.map((g) => (
+            <div key={g.dom}>
+              <div className="flex items-center justify-between text-[12.5px]">
+                <span className="font-semibold text-[#443A32]">{g.dom}</span>
+                <span className={`font-bold tabular-nums ${g.value > 0 ? "text-[#1A1A1A]" : "text-[#C9BDAD]"}`}>{g.value > 0 ? fmtShort(g.value) : "—"}</span>
+              </div>
+              <div className="mt-1.5 h-2.5 rounded-full bg-[#EFE7DC] overflow-hidden">
+                <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700 ease-out" style={{ width: `${(g.value / max) * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 pt-5 border-t border-[#EFE8DE]">
+          {counted.length > 0 ? (
+            <ul className="space-y-2">
+              {counted.map((i) => (
+                <motion.li key={i.title} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}
+                  className="flex items-center justify-between gap-3 text-[13.5px]">
+                  <span className="flex items-center gap-2 text-[#1A1A1A]"><span className="w-[6px] h-[6px] rounded-full bg-[#EA2C00]" />{i.title}</span>
+                  <span className="font-semibold tabular-nums text-[#443A32]">{fmtShort(i.value)}</span>
+                </motion.li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[13.5px] text-[#6B6259] leading-relaxed">Turn on what was measured. The lift builds here.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -550,8 +646,8 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
 const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]";
 function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string; placeholder?: string }) {
   return (
-    <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1`}>
-      {prefix && <span className="text-[14px] text-[#A69A88]">{prefix}</span>}
+    <div className={`${w} ${BOX} !py-2 !px-3`}>
+      {prefix && <span className="text-[14px] text-[#6B6259]">{prefix}</span>}
       <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>
@@ -560,7 +656,7 @@ function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", 
 
 function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; step?: number; w?: string; placeholder?: string }) {
   return (
-    <div className={`${w} inline-flex items-baseline gap-1.5 border-b-2 border-[#EA2C00] pb-1`}>
+    <div className={`${w} ${BOX} !py-2 !px-3 !border-[#F0C4B4] !bg-[#FFF8F5]`}>
       <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>
@@ -586,21 +682,21 @@ function BeforeAfter({ label, table, unit, before, after, onBefore, onAfter, ste
   return (
     <div>
       <div className="flex items-baseline justify-between mb-3">
-        <span className="text-[14px] font-medium text-[#1A1A1A]">{label}</span>
-        {table && <span className="text-[12px] text-[#A69A88]">from {table}</span>}
+        <span className="text-[14px] font-semibold text-[#1A1A1A]">{label}</span>
+        {table && <span className="text-[12px] text-[#6B6259]">from {table}</span>}
       </div>
       <div className="flex items-baseline gap-4 flex-wrap">
         <div>
-          <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#A69A88] mb-1">Before</div>
+          <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#6B6259] mb-1">Before</div>
           <NumInput value={before} onChange={onBefore} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderBefore} />
         </div>
-        <ArrowRight className="w-4 h-4 text-[#C9BDAD] self-end mb-2.5" />
+        <ArrowRight className="w-4 h-4 text-[#C9BDAD] self-end mb-3.5" />
         <div>
           <div className="text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#EA2C00] mb-1">After</div>
           <NumInputAccent value={after} onChange={onAfter} step={step} suffix={unit} w="w-[96px]" placeholder={placeholderAfter} />
         </div>
         {bothEntered && (
-          <span className={`self-end mb-2.5 ml-1 text-[14px] font-bold whitespace-nowrap ${good ? "text-[#B02200]" : "text-[#B4A896]"}`}>
+          <span className={`self-end mb-3 ml-1 text-[14px] font-bold whitespace-nowrap ${good ? "text-[#B02200]" : "text-[#B4A896]"}`}>
             {good ? (lowerIsBetter ? "−" : "+") : ""}{Math.abs(delta).toFixed(decimals)} {unit}
           </span>
         )}
@@ -613,16 +709,19 @@ function Mono({ children }: { children: React.ReactNode }) {
   return <span className="font-bold text-[#443A32] tabular-nums">{children}</span>;
 }
 
-/** The engine's own multiplicand formula string + the engine's value. */
+/** The engine's own multiplicand formula, behind "Show the math", and the value. */
 function WorkedMath({ summary, value }: { summary: string; value: number }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
-      <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
-      <div className="text-[15px] leading-[1.9] text-[#5E534A]">{summary || "Enter the numbers above to build this."}</div>
-      <div className="mt-4 flex items-baseline justify-between">
-        <span className="text-[13px] text-[#A69A88]">equals</span>
-        <span className={`font-abridge text-[34px] leading-none ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}<span className="text-[15px] text-[#9A8C7A]"> a year</span></span>
+    <div className="mt-5 pt-4 border-t border-[#EFE9E0]">
+      <div className="flex items-center justify-between gap-4">
+        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-bold transition-colors ${open ? "border-[#EA2C00] text-[#EA2C00] bg-[#FDF1EC]" : "border-[#E2D8CB] text-[#6B6259] bg-white hover:border-[#EA2C00] hover:text-[#EA2C00]"}`}>
+          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "" : "-rotate-90"}`} /> {open ? "Hide the math" : "Show the math"}
+        </button>
+        <span className={`font-abridge text-[26px] leading-none tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}<span className="text-[13px] text-[#6B6259]"> a year</span></span>
       </div>
+      {open && <div className="mt-3 rounded-[12px] bg-[#F6F1EA] px-4 py-3 text-[14px] leading-[1.8] text-[#443A32]">{summary || "Enter the numbers above to build this."}</div>}
     </div>
   );
 }
@@ -642,30 +741,22 @@ function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; la
  * and the boundary between one driver and the next is unmistakable. The card's
  * own annual total sits in the header so the list is scannable.
  */
-function DriverShell({ title, on, onToggle, value, children }: {
-  title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode;
+function DriverShell({ title, on, onToggle, value, children, note }: {
+  title: string; on: boolean; onToggle: () => void; value: number; children: React.ReactNode; note?: string;
 }) {
-  const [open, setOpen] = useState(true);
   return (
-    <div className={`rounded-xl border transition-colors ${on ? "border-[#EAE3D9] bg-[#FDFBF8]" : "border-[#EFE9E0] bg-transparent"}`}>
-      <div className="flex items-center justify-between gap-4 px-6 py-5">
-        <span className={`text-[17px] font-bold ${on ? "text-[#1A1A1A]" : "text-[#B4A896]"}`}>{title}</span>
-        <div className="flex items-center gap-4">
-          {on
-            ? <span className={`font-abridge text-[18px] tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}</span>
-            : <span className="text-[12px] font-semibold text-[#B4A896] whitespace-nowrap">Not counted</span>}
+    <div className={`rounded-[16px] border transition-all duration-200 ${on ? "bg-white border-[#E9E0D4] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_22px_-16px_rgba(26,26,26,0.16)]" : "bg-[#FBF8F4]/80 border-[#EBE3D8] hover:border-[#DDD2C4]"}`}>
+      <div className="flex items-center justify-between gap-4 px-4 sm:px-5 py-3.5">
+        <button type="button" onClick={onToggle} className="flex-1 min-w-0 text-left outline-none">
+          <span className={`block text-[15.5px] font-semibold ${on ? "text-[#1A1A1A]" : "text-[#443A32]"}`}>{title}</span>
+          {!on && note && <span className="block text-[12.5px] text-[#6B6259] mt-0.5 leading-snug line-clamp-1">{note}</span>}
+        </button>
+        <div className="flex items-center gap-3.5">
+          {on && <span className={`font-abridge text-[17px] tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}</span>}
           <Toggle on={on} onToggle={onToggle} label={`Include ${title}`} />
         </div>
       </div>
-      {on && (
-        <div className="px-6 pb-7 border-t border-[#EFE9E0] pt-5">
-          <button type="button" onClick={() => setOpen((o) => !o)}
-            className="flex items-center gap-1.5 text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-4 outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-offset-2 rounded">
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "" : "-rotate-90"}`} /> The math
-          </button>
-          {open && children}
-        </div>
-      )}
+      {on && <div className="px-4 sm:px-5 pb-4 pt-1">{children}</div>}
     </div>
   );
 }
@@ -688,7 +779,7 @@ function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligib
   const workStr = driver.work ? driver.work(vals, eligibleEncounters) : summary;
   const ba = driver.beforeAfter;
   return (
-    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value} note={driver.note}>
       {driver.note && <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[560px] mb-1">{driver.note}</p>}
       {ba && (
         <div className={driver.note ? "mt-5" : ""}>
@@ -710,8 +801,8 @@ function FieldRow({ field, value, onChange }: { field: RoiField; value: number; 
   return (
     <div className="flex items-center justify-between gap-6 mt-5">
       <div className="min-w-0">
-        <div className="text-[14px] text-[#5E534A]">{field.label}</div>
-        {field.hint && <div className="text-[12px] text-[#A69A88] mt-0.5">{field.hint}</div>}
+        <div className="text-[14px] font-medium text-[#1A1A1A]">{field.label}</div>
+        {field.hint && <div className="text-[12px] text-[#6B6259] mt-0.5">{field.hint}</div>}
       </div>
       <NumInput value={value} onChange={onChange} prefix={field.prefix} suffix={field.suffix} step={field.step ?? 1} w="w-[120px]" />
     </div>
@@ -726,14 +817,14 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
   const pops = driver.populations ?? [];
   const [popIdx, setPopIdx] = useState(0);
   return (
-    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value} note="Valued on the panel, once per member per year.">
       <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[540px] mb-1">Risk capture is valued on the panel, once per member per year, never per visit. What is modelled here is recapture on the conditions a member already carries.</p>
 
       {pops.length > 0 && (
         <div className="mt-5 flex items-center gap-2 flex-wrap">
           {pops.map((p, i) => (
             <button key={p.label} onClick={() => { setPopIdx(i); setVal("hccPerHcc", p.perHcc); }}
-              className={`text-[12px] font-bold rounded-full px-3.5 py-1.5 transition-colors ${i === popIdx ? "bg-[#1A1A1A] text-white" : "border border-[#E8E2DA] text-[#565250] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"}`}>
+              className={`text-[12px] font-bold rounded-full px-3.5 py-1.5 border transition-colors ${i === popIdx ? "border-[#EA2C00] bg-[#FDF1EC] text-[#EA2C00]" : "border-[#E2D8CB] bg-white text-[#565250] hover:border-[#EA2C00] hover:text-[#EA2C00]"}`}>
               {p.label}
             </button>
           ))}
@@ -743,7 +834,7 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
       <div className="flex items-center justify-between gap-6 mt-6">
         <div className="min-w-0">
           <div className="text-[14px] font-medium text-[#1A1A1A]">Risk-adjusted members Abridge covers</div>
-          <div className="text-[12.5px] text-[#A69A88] mt-1">the {pops[popIdx]?.label ?? ""} panel your providers see</div>
+          <div className="text-[12.5px] text-[#6B6259] mt-1">the {pops[popIdx]?.label ?? ""} panel the providers see</div>
         </div>
         <NumInput value={vals.hccMembers} onChange={(v) => setVal("hccMembers", v)} placeholder="e.g., 45,000" w="w-[128px]" />
       </div>
@@ -772,7 +863,7 @@ function PatientAccessCard({ driver, vals, setVal, on, onToggle, value, summary,
   const hoursConsumed = addedVisits * (dur / 60);
   const pct = hoursReclaimed > 0 ? Math.round((hoursConsumed / hoursReclaimed) * 100) : 0;
   return (
-    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
+    <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value} note={driver.note}>
       {driver.note && <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[560px] mb-1">{driver.note}</p>}
       {driver.fields.map((f) => (
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
@@ -869,9 +960,9 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
   const hasNumbers = encToday > 0 && hours > 0;
   const fte = hours / 2080; // 2,080 = one clinician's paid hours a year
   return (
-    <div className="rounded-xl border border-[#EAE3D9] bg-[#FDFBF8] px-6 py-6">
+    <div className="rounded-[16px] border border-[#E9E0D4] bg-white px-4 sm:px-5 py-4">
       <div className="flex items-center justify-between gap-4">
-        <span className="text-[17px] font-bold text-[#1A1A1A]">Time back in the day</span>
+        <span className="text-[15.5px] font-semibold text-[#1A1A1A]">Time back in the day</span>
         <span className="rounded-full bg-[#F2ECE2] px-3 py-1 text-[10px] font-extrabold tracking-[0.12em] uppercase text-[#8C7F6D] whitespace-nowrap">{dollarized ? "Measured · shown as time" : "Measured · not counted in $"}</span>
       </div>
       <div className="mt-5">
@@ -879,8 +970,7 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
           before={before} after={after} onBefore={onBefore} onAfter={onAfter} lowerIsBetter
           placeholderBefore={placeholderBefore} placeholderAfter={placeholderAfter} />
       </div>
-      <div className="mt-7 pt-6 border-t border-[#EFE9E0]">
-        <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88] mb-3">How the number is built</div>
+      <div className="mt-5 pt-4 border-t border-[#EFE9E0]">
         {hasNumbers ? (
           <>
             <div className="text-[15px] leading-[1.9] text-[#5E534A]">
@@ -900,8 +990,8 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
             </p>
           </>
         ) : (
-          <p className="text-[14px] leading-[1.55] italic text-[#A69A88]">
-            Enter the before and after minutes above, plus the encounter numbers on the first step, to see the hours reclaimed.
+          <p className="text-[13.5px] leading-[1.55] text-[#6B6259]">
+            Enter the minutes before and after to see the hours given back.
           </p>
         )}
       </div>

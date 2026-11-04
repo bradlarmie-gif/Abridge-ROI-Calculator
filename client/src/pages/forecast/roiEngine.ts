@@ -219,7 +219,7 @@ const providerWellbeingDriver: RoiDriver = {
   domain: "Workforce",
   title: "Retention (burnout)",
   optional: true,
-  note: "The softest number on the page: it rests on a replacement-cost estimate a CFO may discount. Off by default. Turn it on only if the partner buys the retention story.",
+  note: "The softest number here: it rests on a replacement-cost estimate a CFO may discount. Off by default; count it once the turnover picture is agreed.",
   fields: [
     { k: "turnover", label: "Annual provider turnover", def: 6, suffix: "%", step: 0.1 },
     { k: "burnout", label: "Share of turnover that is burnout-related", def: 40, suffix: "%" },
@@ -475,7 +475,7 @@ const nursingRetentionDriver: RoiDriver = {
   domain: "Workforce",
   title: "Retention (burnout)",
   optional: true,
-  note: "The softest number on the page: it rests on a replacement-cost estimate a CFO may discount. Off by default. Turn it on only if the partner buys the retention story.",
+  note: "The softest number here: it rests on a replacement-cost estimate a CFO may discount. Off by default; count it once the turnover picture is agreed.",
   fields: [
     { k: "nursingTurnoverRate", label: "Annual nurse turnover", def: 18, suffix: "%", step: 0.1 },
     { k: "nursingBurnout", label: "Share of turnover that is burnout-related", def: 40, suffix: "%" },
