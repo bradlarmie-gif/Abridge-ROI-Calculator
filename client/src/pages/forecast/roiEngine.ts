@@ -455,11 +455,11 @@ const nursingOvertimeDriver: RoiDriver = {
   id: "nursingOvertime",
   domain: "Capacity",
   title: "Overtime avoided",
-  note: "Reclaimed charting time that would otherwise be paid as overtime.",
+  note: "Overtime that exists because charting gets batched and finished after the shift.",
   fields: [
-    { k: "nursingOtHoursPerNurseWeek", label: "OT hours per nurse per week", def: 1.0, step: 0.1 },
-    { k: "nursingOtReductionPercent", label: "Reduction from Abridge", def: 40, suffix: "%" },
-    { k: "nursingOtHourlyRate", label: "Blended overtime rate per hour", def: 75, prefix: "$" },
+    { k: "nursingOtHoursPerNurseWeek", label: "Documentation overtime, per nurse each week", def: 1.0, step: 0.1, suffix: "hrs" },
+    { k: "nursingOtReductionPercent", label: "Share taken back by documenting in the moment", hint: "less batching, less documentation lag", def: 40, suffix: "%" },
+    { k: "nursingOtHourlyRate", label: "Overtime rate per hour", def: 75, prefix: "$" },
   ],
   applyToState: (s, v) => {
     const t = td(s);
@@ -477,10 +477,10 @@ const nursingRetentionDriver: RoiDriver = {
   optional: true,
   note: "The softest number here: it rests on a replacement-cost estimate a CFO may discount. Off by default; count it once the turnover picture is agreed.",
   fields: [
-    { k: "nursingTurnoverRate", label: "Annual nurse turnover", def: 18, suffix: "%", step: 0.1 },
-    { k: "nursingBurnout", label: "Share of turnover that is burnout-related", def: 40, suffix: "%" },
-    { k: "impact", label: "Reduction in burnout turnover where Abridge is used", def: 30, suffix: "%" },
-    { k: "nursingReplacementCost", label: "Cost to replace one nurse", def: 56300, prefix: "$" },
+    { k: "nursingTurnoverRate", label: "Annual turnover", def: 18, suffix: "%", step: 0.1 },
+    { k: "nursingBurnout", label: "Tied to burnout", def: 40, suffix: "%" },
+    { k: "impact", label: "Abridge impact", def: 30, suffix: "%" },
+    { k: "nursingReplacementCost", label: "Replacement cost", def: 56300, prefix: "$" },
   ],
   applyToState: (s, v) => {
     const t = td(s);

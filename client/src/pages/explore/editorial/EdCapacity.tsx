@@ -385,7 +385,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
             steps={[
               { label: "Nurses on the unit", running: formatNum(nurses) },
               { label: "Documentation overtime, per nurse each week", factor: { value: td.nursingOtHoursPerNurseWeek, onChange: (v: number) => updateTimeDriverInputs({ nursingOtHoursPerNurseWeek: v }), suffix: "hrs", decimal: true }, running: `${formatNum1(nurses * hrsWk)} /wk` },
-              { label: "Share Abridge takes back", factor: { value: td.nursingOtReductionPercent, onChange: (v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v }), suffix: "%" }, running: `${formatNum1(nurses * hrsWk * red)} /wk` },
+              { label: "Share taken back by documenting in the moment", factor: { value: td.nursingOtReductionPercent, onChange: (v: number) => updateTimeDriverInputs({ nursingOtReductionPercent: v }), suffix: "%" }, running: `${formatNum1(nurses * hrsWk * red)} /wk` },
               { label: "Across the year", running: `${formatNum(otHrs)} hrs`, note: "× 52 weeks" },
               { label: "Overtime rate", factor: { value: td.nursingOtHourlyRate, onChange: (v: number) => updateTimeDriverInputs({ nursingOtHourlyRate: v }), prefix: "$" }, running: formatCurrency(otValue), final: true },
             ]}
