@@ -13,6 +13,7 @@ import {
   computeNet,
   timingSummary,
   buildCumulativeSavings,
+  firstYearSavings,
 } from "@/lib/appRationalizationCalc";
 import { buildConsolidationModel } from "@/components/forecast/ArConsolidationView";
 import { buildMoatTools } from "@/components/forecast/ArMoatView";
@@ -441,12 +442,6 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
   const sortedPlan = [...tools].sort((a, b) => a.sunsetMonths - b.sunsetMonths);
   let cumP = 0;
   const nodes = sortedPlan.map((t) => { cumP += rr(t); return { id: t.id, x: xf(t.sunsetMonths), y: yf(cumP) }; });
-  const year1 = tools.reduce((a, t) => a + (t.sunsetMonths <= 12 ? rr(t) : 0), 0);
-  const y1x = xf(12), y1y = yf(year1);
-  // Only mark Year 1 when it is a distinct, lower point worth calling out. When
-  // everything already lands in year 1 (year1 == full run-rate), the marker just
-  // duplicates the plateau and the Aug-'27 gridline, so it is left off.
-  const showYear1 = year1 < FULL * 0.98 && axisMax > 12;
   const fx = xf(summary.planFinishMonths), bx = xf(summary.renewalFinishMonths);
   const bmid = (fx + bx) / 2;
   const marks = Array.from({ length: Math.floor(axisMax / xStep) + 1 }, (_, i) => i * xStep);
@@ -464,7 +459,6 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
       {captured > 0 && <path d={band} fill={C.coral} fillOpacity={0.2} />}
       {captured > 0 && <path d={renewalLine} fill="none" stroke="#C3B7A8" strokeWidth={2} strokeDasharray="5 5" strokeLinejoin="round" />}
       <path d={planLine} fill="none" stroke={C.coral} strokeWidth={3} strokeLinejoin="round" />
-      {showYear1 && <line x1={y1x} y1={y1y} x2={y1x} y2={yBase} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />}
       {sooner > 0 && (
         <g>
           <line x1={fx} y1={yTop - 10} x2={fx} y2={yTop + 6} stroke={C.coral} strokeWidth={3} />
@@ -486,9 +480,6 @@ function StepChart({ items }: { items: AppRatItem[] }): JSX.Element | null {
         <text key={m} x={xf(m)} y={yBase + 18} textAnchor={m === 0 ? "start" : m === axisMax ? "end" : "middle"} fontSize={9} fill={C.faint}>{m === 0 ? "now" : renewalDateLabel(m)}</text>
       ))}
       <text x={x1} y={yTop - 14} textAnchor="end" fontSize={9} fontWeight={700} fill={C.coral}>{fmtShort(FULL)} / yr · full run-rate</text>
-      {/* Anchor the Year-1 callout to the LEFT of its step, over the open lower
-          plateau, so it clears the step riser and the Sep-'27 guide line. */}
-      {showYear1 && <text x={y1x - 8} y={Math.max(y1y - 13, yTop + 13)} textAnchor="end" fontSize={9} fontWeight={700} fill={C.muted}>Year 1 · {fmtShort(year1)}</text>}
     </svg>
   );
 }
@@ -532,7 +523,7 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
   const net = computeNet(data.items, data.abridgePrice);
   const priced = net.abridgePrice > 0;
   const savers = data.items.filter((i) => itemRetired(i) > 0).sort((a, b) => a.sunsetMonths - b.sunsetMonths);
-  const yearOne = savers.filter((i) => i.sunsetMonths <= 12).reduce((a, i) => a + itemRetired(i), 0);
+  const yearOne = firstYearSavings(data.items);
   const stats = [
     { v: fmtShort(net.sunset), k: "Freed at full consolidation", coral: !priced },
     ...(priced
@@ -544,10 +535,10 @@ function TimingPage({ data }: { data: AppRatPdfData }): JSX.Element {
       : []),
     { v: summary.planFinishMonths > 0 ? renewalDateLabel(summary.planFinishMonths) : "now", k: "Fully consolidated", coral: false },
     // When there is an early-exit plan, show how much sooner; otherwise the useful
-    // number is how much comes back in the first year on the renewal calendar.
+    // number is the cash actually freed in the first 12 months.
     summary.monthsSooner > 0
       ? { v: `${summary.monthsSooner} mo`, k: "Sooner than renewal", coral: false }
-      : { v: fmtShort(yearOne), k: "Freed by year-one exits", coral: false },
+      : { v: fmtShort(yearOne), k: "Freed in the first 12 months", coral: false },
   ];
   return (
     <Page>

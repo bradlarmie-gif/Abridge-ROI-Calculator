@@ -891,6 +891,7 @@ export default function App() {
               <AppRationalizationFlow
                 onBack={() => navigateTo(hubMode ? "financial-hub" : "forecast-mode")}
                 onHome={() => navigateTo(hubMode ? "hub" : "journey")}
+                onOpenPlan={() => navigateTo("planning-hub")}
                 pathLabel={hubMode ? "The Numbers" : undefined}
               />
             )}

@@ -679,3 +679,99 @@ export function TimeBackArt({ active = false, minutes = 0 }: { active?: boolean;
     </Frame>
   );
 }
+
+/* ── Offset the Cost: the capabilities in a documentation stack ─────────── */
+
+/** A clipboard note with a pen writing the next line. */
+export function ScribeArt() {
+  return (
+    <Frame>
+      <rect x="62" y="24" width="60" height="76" rx="6" className={SOFT} />
+      <rect x="80" y="19" width="24" height="10" rx="3" className={SOFT} />
+      {[42, 52, 62].map((y, i) => (
+        <line key={y} x1="72" x2={i === 1 ? 100 : 110} y1={y} y2={y} className={INK} />
+      ))}
+      <line x1="72" x2="94" y1="72" y2="72" className={`${LIVE} [stroke-dasharray:22] [stroke-dashoffset:22] group-hover:[stroke-dashoffset:0]`} />
+      <g className="transition-transform duration-500 ease-out group-hover:translate-x-[2px]">
+        <path d="M126 80 l22 -40 l7 4 l-22 40 l-8 4 z" className={SOFT} />
+        <path d="M126 80 l1 8" className={LIVE} />
+        <line x1="144" x2="151" y1="47" y2="51" className={INK} />
+      </g>
+    </Frame>
+  );
+}
+
+/** Recorded audio sent off and returned as a typed page. */
+export function TranscriptionArt() {
+  const bars = [8, 16, 24, 14, 20, 10];
+  return (
+    <Frame>
+      <rect x="28" y="40" width="50" height="40" rx="8" className={SOFT} />
+      {bars.map((h, i) => (
+        <line key={i} x1={38 + i * 6} x2={38 + i * 6} y1={60 - h / 2} y2={60 + h / 2} className={INK} />
+      ))}
+      <path d="M86 60 h24" className={LIVE} strokeDasharray="3 4" />
+      <path d="M105 55 l5 5 -5 5" className={LIVE} />
+      <rect x="118" y="26" width="54" height="68" rx="6" className={SOFT} />
+      {[40, 50, 60, 70].map((y, i) => (
+        <line key={y} x1="128" x2={i === 3 ? 148 : 162} y1={y} y2={y} className={INK} />
+      ))}
+      <line x1="152" x2="152" y1="66" y2="74" className={`${LIVE} group-hover:animate-pulse`} />
+    </Frame>
+  );
+}
+
+/** A chart reviewed before the visit, one risk line under the lens. */
+export function PreChartArt() {
+  return (
+    <Frame>
+      <rect x="40" y="22" width="72" height="80" rx="6" className={SOFT} />
+      {[38, 50, 62, 74, 86].map((y, i) => (
+        <line key={y} x1="52" x2={i % 2 ? 86 : 100} y1={y} y2={y} className={INK} />
+      ))}
+      <g className="transition-transform duration-500 ease-out group-hover:-translate-x-[6px] group-hover:-translate-y-[4px]">
+        <circle cx="122" cy="62" r="18" className={SOFT} />
+        <line x1="110" x2="134" y1="62" y2="62" className={LIVE} />
+        <line x1="135" x2="152" y1="75" y2="92" className={INK} strokeWidth={3} />
+      </g>
+    </Frame>
+  );
+}
+
+/** Two voices in the room and a prompt appearing on the note as they talk. */
+export function InEncounterArt() {
+  return (
+    <Frame>
+      <rect x="26" y="34" width="44" height="24" rx="8" className={SOFT} />
+      <line x1="35" x2="60" y1="46" y2="46" className={INK} />
+      <rect x="40" y="64" width="44" height="24" rx="8" className={SOFT} />
+      <line x1="49" x2="72" y1="76" y2="76" className={INK} />
+      <rect x="108" y="22" width="64" height="78" rx="6" className={SOFT} />
+      {[36, 46, 80, 90].map((y) => (
+        <line key={y} x1="118" x2="160" y1={y} y2={y} className={INK} />
+      ))}
+      <rect x="114" y="54" width="52" height="18" rx="5" className="transition-all duration-500 fill-[#F1E9DE] group-hover:fill-[#FDE7DF]" />
+      <circle cx="122" cy="63" r="3" className={LIVE_FILL} stroke="none" />
+      <line x1="130" x2="158" y1="63" y2="63" className={LIVE} />
+      <path d="M90 62 h12" className={INK} strokeDasharray="2 3" />
+    </Frame>
+  );
+}
+
+/** A search line answered by a ranked list, the top result picked out. */
+export function EvidenceArt() {
+  return (
+    <Frame>
+      <rect x="40" y="24" width="120" height="20" rx="10" className={SOFT} />
+      <circle cx="54" cy="34" r="4.5" className={LIVE} />
+      <line x1="57.5" x2="61" y1="37.5" y2="41" className={LIVE} />
+      <line x1="68" x2="118" y1="34" y2="34" className={INK} />
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <rect x="40" y={54 + i * 16} width="120" height="12" rx="4" className={i === 0 ? "transition-all duration-500 fill-[#F1E9DE] group-hover:fill-[#FDE7DF]" : SOFT} stroke={i === 0 ? "none" : undefined} />
+          <line x1="50" x2={i === 0 ? 120 : 104 - i * 8} y1={60 + i * 16} y2={60 + i * 16} className={i === 0 ? LIVE : INK} />
+        </g>
+      ))}
+    </Frame>
+  );
+}

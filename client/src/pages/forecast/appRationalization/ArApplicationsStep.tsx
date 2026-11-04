@@ -3,7 +3,9 @@ import { Plus } from "lucide-react";
 import ArCommandSearch from "./ArCommandSearch";
 import ArStackRow from "./ArStackRow";
 import ArAddToolModal from "./ArAddToolModal";
-import { CategoryIcon } from "./CategoryIcon";
+import { ArStepHead } from "./ArStepHead";
+import { HubTile, ReserveTwoLineTitles } from "@/pages/hub/hubKit";
+import { CAPABILITY_ART } from "./capabilityArt";
 import { NumberField } from "@/components/NumberField";
 import { APP_RAT_CATEGORIES, computeNet, type AppRatItem, type AppRatCategoryId } from "@/lib/appRationalizationCalc";
 
@@ -14,7 +16,7 @@ function fmtM(n: number): string {
   return `$${Math.round(a)}`;
 }
 
-const COL_HEADERS = ["Application", "Price / yr", "How much could you displace?", "Renews", "Displaceable"];
+const COL_HEADERS = ["Application", "Price / yr", "Moves onto Abridge", "Renews", "Comes off the bill"];
 
 // The documentation stack, read top to bottom: what you capture, how you keep it
 // coded and clean, and what you reach for at the point of care. Every non-custom
@@ -26,41 +28,20 @@ const CAPABILITY_LAYERS: { num: string; name: string; ids: AppRatCategoryId[] }[
   { num: "03", name: "Decision support", ids: ["cds", "clinicalEvidence"] },
 ];
 
-function CapabilityCard({ id, onPick }: { id: AppRatCategoryId; onPick: (category: AppRatCategoryId) => void }) {
+function CapabilityCard({ id, onPick, delay }: { id: AppRatCategoryId; onPick: (category: AppRatCategoryId) => void; delay: number }) {
   const cat = APP_RAT_CATEGORIES.find((c) => c.id === id);
   if (!cat) return null;
-
-  if (cat.comingSoon) {
-    return (
-      <div
-        aria-disabled
-        className="relative bg-[#FAF7F2] border border-dashed border-[#C9BBA9] rounded-2xl p-[17px_18px] cursor-not-allowed"
-        data-testid={`ar-browse-${cat.id}`}
-      >
-        <span className="absolute top-[15px] right-[15px] text-[8.5px] font-extrabold uppercase tracking-[0.09em] text-[#8C7E6E] bg-white border border-[#E8E2DA] rounded-full px-2 py-[3px]">
-          Coming soon
-        </span>
-        <div className="w-[42px] h-[42px] rounded-xl bg-[#EFE7DC] flex items-center justify-center text-[#B4A99B]">
-          <CategoryIcon icon={cat.icon} className="w-5 h-5" />
-        </div>
-        <p className="font-bold text-[14.5px] text-[#8C7E6E] mt-[13px]">{cat.label}</p>
-        <p className="text-[12px] text-[#B4A99B] mt-[3px] truncate">{cat.hint}</p>
-      </div>
-    );
-  }
-
   return (
-    <button
+    <HubTile
+      title={cat.label}
+      description={cat.hint}
+      art={CAPABILITY_ART[cat.id]}
+      cta="Add to the stack"
+      comingSoon={!!cat.comingSoon}
+      testId={`ar-browse-${cat.id}`}
+      delay={delay}
       onClick={() => onPick(cat.id)}
-      className="group text-left bg-white border border-[#E8E2DA] rounded-2xl p-[17px_18px] hover:border-[#1A1A1A] transition-all"
-      data-testid={`ar-browse-${cat.id}`}
-    >
-      <div className="w-[42px] h-[42px] rounded-xl bg-[#F5F0EB] flex items-center justify-center text-[#6B5E4F] group-hover:bg-[#EA2C00]/10 group-hover:text-[#EA2C00] transition-colors">
-        <CategoryIcon icon={cat.icon} className="w-5 h-5" />
-      </div>
-      <p className="font-bold text-[14.5px] text-[#1A1A1A] mt-[13px]">{cat.label}</p>
-      <p className="text-[12px] text-[#8C7E6E] mt-[3px] truncate">{cat.hint}</p>
-    </button>
+    />
   );
 }
 
@@ -73,14 +54,16 @@ function CapabilityLayers({ onPick }: { onPick: (category: AppRatCategoryId) => 
         <div key={layer.num} className={i === 0 ? "" : "mt-8"}>
           <div className="flex items-baseline gap-[15px] mb-[18px]">
             <span className="font-abridge text-[15px] text-[#EA2C00] tracking-[0.02em]">{layer.num}</span>
-            <span className="font-abridge text-[26px] text-[#1A1A1A] tracking-[0.01em]">{layer.name}</span>
+            <span className="font-abridge text-[24px] text-[#1A1A1A] tracking-[0.01em]">{layer.name}</span>
             <span className="flex-1 h-px bg-[#E8E2DA] self-center" />
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {layer.ids.map((id) => (
-              <CapabilityCard key={id} id={id} onPick={onPick} />
-            ))}
-          </div>
+          <ReserveTwoLineTitles.Provider value>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {layer.ids.map((id, j) => (
+                <CapabilityCard key={id} id={id} onPick={onPick} delay={0.05 + (i * 4 + j) * 0.04} />
+              ))}
+            </div>
+          </ReserveTwoLineTitles.Provider>
         </div>
       ))}
     </div>
@@ -117,7 +100,7 @@ export default function ArApplicationsStep({
   const customAffordance = (
     <button
       onClick={() => openPick("custom")}
-      className="group flex items-center gap-2.5 mt-6 text-[13.5px] text-[#8C7E6E]"
+      className="group flex items-center gap-2.5 mt-8 text-[13.5px] text-[#565250]"
       data-testid="ar-add-custom-tool"
     >
       <span className="w-[26px] h-[26px] rounded-lg border border-dashed border-[#C9BBA9] flex items-center justify-center text-[#8C7E6E] group-hover:border-[#1A1A1A] group-hover:text-[#1A1A1A] transition-colors">
@@ -130,53 +113,51 @@ export default function ArApplicationsStep({
   );
 
   return (
-    <div className="max-w-[1120px] mx-auto px-6 pt-6 pb-8">
+    <div className="max-w-[1120px] mx-auto px-6 pt-8 pb-12">
       {/* Header: headline + subhead on the left, org + Abridge price on the right.
           The app header already shows the "Forecast · App Rationalization" breadcrumb,
           so no in-page eyebrow (it was a duplicate). */}
-      <div className="flex items-start justify-between gap-6">
-        <div>
-          <h1 className="font-abridge text-[38px] leading-[1.08] text-[#1A1A1A] max-w-[720px]">What's in your documentation stack?</h1>
-          <p className="text-[16px] leading-[1.5] text-[#8C7E6E] mt-[13px] max-w-[600px]">
-            Pick a capability to add, or search a vendor. Everything you run around the clinical note, in one place.
-          </p>
-        </div>
-        <div className="flex items-start gap-3 shrink-0">
-          <div className="flex flex-col items-start gap-1.5">
-            <label htmlFor="ar-org" className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Organization</label>
-            <input
-              id="ar-org"
-              value={orgName}
-              onChange={(e) => onOrgNameChange(e.target.value)}
-              placeholder="Organization name"
-              className="w-[180px] h-9 bg-white border border-[#E8E2DA] rounded-[9px] px-3 text-[13px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] placeholder-[#B4A99B]"
-              data-testid="ar-org-name"
+      <ArStepHead
+        title="What's in your documentation stack?"
+        intro="Pick a capability, or search a vendor. Everything that runs around the clinical note, in one place."
+      />
+
+      {/* The deal, in one quiet row: who this is for and what Abridge costs. */}
+      <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[18px] bg-[#F6F1EA] px-5 py-4">
+        <label htmlFor="ar-org" className="flex items-center gap-3">
+          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#443A32]">Organization</span>
+          <input
+            id="ar-org"
+            value={orgName}
+            onChange={(e) => onOrgNameChange(e.target.value)}
+            placeholder="Organization name"
+            className="w-[220px] h-10 bg-white border border-[#E8E2DA] rounded-[10px] px-3 text-[14px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] placeholder-[#B4A99B]"
+            data-testid="ar-org-name"
+          />
+        </label>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#443A32]">Abridge price / yr</span>
+          <div className="flex items-center h-10 bg-white border border-[#E8E2DA] rounded-[10px] px-3 gap-1 focus-within:border-[#1A1A1A]">
+            <span className="text-[#565250] text-[14px]">$</span>
+            <NumberField
+              value={abridgePrice}
+              onValueChange={onAbridgePriceChange}
+              min={0}
+              className="w-[120px] bg-transparent text-[14px] text-[#1A1A1A] outline-none tabular-nums"
+              data-testid="ar-abridge-price"
             />
           </div>
-          <div className="flex flex-col items-start gap-1.5">
-            <label className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Abridge price / yr</label>
-            <div className="flex items-center h-9 bg-white border border-[#E8E2DA] rounded-[9px] px-3 gap-1 focus-within:border-[#1A1A1A]">
-              <span className="text-[#8C7E6E] text-[13px]">$</span>
-              <NumberField
-                value={abridgePrice}
-                onValueChange={onAbridgePriceChange}
-                min={0}
-                className="w-[120px] bg-transparent text-[13px] text-[#1A1A1A] outline-none tabular-nums"
-                data-testid="ar-abridge-price"
-              />
-            </div>
-            <p className="text-[9.5px] leading-tight text-[#B4A99B] max-w-[168px]">Leave $0 if they already have Abridge; savings is the tools they retire.</p>
-          </div>
         </div>
+        <p className="text-[12.5px] leading-snug text-[#565250] lg:max-w-[300px]">Leave at $0 if Abridge is already in place. The savings are the tools retired.</p>
       </div>
 
       {/* Hero command search */}
-      <div className="mt-6"><ArCommandSearch onSelect={openPick} /></div>
+      <div className="mt-5"><ArCommandSearch onSelect={openPick} /></div>
 
       {items.length > 0 && (
         <>
           <div className="flex items-center justify-between mt-8 mb-3">
-            <div className="text-[11px] font-bold uppercase tracking-[2px] text-[#8C7E6E]" data-testid="ar-stack-count">
+            <div className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#443A32]" data-testid="ar-stack-count">
               Your stack · {items.length} added
             </div>
             <button
@@ -189,7 +170,7 @@ export default function ArApplicationsStep({
           </div>
 
           {browseOpen && (
-            <div className="mb-4 p-5 bg-[#FAF7F2] border border-[#E8E2DA] rounded-2xl" data-testid="ar-browse-panel">
+            <div className="mb-5 p-5 md:p-6 bg-white border border-[#E8E2DA] rounded-[24px]" data-testid="ar-browse-panel">
               <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-4">Choose a capability to add</div>
               <CapabilityLayers onPick={openPick} />
               {customAffordance}
@@ -199,7 +180,7 @@ export default function ArApplicationsStep({
           {/* Column headers */}
           <div className="hidden lg:grid grid-cols-[1fr_116px_188px_104px_120px] gap-3.5 px-4 pb-2">
             {COL_HEADERS.map((h, i) => (
-              <span key={h} className={`text-[9px] font-bold uppercase tracking-[0.13em] text-[#B4A99B] ${i === COL_HEADERS.length - 1 ? "text-right" : ""}`}>{h}</span>
+              <span key={h} className={`text-[9.5px] font-bold uppercase tracking-[0.12em] text-[#6E6157] ${i === COL_HEADERS.length - 1 ? "text-right" : ""}`}>{h}</span>
             ))}
           </div>
 
@@ -208,19 +189,19 @@ export default function ArApplicationsStep({
           ))}
 
           {/* Slim total bar with the net */}
-          <div className="flex flex-wrap items-center gap-4 mt-4 px-5 py-4 bg-[#FAF7F2] border border-[#E8E2DA] rounded-2xl">
+          <div className="flex flex-wrap items-center gap-4 mt-4 px-5 py-4 bg-[#F6F1EA] rounded-[18px]">
             <div>
-              <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#8C7E6E]">Stack today</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#443A32]">Stack today</div>
               <div className="text-[19px] font-extrabold text-[#1A1A1A] tabular-nums">
-                {fmtM(net.stackTotal)} <span className="text-[12px] font-medium text-[#8C7E6E]">/ yr</span>
+                {fmtM(net.stackTotal)} <span className="text-[12px] font-medium text-[#565250]">/ yr</span>
               </div>
             </div>
             <div className="h-2 rounded-md overflow-hidden flex" style={{ width: 170 }}>
               <div style={{ width: `${pctSunset}%`, background: "#EA2C00" }} />
               <div style={{ width: `${100 - pctSunset}%`, background: "#D8CEC1" }} />
             </div>
-            <div className="text-[12.5px] text-[#8C7E6E] tabular-nums">
-              <b className="text-[#1A1A1A]">{fmtM(net.sunset)}</b> sunsets onto Abridge
+            <div className="text-[13px] text-[#565250] tabular-nums">
+              <b className="text-[#1A1A1A]">{fmtM(net.sunset)}</b> comes off the bill
               {net.abridgePrice > 0 && (
                 <>
                   {" · −"}{fmtM(net.abridgePrice)} Abridge{" · "}
@@ -242,7 +223,7 @@ export default function ArApplicationsStep({
       )}
 
       {items.length === 0 && (
-        <div className="mt-12" data-testid="ar-empty-browse">
+        <div className="mt-11" data-testid="ar-empty-browse">
           <CapabilityLayers onPick={openPick} />
           {customAffordance}
         </div>

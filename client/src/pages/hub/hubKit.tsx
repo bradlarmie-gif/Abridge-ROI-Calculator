@@ -133,7 +133,7 @@ const QuietTitles = createContext(false);
  * wrap to two lines, so every card reserves two lines to keep the row aligned.
  * Wider rows have names on one line and reserving a second only leaves a gap.
  */
-const ReserveTwoLineTitles = createContext(false);
+export const ReserveTwoLineTitles = createContext(false);
 
 export function HubList({
   children,

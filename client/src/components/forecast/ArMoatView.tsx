@@ -12,7 +12,8 @@
 // bar so the diagram never reads as broken.
 //
 // Copy here is legal-approved; the verbatim strings must not drift.
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { ArStepHead, ArLabel } from "@/pages/forecast/appRationalization/ArStepHead";
 import { itemDisplayName, type AppRatItem, type AppRatCategoryId } from "@/lib/appRationalizationCalc";
 
 const CORAL = "#EA2C00";
@@ -36,7 +37,11 @@ export function buildMoatTools(items: AppRatItem[]): MoatTool[] {
     .map((i) => ({ id: i.id, name: itemDisplayName(i) }));
 }
 
-export default function ArMoatView({ items }: { items: AppRatItem[] }) {
+export default function ArMoatView({ items, headerRight, onOpenPlan }: {
+  items: AppRatItem[];
+  headerRight?: ReactNode;
+  onOpenPlan?: () => void;
+}) {
   const tools = buildMoatTools(items);
   const hasTools = tools.length > 0;
   const [openTool, setOpenTool] = useState<string | null>(null);
@@ -50,26 +55,19 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
   const openName = openTool ? tools.find((t) => t.id === openTool)?.name ?? null : null;
 
   return (
-    <div
-      className="rounded-[20px] p-6 md:p-8"
-      style={{ background: "#FDFBF8", border: "1px solid #E8E2DA" }}
-      data-testid="ar-moat"
-    >
-      {/* Hero: black headline + claim-safe subhead (verbatim). The app header
-          already shows the breadcrumb, so no in-page eyebrow (it was a duplicate). */}
-      <h2 className="font-abridge text-[32px] md:text-[40px] leading-[1.05] text-[#1A1A1A]">
-        The stack consolidates into Abridge.
-      </h2>
-      <p className="text-[15px] md:text-[16.5px] text-[#8C7E6E] mt-4 max-w-[680px] leading-[1.5]">
-        Each of these tools does one step of the note, and Abridge already covers those steps, so that
-        spend consolidates onto Abridge. A point tool that does one step can&rsquo;t absorb the rest of the chain.
-      </p>
+    <div data-testid="ar-moat">
+      {/* Headline + claim-safe subhead (verbatim, legal-approved). */}
+      <ArStepHead
+        title="The stack consolidates into Abridge."
+        intro={<>Each of these tools does one step of the note, and Abridge already covers those steps, so that
+        spend consolidates onto Abridge. A point tool that does one step can&rsquo;t absorb the rest of the chain.</>}
+        right={headerRight}
+      />
 
+      <div className="mt-8 rounded-[24px] bg-white border border-[#E8E2DA] p-6 md:p-8">
       {/* Chain title */}
-      <div className="flex justify-between items-baseline mt-12 mb-1.5">
-        <span className="text-[12px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">
-          The documentation chain, who covers what
-        </span>
+      <div className="flex justify-between items-baseline mb-1.5">
+        <ArLabel>The documentation chain, who covers what</ArLabel>
         {/* Only promise the interaction when it exists. The chain plots fold-in
             bars for capture-category tools only (ambient / dictation / scribe /
             transcription); with none of those in the stack it renders a single
@@ -77,7 +75,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
             show regardless, and used to promise a side-by-side comparison the
             drawer does not do. */}
         {hasTools && (
-          <span className="text-[12px] text-[#8C7E6E]">click any tool to see what it covers</span>
+          <span className="text-[12.5px] text-[#565250]">Click a tool to see what it covers</span>
         )}
       </div>
 
@@ -174,10 +172,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
               "repeating-linear-gradient(135deg,rgba(234,44,0,.16) 0 9px,rgba(234,44,0,.07) 9px 18px)",
           }}
         >
-          Pre-charting
-          <span className="ml-[7px] text-[9.5px] font-extrabold tracking-[0.06em] uppercase opacity-85">
-            expanding
-          </span>
+          <span className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase">Expanding</span>
         </div>
         <div
           className="ab-live font-abridge relative z-[2] flex items-center px-5 text-[15px] font-extrabold text-white"
@@ -187,7 +182,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
           Abridge covers the conversation through the draft note
         </div>
         <div
-          className="relative z-[2] flex items-center rounded-r-[10px] px-[14px] text-[12px] font-extrabold"
+          className="relative z-[2] flex items-center justify-center rounded-r-[10px] px-[14px] text-[12px] font-extrabold"
           style={{
             gridRow: barRow,
             gridColumn: "5 / 7",
@@ -198,54 +193,48 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
               "repeating-linear-gradient(135deg,rgba(234,44,0,.16) 0 9px,rgba(234,44,0,.07) 9px 18px)",
           }}
         >
-          Coding · Quality
-          <span className="ml-[7px] text-[9.5px] font-extrabold tracking-[0.06em] uppercase opacity-85">
-            expanding
-          </span>
+          <span className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase">Expanding</span>
         </div>
 
         {/* Stage labels */}
         <div
-          className="relative z-[2] flex flex-col pt-3 text-[12px] font-extrabold tracking-[0.02em] text-[#B4A99B]"
+          className="relative z-[2] flex flex-col pt-3 text-[12.5px] font-extrabold tracking-[0.02em] text-[#8C7E6E]"
           style={{ gridRow: labelRow, gridColumn: "1 / 2" }}
         >
           Pre-charting
-          <span className="mt-1 text-[10.5px] font-semibold tracking-normal normal-case text-[#8C7E6E]">
+          <span className="mt-1 pr-3 text-[11.5px] font-medium leading-snug tracking-normal normal-case text-[#565250]">
             prep, from EMR data everyone has
           </span>
         </div>
         <div
-          className="relative z-[2] flex flex-col pt-3 text-[12px] font-extrabold tracking-[0.02em] text-[#443A32]"
+          className="relative z-[2] flex flex-col pt-3 text-[12.5px] font-extrabold tracking-[0.02em] text-[#1A1A1A]"
           style={{ gridRow: labelRow, gridColumn: "2 / 3" }}
         >
           The conversation
-          <span
-            className="mt-1.5 w-fit rounded-full px-2 py-[3px] text-[10px] font-extrabold tracking-[0.05em] uppercase"
-            style={{ color: CORAL, background: "#FFEDE7" }}
-          >
+          <span className="mt-1 text-[10.5px] font-extrabold tracking-[0.08em] uppercase" style={{ color: CORAL }}>
             the source
           </span>
         </div>
         <div
-          className="relative z-[2] flex flex-col pt-3 text-[12px] font-extrabold tracking-[0.02em] text-[#443A32]"
+          className="relative z-[2] flex flex-col pt-3 text-[12.5px] font-extrabold tracking-[0.02em] text-[#1A1A1A]"
           style={{ gridRow: labelRow, gridColumn: "3 / 4" }}
         >
           Capture
         </div>
         <div
-          className="relative z-[2] flex flex-col pt-3 text-[12px] font-extrabold tracking-[0.02em] text-[#443A32]"
+          className="relative z-[2] flex flex-col pt-3 text-[12.5px] font-extrabold tracking-[0.02em] text-[#1A1A1A]"
           style={{ gridRow: labelRow, gridColumn: "4 / 5" }}
         >
           Draft note
         </div>
         <div
-          className="relative z-[2] flex flex-col pt-3 text-[12px] font-extrabold tracking-[0.02em] text-[#B4A99B]"
+          className="relative z-[2] flex flex-col pt-3 text-[12.5px] font-extrabold tracking-[0.02em] text-[#8C7E6E]"
           style={{ gridRow: labelRow, gridColumn: "5 / 6" }}
         >
           Coding
         </div>
         <div
-          className="relative z-[2] flex flex-col pt-3 text-[12px] font-extrabold tracking-[0.02em] text-[#B4A99B]"
+          className="relative z-[2] flex flex-col pt-3 text-[12.5px] font-extrabold tracking-[0.02em] text-[#8C7E6E]"
           style={{ gridRow: labelRow, gridColumn: "6 / 7" }}
         >
           Quality
@@ -255,16 +244,13 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
       {/* Compare drawer (coming soon) */}
       {openName && (
         <div
-          className="mt-[26px] rounded-[16px] border border-[#E8E2DA] bg-white p-[22px_24px]"
+          className="mt-[26px] rounded-[16px] bg-[#F6F1EA] p-[22px_24px]"
           data-testid="ar-moat-compare"
         >
           <div className="flex items-center gap-3 text-[16px] font-extrabold text-[#1A1A1A]">
             <span data-testid="ar-moat-compare-name">{openName}</span>
-            <span className="font-bold text-[#8C7E6E]">vs Abridge</span>
-            <span
-              className="rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[0.05em] uppercase"
-              style={{ color: CORAL, background: "#FFEDE7" }}
-            >
+            <span className="font-bold text-[#565250]">vs Abridge</span>
+            <span className="text-[10.5px] font-extrabold tracking-[0.08em] uppercase" style={{ color: CORAL }}>
               where it overlaps
             </span>
             <button
@@ -286,7 +272,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
               that, which is real, instead of miming a comparison that does not
               exist yet. */}
           <div className="mt-4 grid grid-cols-2 gap-3.5">
-            <div className="rounded-[12px] border border-[#E8E2DA] p-[16px_18px]">
+            <div className="rounded-[12px] bg-white border border-[#E8E2DA] p-[16px_18px]">
               <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#443A32]">
                 {openName}
               </div>
@@ -305,7 +291,7 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
             </div>
           </div>
 
-          <div className="mt-3.5 text-[12.5px] leading-[1.5] text-[#8C7E6E]">
+          <div className="mt-3.5 text-[12.5px] leading-[1.5] text-[#565250]">
             That overlap is why {openName} folds in rather than sitting alongside. A step-by-step
             feature comparison is not in this tool yet.
           </div>
@@ -313,9 +299,9 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
       )}
 
       {/* The moat */}
-      <div className="mt-[52px] border-t-2 border-[#1A1A1A] pt-[22px]" data-testid="ar-moat-block">
-        <div className="text-[11px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">The moat</div>
-        <div className="font-abridge mt-3 max-w-[940px] text-[24px] md:text-[26px] leading-[1.2] text-[#1A1A1A]">
+      <div className="mt-12 rounded-[18px] bg-[#F6F1EA] px-6 py-7 md:px-9 md:py-9" data-testid="ar-moat-block">
+        <ArLabel>The moat</ArLabel>
+        <div className="font-abridge mt-4 max-w-[940px] text-[24px] md:text-[28px] leading-[1.22] text-[#1A1A1A]">
           A competitor can match Abridge&rsquo;s price within a year. What&rsquo;s hard to match is working from
           the raw conversation, which is where Abridge starts.{" "}
           <span className="font-normal" style={{ color: CORAL }}>
@@ -323,6 +309,20 @@ export default function ArMoatView({ items }: { items: AppRatItem[] }) {
           </span>
         </div>
       </div>
+      </div>
+
+      {onOpenPlan && (
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-8">
+          <p className="text-[14.5px] text-[#565250]">Next, set the goals and the plan to get there.</p>
+          <button
+            onClick={onOpenPlan}
+            className="h-11 px-5 rounded-xl bg-[#EA2C00] text-white text-sm font-bold hover:bg-[#d92800] transition-colors"
+            data-testid="ar-open-plan"
+          >
+            Build the plan together →
+          </button>
+        </div>
+      )}
     </div>
   );
 }

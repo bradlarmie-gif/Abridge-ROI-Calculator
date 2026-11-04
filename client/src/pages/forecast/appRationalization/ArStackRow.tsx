@@ -95,17 +95,17 @@ export default function ArStackRow({
         </PopoverContent>
       </Popover>
 
-      {/* How much could you displace */}
+      {/* How much of it moves onto Abridge */}
       <div className="flex items-center gap-2.5">
         <Slider
           min={0} max={100} step={5}
           value={[item.coveragePct]}
           onValueChange={(vals) => onChange({ coveragePct: vals[0] })}
           accent="coral"
-          aria-label="How much could you displace"
+          aria-label="How much of it moves onto Abridge"
           data-testid={`ar-row-displace-${item.id}`}
         />
-        <span className="text-[13px] font-extrabold text-[#EA2C00] tabular-nums w-9 text-right">{item.coveragePct}%</span>
+        <span className="text-[13px] font-extrabold text-[#1A1A1A] tabular-nums w-9 text-right">{item.coveragePct}%</span>
       </div>
 
       {/* Renews: months to contract end; setting it resets sunset to ride-to-renewal */}

@@ -11,8 +11,9 @@
 import { useMemo, type ReactNode } from "react";
 import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import {
-  buildCumulativeSavings, timingSummary, itemDisplayName, computeNet, type AppRatItem, type CumulativeTool,
+  buildCumulativeSavings, timingSummary, itemDisplayName, computeNet, firstYearSavings, type AppRatItem, type CumulativeTool,
 } from "@/lib/appRationalizationCalc";
+import { ArStepHead, ArLabel } from "@/pages/forecast/appRationalization/ArStepHead";
 
 // SVG viewBox and plot rect (matches the locked mockup's geometry).
 const VB_W = 1000, VB_H = 300;
@@ -31,7 +32,7 @@ function fmtC(v: number): string {
 const fmtFull = (v: number): string => `$${Math.round(v).toLocaleString("en-US")}`;
 
 export default function ConsolidationTiming({
-  items, abridgePrice, horizonYears, onHorizonChange, onUpdateItem,
+  items, abridgePrice, horizonYears, onHorizonChange, onUpdateItem, headerRight,
 }: {
   items: AppRatItem[];
   abridgePrice: number;
@@ -40,6 +41,7 @@ export default function ConsolidationTiming({
   horizonYears: number;
   onHorizonChange: (y: number) => void;
   onUpdateItem: (id: string, patch: Partial<AppRatItem>) => void;
+  headerRight?: ReactNode;
 }) {
   void horizonYears; void onHorizonChange;
 
@@ -54,10 +56,22 @@ export default function ConsolidationTiming({
   // A stable "now" so labels don't drift between renders within a session.
   const now = useMemo(() => new Date(), []);
 
+  // Cash actually freed in the first 12 months (a contract ending at month 12
+  // adds nothing yet), shared with the PDF so the two never disagree.
+  const firstYear = useMemo(() => firstYearSavings(items), [items]);
+
+  const intro = priced
+    ? <>Net of the <b className="text-[#1A1A1A]">{fmtM(net.abridgePrice)}</b> a year for Abridge, retiring these tools brings back <b className="text-[#1A1A1A]">{fmtM(Math.max(0, net.netSavings))}</b> a year. Each contract comes off at its renewal. Negotiate out early and it lands sooner.</>
+    : <>Each contract comes off at its renewal. Negotiate out early and the savings land sooner.</>;
+  const head = <ArStepHead title="How soon it lands is your call." intro={intro} right={headerRight} />;
+
   if (!cs.hasCurve) {
     return (
-      <div className="rounded-[20px] p-10 text-center text-sm text-[#8C7E6E]" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-timing-empty">
-        Add applications with annual spend to see when the savings land.
+      <div>
+        {head}
+        <div className="mt-8 rounded-[24px] p-10 text-center text-[14px] text-[#565250] bg-white border border-[#E8E2DA]" data-testid="ar-timing-empty">
+          Add applications with annual spend to see when the savings land.
+        </div>
       </div>
     );
   }
@@ -119,10 +133,6 @@ export default function ConsolidationTiming({
   // here drops below its line instead of fighting for the same space.
   const CEIL_Y = Y0 + 0.35 * (Y1 - Y0);
 
-  // Year-1 run-rate reached (tools that have come off by month 12).
-  const year1 = tools.reduce((s, t) => s + (t.sunsetMonths <= 12 ? runRate(t) : 0), 0);
-  const y1x = xf(12), y1y = yf(year1);
-
   // Full run-rate label (top-right, fixed anchor).
   const rrText = `${fmtC(FULL)} / yr · full run-rate`;
   const rrBox = textBox(X1 - 2, Y0 - 10, rrText, 12.5, "end");
@@ -141,20 +151,7 @@ export default function ConsolidationTiming({
   pillCx = clamp(pillCx, X0 + bw / 2, X1 - bw / 2);
   const pillBox = pillBoxAt(pillCx);
 
-  // Year-1 label. Default above its point; drop it below the plan line when the
-  // year-1 value is at/near the full run-rate (everything lands by month 12), or
-  // when the above position would collide with the pill or run-rate label. Its x
-  // flips to the left of the marker near the right edge and is clamped in-frame.
-  const year1Text = `Year 1 · ${fmtC(year1)}`;
-  const year1AtCeiling = year1 >= FULL - FULL * 0.02;
-  const y1Anchor: "start" | "end" = y1x > X1 - textWidth(year1Text, 12) - 12 ? "end" : "start";
-  const y1lxRaw = y1Anchor === "start" ? y1x + 8 : y1x - 8;
-  const y1AboveBox = textBox(y1lxRaw, y1y - 12, year1Text, 12, y1Anchor);
-  const y1Below = year1AtCeiling || (sooner > 0 && boxesOverlap(y1AboveBox, pillBox)) || boxesOverlap(y1AboveBox, rrBox);
-  const y1Baseline = clamp(y1Below ? y1y + 20 : y1y - 12, Y0 + 16, Y1 - 6);
-  const y1w = textWidth(year1Text, 12);
-  const y1lx = y1Anchor === "start" ? clamp(y1lxRaw, X0, VB_W - y1w - 4) : clamp(y1lxRaw, y1w + 4, VB_W - 4);
-  const year1Box = textBox(y1lx, y1Baseline, year1Text, 12, y1Anchor);
+  const year1Box: Box = { x0: -1e9, y0: -1e9, x1: -1e9, y1: -1e9 };
 
   // Named dots on the plan line. Each name rides just off its dot with a white
   // halo. Names on dots high in the plot (the reserved band) drop below their
@@ -163,7 +160,7 @@ export default function ConsolidationTiming({
   const sortedPlan = [...tools].sort((a, b) => a.sunsetMonths - b.sunsetMonths);
   let cumPlan = 0;
   const nodes = sortedPlan.map((t) => { cumPlan += runRate(t); return { t, x: xf(t.sunsetMonths), y: yf(cumPlan) }; });
-  const shortName = (n: string) => (n.length > 15 ? n.slice(0, 14).trimEnd() + "…" : n);
+  const shortName = (n: string) => (n.length > 24 ? n.slice(0, 23).trimEnd() + "…" : n);
   type NameLabel = { name: string; x: number; lx: number; ly: number; anchor: "start" | "end"; below: boolean };
   const nameLabels: NameLabel[] = nodes.map((n) => {
     const right = n.x <= X1 - 130;
@@ -212,30 +209,48 @@ export default function ConsolidationTiming({
     .map((i) => ({ item: i, tool: byId.get(i.id) }));
 
   return (
-    <div className="rounded-[20px] p-6 md:p-8" style={{ background: "linear-gradient(160deg,#FDFBF8,#F6F1EA)", border: "1px solid #E8E2DA" }} data-testid="ar-timing">
-      {/* framing */}
-      <div className="mb-6">
-        <h2 className="font-abridge text-[28px] leading-[1.05] text-[#1A1A1A]">How soon it lands is your call.</h2>
-        <p className="text-[15px] text-[#8C7E6E] mt-3 max-w-[680px] leading-[1.5]">
-          {priced ? (
-            <>Net of the <b className="text-[#2E2822]">{fmtM(net.abridgePrice)}</b> / yr Abridge price, retiring these tools brings <b className="text-[#2E2822]">{fmtM(Math.max(0, net.netSavings))}</b> / yr back. Each contract frees its spend on its real renewal date; negotiate out early and it lands sooner.</>
-          ) : (
-            <>You already run Abridge, so every tool you retire is pure additional savings. Each contract frees its spend on its real renewal date; negotiate out early and it lands sooner.</>
-          )}
-        </p>
+    <div data-testid="ar-timing">
+      {head}
+
+      <div className="mt-8 rounded-[24px] bg-white border border-[#E8E2DA] p-6 md:p-8">
+      {/* the payoff first: what comes back, when */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 rounded-[18px] bg-[#F6F1EA] mb-8" data-testid="ar-timing-stats">
+        <div className="px-6 py-5 sm:border-r border-[#E8DCCB]">
+          <ArLabel>First 12 months</ArLabel>
+          <div className={`font-abridge text-[34px] leading-none mt-3 ${firstYear > 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`} data-testid="ar-timing-first-year">
+            <AnimatedValue value={firstYear} format={fmtFull} duration={700} className="tabular-nums" />
+          </div>
+          <div className="text-[12.5px] text-[#565250] mt-2">{firstYear > 0 ? "in hand by month 12" : "pull an exit earlier to change this"}</div>
+        </div>
+        <div className="px-6 py-5 sm:border-r border-[#E8DCCB]">
+          <ArLabel>Every year after</ArLabel>
+          <div className="font-abridge text-[34px] leading-none mt-3 text-[#1A1A1A]">
+            <AnimatedValue value={FULL} format={fmtFull} duration={700} className="tabular-nums" />
+          </div>
+          <div className="text-[12.5px] text-[#565250] mt-2">once every contract is off</div>
+        </div>
+        <div className="px-6 py-5">
+          <ArLabel>Fully consolidated</ArLabel>
+          <div className="font-abridge text-[34px] leading-none mt-3 text-[#1A1A1A]">{consolidatedLabel}</div>
+          <div className="text-[12.5px] mt-2">
+            {captured > 0
+              ? <span className="text-[#EA2C00] font-bold">{fmtC(captured)} captured by exiting early</span>
+              : <span className="text-[#565250]">on the renewal calendar</span>}
+          </div>
+        </div>
       </div>
 
       {/* chart title + legend */}
       <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[12px] font-extrabold tracking-[0.08em] uppercase text-[#443A32]">{priced ? "Freed spend, on the calendar" : "Additional savings, on the calendar"}</span>
-        <span className="flex items-center gap-4 text-[12px] text-[#8C7E6E]">
+        <ArLabel>{priced ? "Freed spend, on the calendar" : "Savings, on the calendar"}</ArLabel>
+        <span className="flex items-center gap-4 text-[12px] text-[#565250]">
           <span className="inline-flex items-center gap-1.5"><span className="inline-block w-[18px] border-t-2 border-dashed border-[#C3B7A8]" /> ride to renewal</span>
           <span className="inline-flex items-center gap-1.5"><span className="inline-block w-[18px] border-t-[3px] border-[#EA2C00]" /> your plan</span>
         </span>
       </div>
 
       {/* the run-rate step chart */}
-      <div className="rounded-[18px] bg-white border border-[#E8E2DA] px-4 py-3" data-testid="ar-timing-chart">
+      <div className="rounded-[18px] bg-white border border-[#EFE7DC] px-4 py-3" data-testid="ar-timing-chart">
         <svg viewBox={`0 0 ${VB_W} ${VB_H}`} width="100%" className="block">
           <defs>
             <linearGradient id="ar-ramp" x1="0" y1="0" x2="0" y2="1">
@@ -260,12 +275,6 @@ export default function ConsolidationTiming({
           {captured > 0 && <path d={band} fill="#EA2C00" fillOpacity={0.22} />}
           {captured > 0 && <path d={renewalLine} fill="none" stroke="#C3B7A8" strokeWidth={2} strokeDasharray="5 5" strokeLinejoin="round" />}
           <path d={planLine} fill="none" stroke="#EA2C00" strokeWidth={3} strokeLinejoin="round" />
-
-          {/* year-1 marker */}
-          <line x1={y1x} y1={y1y} x2={y1x} y2={Y1} stroke="#D9CDBE" strokeWidth={1.5} strokeDasharray="5 5" />
-          <text x={y1lx} y={y1Baseline} textAnchor={y1Anchor} fontFamily="Manrope" fontSize={12} fontWeight={700} fill="#5E534A" stroke="#FFFFFF" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
-            {year1Text}
-          </text>
 
           {/* full run-rate ceiling label */}
           <text x={X1 - 2} y={Y0 - 10} textAnchor="end" fontFamily="Manrope" fontSize={12.5} fontWeight={800} fill="#EA2C00" stroke="#FFFFFF" strokeWidth={3.5} paintOrder="stroke" strokeLinejoin="round">
@@ -296,27 +305,27 @@ export default function ConsolidationTiming({
       </div>
 
       {/* the read line */}
-      <p className="text-[15px] text-[#8C7E6E] mt-[18px] leading-[1.55] max-w-[780px]" data-testid="ar-timing-readline">
+      <p className="text-[15px] text-[#565250] mt-[18px] leading-[1.55] max-w-[780px]" data-testid="ar-timing-readline">
         {captured > 0 && sooner > 0 ? (
           <>Your plan reaches full consolidation <NeutralSpan>{consolidatedLabel}</NeutralSpan>, <CoralSpan>{sooner} months</CoralSpan> ahead of riding to renewal, and captures <CoralSpan>{fmtC(captured)}</CoralSpan> from {tools.length === 1 ? tools[0].name : "these vendors"} on the way there.</>
         ) : captured > 0 ? (
           <>Pulling these in captures <CoralSpan>{fmtC(captured)}</CoralSpan> you'd otherwise keep paying through renewal. The finish line holds at <NeutralSpan>{monthLabel(summary.renewalFinishMonths)}</NeutralSpan> until you pull <NeutralSpan>{summary.gatingToolName}</NeutralSpan> in too.</>
         ) : (
-          <><NeutralSpan>Every contract is riding to its renewal.</NeutralSpan> Pull one in below and the gap that opens up is savings you capture sooner instead of paying through renewal.</>
+          <><NeutralSpan>Every contract is riding to its renewal.</NeutralSpan> Pull one in below and the gap that opens is money back sooner.</>
         )}
       </p>
 
       {/* per-tool levers */}
-      <div className="mt-6">
+      <div className="mt-7 rounded-[18px] border border-[#EFE7DC] px-5 py-2">
         {rows.map(({ item, tool }) => {
           if (!tool) {
             // Spend that stays: no displaceable share, so it rides on unchanged.
             return (
               <div key={item.id} className="flex items-center gap-3.5 py-3.5 border-b border-[#F2ECE4] last:border-b-0 opacity-90" data-testid={`ar-timing-row-${item.id}`}>
                 <span className="w-[11px] h-[11px] rounded-[3px] bg-[#D8CEC1] shrink-0" />
-                <span className="text-[15.5px] font-bold text-[#8C7E6E] min-w-[180px]">{itemDisplayName(item)}</span>
-                <span className="font-abridge text-[17px] text-[#8C7E6E] min-w-[80px] tabular-nums">{fmtFull(item.annualSpend || 0)}</span>
-                <span className="ml-auto text-[13px] text-[#8C7E6E]">stays on · unchanged</span>
+                <span className="text-[15.5px] font-bold text-[#6E6157] min-w-[180px]">{itemDisplayName(item)}</span>
+                <span className="font-abridge text-[17px] text-[#6E6157] min-w-[80px] tabular-nums">{fmtFull(item.annualSpend || 0)}</span>
+                <span className="ml-auto text-[13px] text-[#565250]">stays on, unchanged</span>
               </div>
             );
           }
@@ -328,7 +337,7 @@ export default function ConsolidationTiming({
               <span className="text-[15.5px] font-bold text-[#1A1A1A] min-w-[180px] truncate">{tool.name}</span>
               <span className="font-abridge text-[17px] text-[#1A1A1A] min-w-[80px] tabular-nums">{fmtFull(runRate(tool))}</span>
               <div className="ml-auto flex items-center gap-3.5">
-                <span className="text-[12px] text-[#8C7E6E]">{mtm ? "comes off" : "exit"}</span>
+                <span className="text-[12px] text-[#565250]">{mtm ? "comes off" : "exit"}</span>
                 <input
                   type="range"
                   min={0}
@@ -338,7 +347,8 @@ export default function ConsolidationTiming({
                   disabled={mtm}
                   onChange={(e) => onUpdateItem(item.id, { sunsetMonths: Math.max(0, Math.min(tool.contractMonths, Number(e.target.value))) })}
                   aria-label={`When ${tool.name} comes off`}
-                  className="h-1 w-[150px] rounded-[3px] bg-[#E8E2DA] appearance-none outline-none cursor-ew-resize disabled:opacity-50 [accent-color:#EA2C00]"
+                  style={{ background: `linear-gradient(90deg, #EA2C00 ${mtm ? 100 : (Math.min(tool.sunsetMonths, tool.contractMonths) / Math.max(1, tool.contractMonths)) * 100}%, #E4D8C8 0%)` }}
+                  className="roi-range h-1.5 w-[170px] rounded-full appearance-none outline-none cursor-pointer disabled:opacity-50"
                   data-testid={`ar-timing-slider-${item.id}`}
                 />
                 <span className="text-[13px] font-bold text-right min-w-[150px] tabular-nums" data-testid={`ar-timing-when-${item.id}`}>
@@ -356,30 +366,6 @@ export default function ConsolidationTiming({
         })}
       </div>
 
-      {/* hero stats */}
-      <div className="grid grid-cols-3 mt-9 border-t border-b border-[#E8E2DA]">
-        <div className="py-[22px] border-r border-[#E8E2DA]">
-          <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Additional savings, year 1</div>
-          <div className="font-abridge text-[30px] mt-2 text-[#1A1A1A]">
-            <AnimatedValue value={year1} format={fmtFull} duration={600} className="tabular-nums" />
-            <span className="text-[13px] text-[#8C7E6E] font-sans font-normal"> / yr</span>
-          </div>
-        </div>
-        <div className="py-[22px] pl-7 border-r border-[#E8E2DA]">
-          <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Captured sooner by acting</div>
-          {captured > 0 ? (
-            <div className="font-abridge text-[30px] mt-2">
-              <AnimatedValue value={captured} format={fmtFull} duration={600} className="tabular-nums" style={{ color: "#EA2C00" }} />
-            </div>
-          ) : (
-            <div className="text-[13.5px] text-[#8C7E6E] leading-snug mt-2 max-w-[200px]">Drag an exit earlier to capture that spend sooner.</div>
-          )}
-        </div>
-        <div className="py-[22px] pl-7">
-          <div className="text-[11px] font-extrabold tracking-[0.07em] uppercase text-[#443A32]">Fully consolidated</div>
-          <div className="font-abridge text-[30px] mt-2 text-[#1A1A1A]">{consolidatedLabel}</div>
-          {sooner > 0 && <span className="block text-[12.5px] text-[#EA2C00] font-bold mt-1.5">{sooner} mo earlier than {monthLabel(summary.renewalFinishMonths)}</span>}
-        </div>
       </div>
     </div>
   );

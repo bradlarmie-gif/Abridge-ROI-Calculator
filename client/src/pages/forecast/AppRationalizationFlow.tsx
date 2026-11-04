@@ -15,13 +15,14 @@ type ArStep = "applications" | "consolidation" | "timing" | "moat";
 interface AppRationalizationFlowProps {
   onBack: () => void;
   onHome: () => void;
+  onOpenPlan?: () => void;
   pathLabel?: string;
 }
 
 const STEP_INDEX: Record<ArStep, number> = { applications: 1, consolidation: 2, timing: 3, moat: 4 };
-const STEP_LABELS = ["Applications", "Consolidation", "When it lands", "Why only Abridge"];
+const STEP_LABELS = ["Your stack", "Consolidation", "When it lands", "Why only Abridge"];
 
-export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: AppRationalizationFlowProps) {
+export default function AppRationalizationFlow({ onBack, onHome, onOpenPlan, pathLabel }: AppRationalizationFlowProps) {
   const [step, setStepState] = useState<ArStep>("applications");
   // The four steps are real history entries, so the browser Back button steps
   // back through them rather than exiting the tool outright.
@@ -70,14 +71,14 @@ export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: Ap
     else onBack();
   };
 
-  // The export button, top-right on every step past Applications. One handler,
+  // The export button, beside each step's headline past Applications. One handler,
   // one testid, so the export stays reachable throughout the value story.
   const exportButton = (
-    <div className="flex justify-end mb-5">
+    <div className="flex justify-end">
       <button
         onClick={handleExportPdf}
         disabled={exporting}
-        className="flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-[#E8E2DA] bg-white text-[12px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors"
+        className="flex items-center gap-1.5 h-10 px-4 rounded-xl border border-[#E8E2DA] bg-white text-[13px] font-bold text-[#1A1A1A] hover:border-[#1A1A1A] disabled:opacity-50 transition-colors"
         data-testid="ar-export-pdf"
       >
         <Download className="w-3.5 h-3.5" strokeWidth={2.25} />
@@ -104,7 +105,7 @@ export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: Ap
       <UnifiedHeader
         pathType="forecast"
         pathLabel={pathLabel}
-        stepName="App Rationalization"
+        stepName="Offset the Cost"
         currentStep={STEP_INDEX[step]}
         totalSteps={4}
         stepLabels={STEP_LABELS}
@@ -127,17 +128,16 @@ export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: Ap
         )}
 
         {step === "consolidation" && (
-          <div data-testid="ar-step-consolidation" className="max-w-[1120px] mx-auto px-6 py-8">
-            {exportButton}
-            <ArConsolidationView items={items} abridgePrice={abridgePrice} />
+          <div data-testid="ar-step-consolidation" className="max-w-[1120px] mx-auto px-6 pt-8 pb-12">
+            <ArConsolidationView items={items} abridgePrice={abridgePrice} headerRight={exportButton} />
             {nextCta("See when it lands →", () => setStep("timing"), "ar-see-timing")}
           </div>
         )}
 
         {step === "timing" && (
-          <div data-testid="ar-step-timing" className="max-w-[1120px] mx-auto px-6 py-8">
-            {exportButton}
+          <div data-testid="ar-step-timing" className="max-w-[1120px] mx-auto px-6 pt-8 pb-12">
             <ConsolidationTiming
+              headerRight={exportButton}
               items={items}
               abridgePrice={abridgePrice}
               horizonYears={horizonYears}
@@ -149,9 +149,8 @@ export default function AppRationalizationFlow({ onBack, onHome, pathLabel }: Ap
         )}
 
         {step === "moat" && (
-          <div data-testid="ar-step-moat" className="max-w-[1120px] mx-auto px-6 py-8">
-            {exportButton}
-            <ArMoatView items={items} />
+          <div data-testid="ar-step-moat" className="max-w-[1120px] mx-auto px-6 pt-8 pb-12">
+            <ArMoatView items={items} headerRight={exportButton} onOpenPlan={onOpenPlan} />
           </div>
         )}
       </div>

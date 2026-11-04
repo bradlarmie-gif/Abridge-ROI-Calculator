@@ -423,6 +423,15 @@ export function cumulativeSavedAt(tools: CumulativeTool[], month: number, mode: 
   }, 0);
 }
 
+/**
+ * Cash actually freed in the first 12 months on the chosen plan: each tool only
+ * saves from its sunset month on (with its ramp). A contract that ends at month 12
+ * adds $0 here, so this never claims a full year for spend still being paid.
+ */
+export function firstYearSavings(items: AppRatItem[]): number {
+  return cumulativeSavedAt(buildCumulativeSavings(items, 12).tools, 12, "plan");
+}
+
 export interface TimingSummary {
   /** Dollars captured sooner by exiting before renewal: sum of each tool's earlySaving
    *  (earlyMonths * monthlySaving). Zero when every tool rides to its contract end. */

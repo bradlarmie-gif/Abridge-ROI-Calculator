@@ -15,6 +15,8 @@ import { Slider } from "@/components/ui/slider";
 import { NumberField } from "@/components/NumberField";
 import { CategoryIcon } from "./CategoryIcon";
 import ArPriceControl from "./ArPriceControl";
+import { CAPABILITY_ART } from "./capabilityArt";
+import { AnimatedValue } from "@/components/explore/AnimatedValue";
 import {
   APP_RAT_CATEGORIES, makeItem, resolveAnnualSpend, renewalPatch, renewalDateLabel,
   type AppRatCategoryId, type AppRatItem, type ArPricingModel,
@@ -83,12 +85,19 @@ export default function ArAddToolModal({
         <DialogDescription className="sr-only">Add this tool to your consolidation stack.</DialogDescription>
 
         {/* header: icon tile + eyebrow + capability title */}
-        <div className="flex items-center gap-3.5 px-6 pt-5 pb-3 shrink-0">
-          <div className="w-[46px] h-[46px] rounded-[13px] bg-[#F5F0EB] flex items-center justify-center text-[#6B5E4F] flex-shrink-0">
-            <CategoryIcon icon={cat.icon} className="w-[22px] h-[22px]" />
-          </div>
+        <div className="flex items-center gap-3.5 px-6 pt-6 pb-4 shrink-0">
+          {/* the same drawing as the tile that opened this, its live mark coral */}
+          {CAPABILITY_ART[activeCategory] ? (
+            <div className="group w-[78px] h-[52px] rounded-[13px] bg-[#F6F1EA] flex-shrink-0 p-1" aria-pressed="true" data-testid="ar-add-art">
+              {CAPABILITY_ART[activeCategory]}
+            </div>
+          ) : (
+            <div className="w-[52px] h-[52px] rounded-[13px] bg-[#F6F1EA] flex items-center justify-center text-[#443A32] flex-shrink-0">
+              <CategoryIcon icon={cat.icon} className="w-[22px] h-[22px]" />
+            </div>
+          )}
           <div>
-            <div className="font-abridge uppercase tracking-[0.14em] text-[10px] text-[#8C7E6E]">Add to your stack</div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#443A32]">Add to your stack</div>
             <DialogTitle className="font-abridge text-[23px] tracking-[-0.01em] leading-none mt-[5px] text-[#1A1A1A]">{title}</DialogTitle>
           </div>
         </div>
@@ -103,7 +112,7 @@ export default function ArAddToolModal({
                 <select
                   value={activeCategory}
                   onChange={(e) => changeCategory(e.target.value as AppRatCategoryId)}
-                  className="w-full h-11 appearance-none bg-white border border-[#E8E2DA] rounded-[11px] pl-3.5 pr-9 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00] cursor-pointer"
+                  className="w-full h-11 appearance-none bg-white border border-[#E8E2DA] rounded-[11px] pl-3.5 pr-9 text-sm text-[#1A1A1A] outline-none focus:border-[#1A1A1A] cursor-pointer"
                   data-testid="ar-add-capability"
                 >
                   {APP_RAT_CATEGORIES.filter((c) => c.id !== "custom").map((c) => (
@@ -111,27 +120,27 @@ export default function ArAddToolModal({
                   ))}
                   <option value="custom">Other</option>
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7E6E]" strokeWidth={2.25} />
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#565250]" strokeWidth={2.25} />
               </div>
             </div>
           )}
 
           <div className={entryIsCustom ? "mt-4" : ""}>
             <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">
-              Vendor <span className="font-semibold tracking-normal normal-case text-[#B4A99B]">optional</span>
+              Vendor <span className="font-medium tracking-normal normal-case text-[#565250]">optional</span>
             </div>
             <input
               value={vendor}
               onChange={(e) => setVendor(e.target.value)}
               placeholder={vendorPlaceholder}
-              className="w-full h-11 border border-[#E8E2DA] rounded-[11px] px-3.5 text-sm text-[#1A1A1A] outline-none focus:border-[#EA2C00] placeholder:text-[#B4A99B]"
+              className="w-full h-11 border border-[#E8E2DA] rounded-[11px] px-3.5 text-sm text-[#1A1A1A] outline-none focus:border-[#1A1A1A] placeholder:text-[#8A827C]"
               data-testid="ar-add-vendor"
             />
           </div>
 
           <div className="mt-4">
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">Annual spend</div>
             <ArPriceControl
+              label="Annual spend"
               pricingModel={pricingModel} onPricingModel={setPricingModel}
               flatSpend={flatSpend} onFlatSpend={setFlatSpend}
               users={users} onUsers={setUsers}
@@ -143,17 +152,17 @@ export default function ArAddToolModal({
           </div>
 
           <div className="mt-4">
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">How much could you displace?</div>
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">How much of it moves onto Abridge?</div>
             <div className="flex items-center gap-3.5">
-              <Slider min={0} max={100} step={5} value={[pct]} onValueChange={(v) => setPct(v[0])} accent="coral" aria-label="How much could you displace" />
-              <span className="text-[16px] font-extrabold text-[#EA2C00] tabular-nums w-12 text-right">{pct}%</span>
+              <Slider min={0} max={100} step={5} value={[pct]} onValueChange={(v) => setPct(v[0])} accent="coral" aria-label="How much of it moves onto Abridge" />
+              <span className="text-[16px] font-extrabold text-[#1A1A1A] tabular-nums w-12 text-right">{pct}%</span>
             </div>
           </div>
 
           <div className="mt-4">
             <div className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#443A32] mb-2">Renews in</div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center h-11 w-[136px] bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#EA2C00]">
+              <div className="flex items-center h-11 w-[136px] bg-white border border-[#E8E2DA] rounded-[11px] px-3.5 gap-1.5 focus-within:border-[#1A1A1A]">
                 <NumberField
                   value={renewMonths}
                   onValueChange={setRenewMonths}
@@ -162,33 +171,33 @@ export default function ArAddToolModal({
                   className="flex-1 min-w-0 bg-transparent text-sm text-[#1A1A1A] outline-none tabular-nums"
                   data-testid="ar-add-renews"
                 />
-                <span className="text-[#B4A99B] text-[12px]">months</span>
+                <span className="text-[#565250] text-[12px]">months</span>
               </div>
-              <span className="text-[12.5px] text-[#8C7E6E] tabular-nums">renews {renewalDateLabel(renewMonths)}</span>
+              <span className="text-[12.5px] text-[#565250] tabular-nums">renews {renewalDateLabel(renewMonths)}</span>
             </div>
           </div>
 
-          {/* preview band: what sunsets vs what stays, live from spend x displace% */}
-          <div className="mt-[18px] min-h-[58px] flex items-center px-[18px] py-[15px] bg-[#FAF7F2] border border-[#EFE7DC] rounded-xl">
-            {canAdd ? (
-              <div className="flex items-end justify-between w-full">
-                <div>
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#443A32]">Sunsets onto Abridge / yr</div>
-                  <div className="font-abridge text-[23px] leading-none text-[#EA2C00] tabular-nums mt-1.5">{fmt(retired)}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-[#443A32]">Stays on this tool</div>
-                  <div className="font-abridge text-[19px] leading-none text-[#5E534A] tabular-nums mt-1.5">{fmt(stays)}</div>
+          {/* result band: always present, counts up as the spend and share change */}
+          <div className="mt-[18px] px-[18px] py-4 bg-[#F6F1EA] rounded-xl" data-testid="ar-add-result">
+            <div className="flex items-end justify-between gap-4 w-full">
+              <div>
+                <div className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#443A32]">Comes off the bill every year</div>
+                <div className={`font-abridge text-[26px] leading-none tabular-nums mt-2 ${canAdd ? "text-[#EA2C00]" : "text-[#C9BFB2]"}`}>
+                  <AnimatedValue value={retired} format={fmt} duration={500} />
                 </div>
               </div>
-            ) : (
-              <div className="text-[12.5px] text-[#8C7E6E]">Enter a spend to see what sunsets onto Abridge.</div>
-            )}
+              <div className="text-right">
+                <div className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#443A32]">Stays on</div>
+                <div className={`font-abridge text-[19px] leading-none tabular-nums mt-2 ${canAdd ? "text-[#1A1A1A]" : "text-[#C9BFB2]"}`}>
+                  <AnimatedValue value={stays} format={fmt} duration={500} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* footer */}
-        <div className="px-6 pt-3.5 pb-5 border-t border-[#F2ECE4] shrink-0">
+        <div className="px-6 pt-3.5 pb-5 border-t border-[#EFE9E1] shrink-0">
           <button
             disabled={!canAdd}
             onClick={() => onConfirm(activeCategory, {
@@ -200,7 +209,7 @@ export default function ArAddToolModal({
               userCount: users > 0 ? users : undefined,
               perUserCost: pricingModel === "perUser" ? perUser : undefined,
             })}
-            className="w-full h-[49px] rounded-[13px] bg-[#EA2C00] text-white text-[14.5px] font-extrabold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#d92800] transition-opacity"
+            className="w-full h-[49px] rounded-[13px] bg-[#EA2C00] text-white text-[14.5px] font-extrabold hover:bg-[#d92800] transition-colors disabled:bg-[#ECE7E1] disabled:text-[#8A827C] disabled:cursor-not-allowed"
             data-testid="ar-add-confirm"
           >
             Add to stack
