@@ -374,12 +374,15 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                   drivers never read a per-nurse volume or a documented share, so
                   those questions are not asked. */}
               {isNursing ? (
-                <FieldCard title="The beds">
+                <FieldCard title="The patients">
                   <Field label="How many staffed beds?" hint="on the units these nurses cover">
                     <BoxNum value={staffedBeds} onChange={setStaffedBeds} placeholder="e.g., 300" />
                   </Field>
                   <Field label="Average occupancy?">
                     <BoxNum value={occupancy} onChange={setOccupancy} suffix="%" />
+                  </Field>
+                  <Field label="How often is Abridge used per patient?" hint="out of the patients available: used on 1 of 5 patients is 20%">
+                    <BoxNum value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 20" />
                   </Field>
                 </FieldCard>
               ) : (
@@ -494,7 +497,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
           potentialValue={potentialValue} headroom={headroom} hoursReclaimed={hoursReclaimed}
           adoptionNow={adoptionNow} utilNow={utilNow} totalProviders={totalProviders}
           targetAdoptionPct={targetAdoptionPct} setTargetAdoptionPct={setTargetAdoptionPct}
-          targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct} showUtilDial={!isNursing}
+          targetUtilPct={targetUtilPct} setTargetUtilPct={setTargetUtilPct} showUtilDial isNursing={isNursing}
           price={price} setPrice={setPrice} onBack={() => setStep(1)} onExport={onExportPdf} />
       )}
     </div>
@@ -629,7 +632,7 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
   const FIG = 40;
   // Nursing's base is patient-days on the covered share of nurses (the same
   // scoping the quality math uses); everyone else's is visits on Abridge.
-  const coveredDays = total > 0 ? patientDays * (Math.min(onAbridge, total) / total) : 0;
+  const coveredDays = patientDays * (Math.max(0, Math.min(100, util || 0)) / 100);
   const base = isNursing ? coveredDays : encToday;
   const ready = base > 0;
   const on = total > 0 ? Math.round((Math.min(onAbridge, total) / total) * FIG) : 0;
@@ -656,13 +659,13 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
             {total > 0 && <span className="font-bold text-[#EA2C00]">{Math.round(adoption)}%</span>}
           </div>
         </div>
-        {/* the visits (nursing has no documented-share measure) */}
-        {!isNursing && <div className="mt-3 rounded-[16px] border border-[#E6DCCE] bg-[#EFE7DC]/60 px-4 py-4">
+        {/* the share of visits (or, for nursing, patients) documented */}
+        {<div className="mt-3 rounded-[16px] border border-[#E6DCCE] bg-[#EFE7DC]/60 px-4 py-4">
           <div className="h-3 rounded-full bg-[#E2D6C6] overflow-hidden">
             <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700 ease-out" style={{ width: `${utilPct}%` }} />
           </div>
           <div className="mt-3 flex items-center justify-between text-[12.5px]">
-            <span className="font-semibold text-[#443A32]">{encWord.charAt(0).toUpperCase() + encWord.slice(1)} documented with Abridge</span>
+            <span className="font-semibold text-[#443A32]">{isNursing ? "Patients documented with Abridge" : `${encWord.charAt(0).toUpperCase() + encWord.slice(1)} documented with Abridge`}</span>
             {util > 0 && <span className="font-bold text-[#EA2C00]">{Math.round(utilPct)}%</span>}
           </div>
         </div>}
@@ -675,7 +678,7 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
                 <>
                   <div className="mt-2 text-[15px] font-semibold text-[#1A1A1A]">patient-days a year on Abridge-covered units</div>
                   <div className="mt-1.5 text-[13.5px] text-[#565250]">
-                    {Math.round(adoption)}% of {fmtInt(patientDays)} patient-days a year, the base the quality math runs on
+                    {Math.round(util || 0)}% of {fmtInt(patientDays)} patient-days a year, the base the quality math runs on
                   </div>
                 </>
               ) : (
@@ -1113,7 +1116,7 @@ function AnswerStep(p: {
   todayValue: number; potentialValue: number; headroom: number; hoursReclaimed: number;
   adoptionNow: number; utilNow: number; totalProviders: number;
   targetAdoptionPct: number; setTargetAdoptionPct: (n: number) => void; targetUtilPct: number; setTargetUtilPct: (n: number) => void;
-  showUtilDial: boolean; price: number; setPrice: (n: number) => void; onBack: () => void; onExport: () => void;
+  showUtilDial: boolean; isNursing?: boolean; price: number; setPrice: (n: number) => void; onBack: () => void; onExport: () => void;
 }) {
   const todayShown = useCountUp(p.todayValue);
   const potentialShown = useCountUp(p.potentialValue);
@@ -1147,9 +1150,7 @@ function AnswerStep(p: {
       <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] mt-4">{p.partnerName ? `To ${p.partnerName}, Abridge is worth` : "Abridge is worth"}</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
-        {makeup ? (p.showUtilDial
-          ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</>
-          : <>From {makeup}, with {Math.round(p.adoptionNow)}% of nurses on Abridge.</>) : "Turn on the drivers your data supports to build the number."}
+        {makeup ? <>From {makeup}, at today&rsquo;s {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% {p.isNursing ? "use per patient" : "utilization"}.</> : "Turn on the drivers your data supports to build the number."}
       </p>
 
       {/* Beat 2 — the upside */}
@@ -1174,9 +1175,9 @@ function AnswerStep(p: {
 
         {/* the dials */}
         <div className={`mt-9 grid grid-cols-1 ${p.showUtilDial ? "sm:grid-cols-2" : ""} gap-x-10 gap-y-6`}>
-          <Slider label="More providers on Abridge" value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
+          <Slider label={p.isNursing ? "More nurses on Abridge" : "More providers on Abridge"} value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
           {p.showUtilDial && (
-            <Slider label="Documenting more encounters with Abridge" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
+            <Slider label={p.isNursing ? "Using Abridge with more patients" : "Documenting more encounters with Abridge"} value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
           )}
         </div>
         <p className="mt-6 text-[13.5px] leading-[1.6] text-[#565250] max-w-[560px]">

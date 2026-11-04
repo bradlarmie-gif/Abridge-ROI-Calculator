@@ -282,7 +282,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
       ? "Total ED visits across the department, per year."
       : "Total encounters across the practice, per year.";
   const shareDesc = isNursing
-    ? "The share of nurses actively documenting with Abridge."
+    ? "How often Abridge is used per patient, out of the patients available."
     : `The share of ${encounterLabel} captured with Abridge.`;
 
   // Editorial entry styling — underline figure, coral = editable (matches Time)

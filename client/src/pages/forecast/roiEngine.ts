@@ -643,8 +643,8 @@ export const SETTING_META: Record<SettingKey, SettingMeta> = {
     label: "Nursing",
     blurb: "Bedside charting time, retention, and harm-reduction quality.",
     providerWord: "nurses",
-    encWord: "care events",
-    visitWord: "care event",
+    encWord: "patients",
+    visitWord: "patient",
     isNursing: true,
     defaults: { totalProviders: 0, onAbridge: 0, encPerProvider: 0, utilNow: 0, staffedBeds: 0, occupancy: 85 },
   },
@@ -756,9 +756,9 @@ export function buildRoiState(
   if (setting === "nursing") {
     state.nursingStaffedBeds = account.staffedBeds ?? 0;
     state.nursingOccupancyRate = account.occupancy ?? state.nursingOccupancyRate;
-    // Nursing has no "share of care events documented": coverage is the share of
-    // nurses on Abridge, which scopes the quality patient-days (nursingPatientDays).
-    state.utilizationPercent = account.totalProviders > 0 ? Math.min(100, (providers / account.totalProviders) * 100) : 0;
+    // utilizationPercent stays how often Abridge is used per patient (set above
+    // from utilNow, or the upside dial); it scopes the quality patient-days the
+    // same way Model the Value does (nursingPatientDays). No visit volume here.
     state.annualEncounters = 0;
   }
 

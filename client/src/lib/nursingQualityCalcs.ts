@@ -24,16 +24,15 @@
  */
 
 /**
- * Patient-days the quality drivers run on: staffed beds x occupancy x 365, x the
- * share of nurses on Abridge. Counting every bed in the house when only part of
- * the nursing staff documents with Abridge overstated a partial rollout, so the
- * base is scoped to coverage everywhere (Model the Value, Build the Deal, Size
- * the ROI, the PDFs).
+ * Patient-days the quality drivers run on: staffed beds x occupancy x 365, x how
+ * often Abridge is used per patient (utilizationPercent). Use it on 20% of five
+ * patients and that counts as one patient's worth. Counting every patient-day
+ * regardless of use overstated the value, so the base is scoped to use in every
+ * tool (Model the Value, Build the Deal, Size the ROI, the PDFs). The number of
+ * nurses on Abridge is not applied again here; it drives overtime and retention.
  *
- * `utilizationPercent` is that share in every caller ("share of nurses actively
- * documenting with Abridge" in the Value Model; nurses on Abridge / all nurses
- * in Size the ROI). Callers that already pass only the beds in scope (The Plan)
- * set `nursingQualityBedsInScope` so the base is not cut twice.
+ * Callers that already pass only the beds in scope (The Plan) set
+ * `nursingQualityBedsInScope` so the base is not cut twice.
  */
 export function nursingCoveragePct(s: { utilizationPercent?: number; nursingQualityBedsInScope?: boolean }): number {
   if (s.nursingQualityBedsInScope) return 100;
