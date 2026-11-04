@@ -1,4 +1,7 @@
-import { Check, Stethoscope, Zap, Building2, HeartPulse, ArrowRight } from "lucide-react";
+import type { ReactNode } from "react";
+import { Check } from "lucide-react";
+import { HubTile, HubTileGrid } from "@/pages/hub/hubKit";
+import { EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
 import type { AttainSetting, GoalId } from "@/lib/attain/attainTypes";
 import type { AttainBaseline } from "@/lib/attain/attainLevers";
 
@@ -12,11 +15,11 @@ const LBL = "text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00]";
 const H2 = "font-abridge text-[30px] md:text-4xl text-[#1A1A1A] leading-tight";
 const HELP = "text-[15px] text-[#3A3A3A] leading-relaxed max-w-[620px]";
 
-const SETTINGS: { id: AttainSetting; label: string; desc: string; Icon: typeof Stethoscope }[] = [
-  { id: "outpatient", label: "Outpatient", desc: "Primary care and specialty. Panel access, coding capture, and provider retention across clinics.", Icon: Stethoscope },
-  { id: "ed", label: "Emergency", desc: "The emergency department. Throughput, LWBS recovery, coding accuracy, and staff wellbeing.", Icon: Zap },
-  { id: "inpatient", label: "Inpatient", desc: "Hospital medicine. DRG accuracy, CDI turnaround, and hospitalist retention.", Icon: Building2 },
-  { id: "nursing", label: "Nursing", desc: "Inpatient nursing. Bundle compliance, patient safety, and nurse retention.", Icon: HeartPulse },
+const SETTINGS: { id: AttainSetting; label: string; desc: string; art: ReactNode }[] = [
+  { id: "outpatient", label: "Outpatient", desc: "Primary care and specialty. Panel access, coding capture, and provider retention across clinics.", art: <OutpatientArt /> },
+  { id: "ed", label: "Emergency", desc: "The emergency department. Throughput, LWBS recovery, coding accuracy, and staff wellbeing.", art: <EmergencyArt /> },
+  { id: "inpatient", label: "Inpatient", desc: "Hospital medicine. DRG accuracy, CDI turnaround, and hospitalist retention.", art: <InpatientArt /> },
+  { id: "nursing", label: "Nursing", desc: "Inpatient nursing. Bundle compliance, patient safety, and nurse retention.", art: <NursingArt /> },
 ];
 
 const SETTING_GOALS: Record<AttainSetting, GoalId[]> = {
@@ -37,9 +40,8 @@ const GOAL_INFO: Record<GoalId, { label: string; desc: string }> = {
 const cardCls = (sel: boolean) =>
   `text-left rounded-2xl border p-5 transition-colors ${sel ? "border-[#EA2C00] bg-[#FBE7E1]/50" : "border-[#E8E2DA] hover:bg-[#F2EDE5] hover:border-[#E7E0D6]"}`;
 
-// Matches the Explore care-setting picker (EdCareSetting): one hairline list, a
-// bare icon per row, a one-line blurb, click a row to advance. Keeps the whole
-// Value Attainment flow reading as one product with Explore.
+// Matches the Value Model and Size the ROI care-setting pickers: the shared
+// drawn tan tiles, click a tile to advance.
 export function SettingStep({ selected, onPick, savedBySetting }: { selected: AttainSetting | null; onPick: (s: AttainSetting) => void; savedBySetting?: Record<string, string> }) {
   const anySaved = savedBySetting && Object.keys(savedBySetting).length > 0;
   return (
@@ -49,33 +51,24 @@ export function SettingStep({ selected, onPick, savedBySetting }: { selected: At
       <p className={`${HELP} mb-9`}>{anySaved
         ? "You've worked with this partner before. Pick a setting with saved work to pick up where you left off, or choose a new one to start a fresh conversation. Each setting keeps its own plan."
         : "Every plan is scoped to one care setting, because the outcomes, the operating conditions, and what has to be true all change with it. You can build a separate plan for another setting later."}</p>
-      <div className="border-t border-[#E8E2DA]">
-        {SETTINGS.map(({ id, label, desc, Icon }) => {
-          const sel = selected === id;
-          const savedLabel = savedBySetting?.[id];
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onPick(id)}
-              data-testid={`attain-setting-${id}`}
-              className="group w-full text-left flex items-center gap-5 py-6 border-b border-[#E8E2DA] transition-all cursor-pointer hover:pl-2"
-            >
-              <Icon className={`w-6 h-6 flex-shrink-0 transition-colors ${sel ? "text-[#EA2C00]" : "text-[#B0A99E] group-hover:text-[#EA2C00]"}`} strokeWidth={1.6} />
-              <div className="min-w-0 flex-1">
-                <div className={`font-abridge text-[24px] sm:text-[26px] leading-tight transition-colors ${sel ? "text-[#EA2C00]" : "text-[#1A1A1A] group-hover:text-[#EA2C00]"}`}>{label}</div>
-                <div className="text-[14px] text-[#8C8073] mt-1 leading-[1.5]">{desc}</div>
-              </div>
-              {savedLabel && (
-                <span data-testid={`attain-setting-saved-${id}`} className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full border border-[#E6D3B8] bg-[#F5EEE2] px-2.5 py-1 text-[11px] font-semibold tracking-wide text-[#8A6D3B] whitespace-nowrap">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#B78A5A]" />{savedLabel}
-                </span>
-              )}
-              <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all ${sel ? "text-[#EA2C00]" : "text-[#C9BDAD] group-hover:text-[#EA2C00] group-hover:translate-x-1"}`} strokeWidth={1.8} />
-            </button>
-          );
-        })}
-      </div>
+      {/* The same drawn tiles as every other care-setting picker in the app.
+          Saved work shows as the tile's coral line ("Resume · 2 priorities"). */}
+      <HubTileGrid>
+        {SETTINGS.map(({ id, label, desc, art }, i) => (
+          <HubTile
+            key={id}
+            title={label}
+            tagline={savedBySetting?.[id]}
+            description={desc}
+            art={art}
+            cta={savedBySetting?.[id] ? "Pick up where you left off" : "Plan this setting"}
+            selected={selected === id}
+            testId={`attain-setting-${id}`}
+            delay={0.08 + i * 0.06}
+            onClick={() => onPick(id)}
+          />
+        ))}
+      </HubTileGrid>
     </div>
   );
 }

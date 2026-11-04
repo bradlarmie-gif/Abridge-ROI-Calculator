@@ -10,8 +10,10 @@
 
 const INK = "stroke-[#B39F87]";
 const SOFT = "fill-[#FBF8F4] stroke-[#CDBDA8]";
-const LIVE = "transition-all duration-500 ease-out stroke-[#B39F87] group-hover:stroke-[#EA2C00]";
-const LIVE_FILL = "transition-all duration-500 ease-out fill-[#D9CCBB] group-hover:fill-[#EA2C00]";
+// group-aria-pressed: a chosen tile (multi-select, aria-pressed) keeps its live
+// mark coral, not just while hovered.
+const LIVE = "transition-all duration-500 ease-out stroke-[#B39F87] group-hover:stroke-[#EA2C00] group-aria-pressed:stroke-[#EA2C00]";
+const LIVE_FILL = "transition-all duration-500 ease-out fill-[#D9CCBB] group-hover:fill-[#EA2C00] group-aria-pressed:fill-[#EA2C00]";
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
@@ -507,6 +509,141 @@ export function QuarterlyArt() {
         </g>
       ))}
       <line x1="40" x2="159" y1="88" y2="88" className="stroke-[#D6C8B6]" />
+    </Frame>
+  );
+}
+
+/* ── The Plan, step 1: the two halves of the walk ──────────────────────── */
+
+/** Map how it happens: an outcome at the top, held up by the conditions under it. */
+export function MapOutcomeArt() {
+  return (
+    <Frame>
+      <rect x="78" y="22" width="44" height="18" rx="9" className={LIVE_FILL} stroke="none" />
+      {[52, 100, 148].map((x, i) => (
+        <g key={x}>
+          <path d={`M100 40 C 100 52, ${x} 54, ${x} 66`} className="stroke-[#CDBDA8]" strokeDasharray="3 3" />
+          <rect
+            x={x - 20}
+            y="66"
+            width="40"
+            height="22"
+            rx="6"
+            className="transition-all duration-500 fill-[#FBF8F4] stroke-[#B39F87] group-hover:stroke-[#EA2C00]"
+            style={{ transitionDelay: `${i * 110}ms` }}
+          />
+          <line x1={x - 11} x2={x + 11} y1="77" y2="77" className="stroke-[#D6C8B6]" />
+        </g>
+      ))}
+    </Frame>
+  );
+}
+
+/* ── The Plan, step 3: one drawing per goal ────────────────────────────── */
+
+/** Patient Access: a day's schedule with new visit slots opening up. */
+export function AccessGoalArt() {
+  const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const open = [3, 7];
+  return (
+    <Frame>
+      <rect x="48" y="24" width="104" height="72" rx="8" className={SOFT} />
+      <line x1="48" x2="152" y1="38" y2="38" className="stroke-[#D6C8B6]" />
+      {cells.map((i) => {
+        const x = 58 + (i % 5) * 18;
+        const y = 46 + Math.floor(i / 5) * 22;
+        return open.includes(i) ? (
+          <rect key={i} x={x} y={y} width="13" height="14" rx="3" className={LIVE_FILL} stroke="none" />
+        ) : (
+          <rect key={i} x={x} y={y} width="13" height="14" rx="3" className="fill-[#EFE5D8] stroke-[#D6C8B6]" />
+        );
+      })}
+    </Frame>
+  );
+}
+
+/** Provider Retention: a clock where the day ends on time, and the door home. */
+export function RetentionGoalArt() {
+  return (
+    <Frame>
+      <circle cx="82" cy="60" r="28" className={SOFT} />
+      {[0, 90, 180, 270].map((a) => (
+        <line key={a} x1="82" y1="35" x2="82" y2="39" className={INK} transform={`rotate(${a} 82 60)`} />
+      ))}
+      <line x1="82" y1="60" x2="82" y2="44" className={INK} strokeWidth={2} />
+      <line x1="82" y1="60" x2="96" y2="60" className={LIVE} strokeWidth={2} />
+      <circle cx="82" cy="60" r="2.5" className="fill-[#B39F87]" stroke="none" />
+      <rect x="124" y="32" width="30" height="58" rx="3" className={SOFT} />
+      <circle cx="147" cy="62" r="2" className="fill-[#B39F87]" stroke="none" />
+      <path d="M116 90 h46" className={INK} />
+    </Frame>
+  );
+}
+
+/** Revenue Capture: the documented note and the claim lining up, row for row. */
+export function RevenueGoalArt() {
+  return (
+    <Frame>
+      <rect x="40" y="26" width="50" height="68" rx="6" className={SOFT} />
+      <rect x="110" y="26" width="50" height="68" rx="6" className={SOFT} />
+      {[42, 56, 70].map((y) => (
+        <g key={y}>
+          <line x1="50" x2="80" y1={y} y2={y} className={INK} />
+          <line x1="120" x2="150" y1={y} y2={y} className={INK} />
+          <line x1="90" x2="110" y1={y} y2={y} className={LIVE} strokeDasharray="2 3" />
+        </g>
+      ))}
+      <line x1="50" x2="70" y1="82" y2="82" className="stroke-[#D6C8B6]" />
+      <line x1="120" x2="140" y1="82" y2="82" className="stroke-[#D6C8B6]" />
+    </Frame>
+  );
+}
+
+/** Quality & Safety: a shield with a check. */
+export function QualityGoalArt() {
+  return (
+    <Frame>
+      <path d="M100 24 l30 11 v22 c0 20 -14 32 -30 38 c-16 -6 -30 -18 -30 -38 v-22 z" className={SOFT} />
+      <path d="M100 34 l20 7 v15 c0 13 -9 21 -20 25 c-11 -4 -20 -12 -20 -25 v-15 z" className="stroke-[#D6C8B6]" />
+      <path d="M89 58 l8 8 l15 -16" className={LIVE} strokeWidth={2.4} />
+    </Frame>
+  );
+}
+
+/** Nursing Capacity: a row of beds, with time freed at one of them. */
+export function CapacityGoalArt() {
+  return (
+    <Frame>
+      {[44, 84, 124].map((x, i) => (
+        <g key={x}>
+          <rect x={x} y="60" width="32" height="14" rx="3" className={SOFT} />
+          <rect x={x + 2} y="54" width="10" height="7" rx="2.5" className="fill-[#EFE5D8] stroke-[#D6C8B6]" />
+          <line x1={x} x2={x} y1="52" y2="82" className={INK} />
+          <line x1={x + 32} x2={x + 32} y1="64" y2="82" className={INK} />
+          {i === 1 && (
+            <g>
+              <circle cx={x + 16} cy="36" r="10" className={`${LIVE} fill-[#FBF8F4]`} />
+              <path d={`M${x + 16} 30 v6 h5`} className={LIVE} />
+            </g>
+          )}
+        </g>
+      ))}
+      <line x1="38" x2="162" y1="88" y2="88" className="stroke-[#D6C8B6]" />
+    </Frame>
+  );
+}
+
+/** Patient Experience: a nurse and a patient talking, a speech bubble between. */
+export function ExperienceGoalArt() {
+  return (
+    <Frame>
+      <circle cx="62" cy="48" r="10" className={SOFT} />
+      <path d="M44 90 c0 -14 8 -22 18 -22 s18 8 18 22" className={SOFT} />
+      <circle cx="138" cy="52" r="10" className={SOFT} />
+      <path d="M120 90 c0 -12 8 -20 18 -20 s18 8 18 20" className={SOFT} />
+      <path d="M84 26 h32 a6 6 0 0 1 6 6 v12 a6 6 0 0 1 -6 6 h-18 l-8 7 v-7 h-6 a6 6 0 0 1 -6 -6 v-12 a6 6 0 0 1 6 -6 z" className={`${LIVE} fill-[#FBF8F4]`} />
+      <line x1="92" x2="110" y1="35" y2="35" className="stroke-[#D6C8B6]" />
+      <line x1="92" x2="104" y1="42" y2="42" className="stroke-[#D6C8B6]" />
     </Frame>
   );
 }

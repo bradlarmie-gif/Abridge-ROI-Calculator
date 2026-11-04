@@ -3,6 +3,7 @@ import { useFlowHistory } from "@/lib/useFlowHistory";
 import { ArrowRight, RotateCcw } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UnifiedHeader, UnifiedHeaderSpacer } from "@/components/UnifiedHeader";
+import { BuildPlanArt, MapOutcomeArt } from "@/pages/hub/hubArt";
 import StepVision from "./steps/StepVision";
 import StepScope from "./steps/StepScope";
 import { SettingStep } from "./preview/AttainFunnel";
@@ -230,17 +231,46 @@ export default function AttainFlowV2({
       ) : phase === "experience" ? (
         <><UnifiedHeaderSpacer /><PlanBuildExperience key={`${partner}::${setting}`} embedded backRef={planBackRef} setting={setting!} goals={goals} partner={partner.trim() || undefined} baseline={baseline} initial={planBuildRef.current ?? undefined} onPersist={onPersistPlanBuild} onTrackingChange={setPlanTracking} onExit={() => setPhase("vision")} /></>
       ) : (
-        <><UnifiedHeaderSpacer /><div className={`${phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
+        <><UnifiedHeaderSpacer /><div className={`${phase === "setting" || phase === "vision" ? "max-w-[1200px]" : phase === "scope" ? "max-w-[1040px]" : "max-w-[760px]"} mx-auto px-6 py-8 md:py-12`}>
           {phase === "partner" && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] mb-3">Step 1 · Start here</p>
               {/* One opening for one walk: the interview and the plan used to have
                   a page each, and each explained only its own half. */}
               <h1 className="font-abridge text-[32px] md:text-[42px] text-[#1A1A1A] leading-[1.1] mb-5">Start with the outcome.<br className="hidden md:inline" /> Leave with a plan you can run.</h1>
-              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-3">First we map how the outcome actually happens: the operating conditions, the decisions, the behaviors, and the dependencies that have to hold for it to land. No numbers yet.</p>
-              <p className="text-[16px] text-[#4A4A4A] leading-relaxed max-w-[600px] mb-10">Then that becomes an owned, step-by-step plan, with the metric that proves each step, the owner on it, and a review cadence. First, who are we building this for?</p>
-              <label className="block text-[11px] font-bold uppercase tracking-[1.5px] text-[#8C8073] mb-3">Partner or organization</label>
-              <input value={partner} onChange={(e) => setPartner(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canContinue) goNext(); }} placeholder="e.g., Northgate Medical Group" autoFocus className="w-full max-w-[520px] bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-2 font-abridge text-[26px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0] placeholder:font-sans placeholder:text-[18px]" />
+              {/* The method in two drawn tiles instead of two paragraphs. */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-8">
+                {[
+                  { n: "01", t: "Map how it happens", b: "The conditions, decisions and people it depends on. No numbers yet.", art: <MapOutcomeArt /> },
+                  { n: "02", t: "Own the plan", b: "Each step gets an owner, a metric and a review date.", art: <BuildPlanArt /> },
+                ].map((c) => (
+                  <div key={c.n} className="group rounded-[18px] border border-[#E9E0D4] bg-[#F6F1EA]/90 p-2.5 transition-all duration-300 hover:-translate-y-1 hover:border-[#DDD2C4] hover:shadow-[0_18px_40px_-22px_rgba(26,26,26,0.24)]">
+                    <div className="relative h-[104px] rounded-[13px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-3 py-2.5">
+                      {c.art}
+                      <span className="absolute left-3 top-2 font-abridge text-[11.5px] tracking-[0.08em] text-[#AE9F8C]">{c.n}</span>
+                    </div>
+                    <div className="px-2.5 pt-3.5 pb-2">
+                      <div className="text-[15px] font-bold text-[#1A1A1A]">{c.t}</div>
+                      <div className="text-[13px] text-[#565250] mt-1 leading-[1.5] text-balance">{c.b}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* The one question this screen asks, as the label; Continue sits on
+                  the same line as the field so the two read as one control. */}
+              <label htmlFor="attain-partner" className="block text-[11px] font-extrabold uppercase tracking-[1.5px] text-[#443A32] mt-11 mb-2">Who are we building this for?</label>
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                <input id="attain-partner" value={partner} onChange={(e) => setPartner(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canContinue) goNext(); }} placeholder="e.g., Northgate Medical Group" autoFocus className="flex-1 min-w-0 bg-transparent border-0 border-b-2 border-[#E0D9CE] rounded-none px-0 pb-2 font-abridge text-[26px] text-[#1A1A1A] outline-none transition-colors focus:border-[#EA2C00] placeholder:text-[#C4BCB0] placeholder:font-sans placeholder:text-[18px]" />
+                <button
+                  type="button"
+                  onClick={goNext}
+                  disabled={!canContinue}
+                  data-testid="attain-partner-continue"
+                  className={`flex-none self-start sm:self-auto inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-bold transition-colors ${canContinue ? "bg-[#EA2C00] text-white hover:bg-[#d12800]" : "bg-[#F1ECE5] text-[#B5AA9B] cursor-default"}`}
+                >
+                  Continue <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
               {Object.keys(savedBySetting).length > 0 && <p className="text-[12px] text-[#EA2C00] mt-3">You've worked with this partner before. On the next step, pick a care setting to resume it or start a new one.</p>}
             </div>
           )}
@@ -262,10 +292,16 @@ export default function AttainFlowV2({
             <StepScope setting={setting} goals={goals} baseline={baseline} onChangeBaseline={(patch) => setBaseline((prev) => ({ ...prev, ...patch }))} />
           )}
 
-          {/* The care-setting step advances on row click (Explore parity), so it
-              carries no Continue button; every other funnel step does. */}
-          {phase !== "setting" && (
-            <div className="mt-10 flex items-center justify-end">
+          {/* The care-setting step advances on tile click, and the partner step
+              carries its Continue inline beside the name field; every other
+              funnel step uses this one. */}
+          {phase !== "setting" && phase !== "partner" && (
+            <div className="mt-10 flex items-center justify-end gap-5">
+              {phase === "vision" && (
+                <span className="text-[13px] font-semibold text-[#565250]" data-testid="text-goals-picked">
+                  {goals.length === 0 ? "Pick at least one" : `${goals.length} ${goals.length === 1 ? "goal" : "goals"} picked`}
+                </span>
+              )}
               <button onClick={goNext} disabled={!canContinue} className="inline-flex items-center gap-2 rounded-xl bg-[#EA2C00] text-white text-[14px] font-semibold px-5 py-2.5 hover:bg-[#d12800] disabled:bg-transparent disabled:text-[#B4A896] disabled:border disabled:border-[#E0D9CE] disabled:cursor-not-allowed transition-colors">
                 {phase === "vision" ? "Start discovery" : phase === "scope" ? "Build the plan" : "Continue"} <ArrowRight className="w-4 h-4" />
               </button>
