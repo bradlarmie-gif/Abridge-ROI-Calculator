@@ -541,8 +541,8 @@ export default function EdModel({
 
         {/* HERO — the one number everything built to. Number left, the
             components that make it up right, on the shared spine. */}
-        <div className={`${CARD} overflow-hidden mt-9 grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] items-stretch`}>
-          <div className="px-6 sm:px-9 py-8 bg-[linear-gradient(180deg,#F6F1EA_0%,#FFFFFF_100%)]">
+        <div className={`${CARD} mt-9 p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-6 lg:gap-8 items-stretch`}>
+          <div className="rounded-[16px] border border-[#E9E0D4] bg-[#F6F1EA]/80 px-6 sm:px-8 py-7">
             {/* "Net" only once a cost exists; before pricing this is net of nothing, so it reads "value before cost" (matches EdInvestment). */}
             <div className={sectLabel}>{annualInvestment > 0 ? "Net annual value" : "Value before cost"}</div>
             {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
@@ -566,7 +566,7 @@ export default function EdModel({
 
           
 
-          <div className="flex flex-col justify-center gap-[15px] px-6 sm:px-8 py-7 border-t lg:border-t-0 lg:border-l border-[#EFE8DE]">
+          <div className="flex flex-col justify-center gap-[15px] px-1 sm:px-2 py-2">
             <div className="flex justify-between items-baseline">
               <span className="text-[14px] text-[#3A342E]">Total annual value</span>
               <span className="font-abridge text-[19px] text-[#1A1A1A] tabular-nums">{fmtCurrency(totalAnnualValue)}</span>
