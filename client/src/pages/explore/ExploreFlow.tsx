@@ -505,6 +505,9 @@ export interface ExploreState {
   encountersPerProvider: number;
   annualEncounters: number;
   utilizationPercent: number;
+  /** Set by The Plan, which passes only the beds in scope: quality patient-days
+   * are then not scaled again by nurse coverage (see nursingPatientDays). */
+  nursingQualityBedsInScope?: boolean;
   
   nursingStaffedBeds: number;
   nursingOccupancyRate: number;

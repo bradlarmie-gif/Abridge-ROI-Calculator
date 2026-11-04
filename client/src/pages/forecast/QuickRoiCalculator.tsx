@@ -370,21 +370,25 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                   <BoxNum value={onAbridge} onChange={setOnAbridge} placeholder="e.g., 60" />
                 </Field>
               </FieldCard>
-              <FieldCard title={`The ${meta.encWord}`}>
-                <Field label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
-                  <BoxNum value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
-                </Field>
-                <Field label={`What share of ${meta.encWord} are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
-                  <BoxNum value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
-                </Field>
-              </FieldCard>
-              {isNursing && (
-                <FieldCard title="The unit">
-                  <Field label="How many staffed beds?" hint="drives the patient-days behind the quality math">
+              {/* Nursing is valued on nurses and patient-days, not on visits: its
+                  drivers never read a per-nurse volume or a documented share, so
+                  those questions are not asked. */}
+              {isNursing ? (
+                <FieldCard title="The beds">
+                  <Field label="How many staffed beds?" hint="on the units these nurses cover">
                     <BoxNum value={staffedBeds} onChange={setStaffedBeds} placeholder="e.g., 300" />
                   </Field>
                   <Field label="Average occupancy?">
                     <BoxNum value={occupancy} onChange={setOccupancy} suffix="%" />
+                  </Field>
+                </FieldCard>
+              ) : (
+                <FieldCard title={`The ${meta.encWord}`}>
+                  <Field label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
+                    <BoxNum value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
+                  </Field>
+                  <Field label={`What share of ${meta.encWord} are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
+                    <BoxNum value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
                   </Field>
                 </FieldCard>
               )}
@@ -402,6 +406,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
               scopeWord={scopeWord}
               encWord={meta.encWord}
               settingWord={settingWord}
+              isNursing={isNursing}
+              patientDays={staffedBeds * (occupancy / 100) * 365}
             />
             </div>
           </div>
@@ -616,13 +622,18 @@ function BoxText({ value, onChange, placeholder }: { value: string; onChange: (s
  * the visits-on-Abridge number every later dollar multiplies off. The "room to
  * grow" line is plain arithmetic on their inputs (everyone x their visits).
  */
-function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scopeWord, encWord, settingWord }: {
+function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scopeWord, encWord, settingWord, isNursing = false, patientDays = 0 }: {
   total: number; onAbridge: number; util: number; encToday: number; totalEnc: number; adoption: number; scopeWord: string; encWord: string; settingWord: string;
+  isNursing?: boolean; patientDays?: number;
 }) {
   const FIG = 40;
-  const ready = encToday > 0;
+  // Nursing's base is patient-days on the covered share of nurses (the same
+  // scoping the quality math uses); everyone else's is visits on Abridge.
+  const coveredDays = total > 0 ? patientDays * (Math.min(onAbridge, total) / total) : 0;
+  const base = isNursing ? coveredDays : encToday;
+  const ready = base > 0;
   const on = total > 0 ? Math.round((Math.min(onAbridge, total) / total) * FIG) : 0;
-  const shown = useAnimatedNumber(encToday);
+  const shown = useAnimatedNumber(base);
   const utilPct = Math.max(0, Math.min(100, util || 0));
   return (
     <div className="lg:sticky lg:top-24 rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="roi-footprint">
@@ -645,8 +656,8 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
             {total > 0 && <span className="font-bold text-[#EA2C00]">{Math.round(adoption)}%</span>}
           </div>
         </div>
-        {/* the visits */}
-        <div className="mt-3 rounded-[16px] border border-[#E6DCCE] bg-[#EFE7DC]/60 px-4 py-4">
+        {/* the visits (nursing has no documented-share measure) */}
+        {!isNursing && <div className="mt-3 rounded-[16px] border border-[#E6DCCE] bg-[#EFE7DC]/60 px-4 py-4">
           <div className="h-3 rounded-full bg-[#E2D6C6] overflow-hidden">
             <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700 ease-out" style={{ width: `${utilPct}%` }} />
           </div>
@@ -654,17 +665,28 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
             <span className="font-semibold text-[#443A32]">{encWord.charAt(0).toUpperCase() + encWord.slice(1)} documented with Abridge</span>
             {util > 0 && <span className="font-bold text-[#EA2C00]">{Math.round(utilPct)}%</span>}
           </div>
-        </div>
+        </div>}
         {/* the number */}
         <div className="mt-6">
           {ready ? (
             <>
               <div className="font-abridge text-[52px] leading-none text-[#1A1A1A] tabular-nums">{fmtInt(shown)}</div>
-              <div className="mt-2 text-[15px] font-semibold text-[#1A1A1A]">{encWord} a year on Abridge today, in {settingWord}</div>
-              {totalEnc > 0 && (
-                <div className="mt-1.5 text-[13.5px] text-[#565250]">
-                  of {fmtInt(totalEnc)} {encWord} a year across all {fmtInt(total)} {scopeWord}
-                </div>
+              {isNursing ? (
+                <>
+                  <div className="mt-2 text-[15px] font-semibold text-[#1A1A1A]">patient-days a year on Abridge-covered units</div>
+                  <div className="mt-1.5 text-[13.5px] text-[#565250]">
+                    {Math.round(adoption)}% of {fmtInt(patientDays)} patient-days a year, the base the quality math runs on
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mt-2 text-[15px] font-semibold text-[#1A1A1A]">{encWord} a year on Abridge today, in {settingWord}</div>
+                  {totalEnc > 0 && (
+                    <div className="mt-1.5 text-[13.5px] text-[#565250]">
+                      of {fmtInt(totalEnc)} {encWord} a year across all {fmtInt(total)} {scopeWord}
+                    </div>
+                  )}
+                </>
               )}
             </>
           ) : (
@@ -1125,7 +1147,9 @@ function AnswerStep(p: {
       <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] mt-4">{p.partnerName ? `To ${p.partnerName}, Abridge is worth` : "Abridge is worth"}</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
-        {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your data supports to build the number."}
+        {makeup ? (p.showUtilDial
+          ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</>
+          : <>From {makeup}, with {Math.round(p.adoptionNow)}% of nurses on Abridge.</>) : "Turn on the drivers your data supports to build the number."}
       </p>
 
       {/* Beat 2 — the upside */}

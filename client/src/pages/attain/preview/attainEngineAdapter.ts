@@ -163,7 +163,7 @@ function nursingResults(inp: CellInputs) {
   const beds = inp.staffedBeds && inp.staffedBeds > 0 ? inp.staffedBeds : Math.max(1, Math.round(nurses * (180 / 260)));
   const occ = 85, util = inp.util && inp.util > 0 ? inp.util : 70, shifts = 156, minSaved = inp.minSaved ?? 5;
   const hrs = Math.round((nurses * shifts * (util / 100) * minSaved) / 60);
-  return run("nursing", { numberOfProviders: nurses, nursingStaffedBeds: beds, nursingOccupancyRate: occ, nursingShiftsPerNurseYear: shifts, annualEncounters: 0, utilizationPercent: util },
+  return run("nursing", { nursingQualityBedsInScope: true, numberOfProviders: nurses, nursingStaffedBeds: beds, nursingOccupancyRate: occ, nursingShiftsPerNurseYear: shifts, annualEncounters: 0, utilizationPercent: util },
     {
       nursingOtEnabled: true, nursingOtHoursPerNurseWeek: inp.econ?.otHours ?? 1.0, nursingOtReductionPercent: inp.stancePct ?? 40, nursingOtHourlyRate: inp.econ?.otRate ?? 75,
       nursingRetentionEnabled: true, nursingTurnoverRate: inp.econ?.turnover ?? 18, retentionImpactScenario: inp.stancePct && inp.stancePct > 0 ? "custom" : "typical", retentionCustomPercent: inp.stancePct ?? 15, nursingReplacementCost: inp.econ?.replacementCost ?? 56_300,

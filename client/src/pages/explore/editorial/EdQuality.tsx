@@ -2,7 +2,7 @@ import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { MoneyCard, SectionLabel, FieldGrid, FieldTile, Fi, FiReadout, OutcomesTier, fmtN } from "./EdMoneyCard";
 import { computeAllDriverValues } from "@/lib/exploreDriverCalcs";
 import { driverScaleReadiness } from "@/lib/exploreScaleGate";
-import { calcHapi, calcFalls, calcCauti, calcClabsi, calcSepsis } from "@/lib/nursingQualityCalcs";
+import { calcHapi, calcFalls, calcCauti, calcClabsi, calcSepsis, nursingPatientDays } from "@/lib/nursingQualityCalcs";
 import { getDriversForPage, type ExploreDriver } from "@/lib/exploreDrivers";
 import { type ExploreState } from "../ExploreFlow";
 import { SignalWatch } from "./SignalWatch";
@@ -181,7 +181,7 @@ function NursingQualityScreen({
 }) {
   const dq = state.docQualityInputs;
   const engine = computeAllDriverValues(state, totalHoursSaved);
-  const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+  const patientDays = nursingPatientDays(state);
   const updateDq = (updates: Partial<ExploreState["docQualityInputs"]>) => updateState({ docQualityInputs: { ...dq, ...updates } });
   const valueFor = (key: string) => engine[key] ?? 0;
   const gate = (driverId: string) => {

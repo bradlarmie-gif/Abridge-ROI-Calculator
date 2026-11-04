@@ -756,6 +756,10 @@ export function buildRoiState(
   if (setting === "nursing") {
     state.nursingStaffedBeds = account.staffedBeds ?? 0;
     state.nursingOccupancyRate = account.occupancy ?? state.nursingOccupancyRate;
+    // Nursing has no "share of care events documented": coverage is the share of
+    // nurses on Abridge, which scopes the quality patient-days (nursingPatientDays).
+    state.utilizationPercent = account.totalProviders > 0 ? Math.min(100, (providers / account.totalProviders) * 100) : 0;
+    state.annualEncounters = 0;
   }
 
   const ctx: RoiCtx = { setting, baseProviders: account.onAbridge };

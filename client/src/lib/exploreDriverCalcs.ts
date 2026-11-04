@@ -4,6 +4,7 @@ import {
   calcCauti,
   calcClabsi,
   calcSepsis,
+  nursingPatientDays,
 } from "@/lib/nursingQualityCalcs";
 import type { ExploreState } from "@/pages/explore/ExploreFlow";
 import { EXPLORE_DRIVERS, type ExploreQuadrant } from "@/lib/exploreDrivers";
@@ -306,7 +307,7 @@ export function computeAllDriverValues(
   // so the engine, the live UI, and the printed PDF stay in lockstep.
   if (isNursing) {
     const patientDays =
-      state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+      nursingPatientDays(state);
     if (dq.nursingHapiEnabled) {
       result.nursingHapi = Math.round(
         calcHapi({
@@ -514,7 +515,7 @@ export function computeAllDriverCalcSummaries(
   // disagree, even if a future haircut/multiplier is added to the math.
   if (isNursing && state.nursingStaffedBeds && state.nursingOccupancyRate) {
     const patientDays =
-      state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+      nursingPatientDays(state);
     if (dq.nursingHapiEnabled) {
       out.nursingHapi = `${fmtN(patientDays)} patient-days × ${dq.nursingHapiRate}/1k HAPI × ${dq.nursingHapiPreventionRate}% prevention × ${fmt$(dq.nursingHapiCost)}/case`;
     }

@@ -8,6 +8,7 @@
  */
 import type { ProformaSettingSnapshot } from "@/pages/proforma/proformaTypes";
 import { nursingRetentionRates, physicianRetentionRates } from "@/lib/retentionScenarios";
+import { nursingPatientDays } from "@/lib/nursingQualityCalcs";
 
 function fmt(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -329,31 +330,41 @@ export function buildDriverFormula(
 
     // ── Quality / Nursing ─────────────────────────────────────────────────────
 
+    // Nursing quality: built from the model's own inputs (covered patient-days x
+    // rate x share prevented x the partner's cost per event), the same
+    // multiplicands the engine uses, so the steps reconcile by construction.
+    // Patient-days are scoped to nurse coverage (nursingPatientDays) and scaled
+    // to the full deployment like the value.
     case "nursingHapi":
     case "nursingFalls":
     case "nursingCauti":
-    case "nursingClabsi": {
-      const evtNames: Record<string, string> = {
-        nursingHapi: "HAPI", nursingFalls: "fall", nursingCauti: "CAUTI", nursingClabsi: "CLABSI",
-      };
-      const evtCosts: Record<string, number> = {
-        nursingHapi: 11000, nursingFalls: 14000, nursingCauti: 13000, nursingClabsi: 48000,
-      };
-      const evtName = evtNames[driverId] || "adverse event";
-      const avgCost = evtCosts[driverId] || 15000;
-      const eventsAvoided = avgCost > 0 ? (driverValue / avgCost).toFixed(1) : "—";
-      return [
-        { label: `Real-time documentation → earlier identification of ${evtName} risk factors`, value: `event prevention` },
-        { label: `${eventsAvoided} ${evtName} events avoided/yr  ×  ${d(avgCost)} avg cost per event`, value: fmt(driverValue), isResult: true },
-      ];
-    }
-
+    case "nursingClabsi":
     case "nursingSepsis": {
-      const avgSepsisCost = 26000;
-      const eventsAvoided = (driverValue / avgSepsisCost).toFixed(1);
+      const dq = es.docQualityInputs ?? {};
+      const pd = nursingPatientDays({ ...es, nursingStaffedBeds: (es.nursingStaffedBeds || 0) * providerScaleFactor });
+      const pdLine = { label: `${n(pd)} patient-days a year on Abridge-covered units`, value: `${n(pd)} patient-days` };
+      if (driverId === "nursingSepsis") {
+        const gap = Math.max(0, 100 - (dq.nursingSepsisCurrentCompliance ?? 0));
+        const cases = (pd / 1000) * (dq.nursingSepsisRatePerThousand ?? 0) * (gap / 100) * ((dq.nursingSepsisDocLagPercent ?? 0) / 100) * ((dq.nursingSepsisRealization ?? 0) / 100);
+        return [
+          pdLine,
+          { label: `${dq.nursingSepsisRatePerThousand} sepsis cases per thousand patient-days  ·  ${gap}% non-compliant  ·  ${dq.nursingSepsisDocLagPercent}% documentation lag  ·  ${p(dq.nursingSepsisRealization ?? 0)} realization`, value: `${cases.toFixed(2)} cases addressed` },
+          { label: `${cases.toFixed(2)} cases addressed  ×  ${d(dq.nursingSepsisExcessCostPerCase ?? 0)} excess cost per case`, value: fmt(driverValue), isResult: true },
+        ];
+      }
+      const cfg: Record<string, { name: string; rate: number; prev: number; cost: number; util?: number; base?: string }> = {
+        nursingHapi: { name: "HAPI", rate: dq.nursingHapiRate, prev: dq.nursingHapiPreventionRate, cost: dq.nursingHapiCost },
+        nursingFalls: { name: "falls", rate: dq.nursingFallsRate, prev: dq.nursingFallsPreventionRate, cost: dq.nursingFallsCost },
+        nursingCauti: { name: "CAUTI", rate: dq.nursingCautiRate, prev: dq.nursingCautiPreventionRate, cost: dq.nursingCautiCost, util: dq.nursingCautiUtilizationRatio, base: "catheter-days" },
+        nursingClabsi: { name: "CLABSI", rate: dq.nursingClabsiRate, prev: dq.nursingClabsiPreventionRate, cost: dq.nursingClabsiCost, util: dq.nursingClabsiUtilizationRatio, base: "line-days" },
+      };
+      const c = cfg[driverId];
+      const exposure = c.util != null ? pd * (c.util / 100) : pd;
+      const events = (exposure / 1000) * (c.rate ?? 0) * ((c.prev ?? 0) / 100);
       return [
-        { label: `Earlier sepsis recognition via real-time documentation → timely SEP-1 bundle adherence`, value: `mortality & cost reduction` },
-        { label: `${eventsAvoided} sepsis complications avoided/yr  ×  ${d(avgSepsisCost)} avg cost per event`, value: fmt(driverValue), isResult: true },
+        pdLine,
+        { label: `${c.util != null ? `${p(c.util)} of them as ${c.base}  ·  ` : ""}${c.rate} ${c.name} per thousand  ·  ${p(c.prev)} prevented with timely documentation`, value: `${events.toFixed(2)} events avoided` },
+        { label: `${events.toFixed(2)} events avoided  ×  ${d(c.cost ?? 0)} per event`, value: fmt(driverValue), isResult: true },
       ];
     }
 

@@ -23,6 +23,27 @@
  * `value`, and will fail loudly if the math drifts out of step.
  */
 
+/**
+ * Patient-days the quality drivers run on: staffed beds x occupancy x 365, x the
+ * share of nurses on Abridge. Counting every bed in the house when only part of
+ * the nursing staff documents with Abridge overstated a partial rollout, so the
+ * base is scoped to coverage everywhere (Model the Value, Build the Deal, Size
+ * the ROI, the PDFs).
+ *
+ * `utilizationPercent` is that share in every caller ("share of nurses actively
+ * documenting with Abridge" in the Value Model; nurses on Abridge / all nurses
+ * in Size the ROI). Callers that already pass only the beds in scope (The Plan)
+ * set `nursingQualityBedsInScope` so the base is not cut twice.
+ */
+export function nursingCoveragePct(s: { utilizationPercent?: number; nursingQualityBedsInScope?: boolean }): number {
+  if (s.nursingQualityBedsInScope) return 100;
+  const u = s.utilizationPercent ?? 0;
+  return Math.max(0, Math.min(100, u));
+}
+export function nursingPatientDays(s: { nursingStaffedBeds?: number; nursingOccupancyRate?: number; utilizationPercent?: number; nursingQualityBedsInScope?: boolean }): number {
+  return (s.nursingStaffedBeds ?? 0) * ((s.nursingOccupancyRate ?? 0) / 100) * 365 * (nursingCoveragePct(s) / 100);
+}
+
 export interface HapiInputs {
   patientDays: number;
   rate: number;          // events per 1,000 patient days

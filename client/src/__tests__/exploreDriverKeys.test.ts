@@ -194,6 +194,9 @@ describe("engineKeyForDriver — every registered quantified driver resolves to 
       numberOfProviders: 300,
       nursingStaffedBeds: 300,
       nursingOccupancyRate: 85,
+      // Share of nurses documenting with Abridge: quality patient-days are
+      // scoped to it (nursingPatientDays), as every real nursing model has one.
+      utilizationPercent: 60,
       timeDriverInputs: {
         ...DEFAULT_EXPLORE_STATE.timeDriverInputs,
         nursingRetentionEnabled: true,

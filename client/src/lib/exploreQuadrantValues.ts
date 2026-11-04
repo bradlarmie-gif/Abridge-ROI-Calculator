@@ -8,7 +8,7 @@ import {
   IP_OBS_PREVENTABLE_SCENARIOS,
 } from "@/lib/exploreDriverCalcs";
 import { EXPLORE_DRIVERS } from "@/lib/exploreDrivers";
-import { calcHapi, calcFalls, calcCauti, calcClabsi, calcSepsis } from "@/lib/nursingQualityCalcs";
+import { calcHapi, calcFalls, calcCauti, calcClabsi, calcSepsis, nursingPatientDays } from "@/lib/nursingQualityCalcs";
 
 export interface QuadrantBreakdown {
   driverValues: Record<string, number>;
@@ -158,7 +158,7 @@ export function computeRevenueBreakdown(state: ExploreState, _totalHoursSaved: n
 export function computeQualityBreakdown(state: ExploreState, _totalHoursSaved: number): QuadrantBreakdown {
   const result: Record<string, number> = {};
   const dq = state.docQualityInputs;
-  const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+  const patientDays = nursingPatientDays(state);
 
   if (dq.nursingHapiEnabled) {
     result.nursingHapi = Math.round(

@@ -1,3 +1,4 @@
+import { nursingPatientDays } from "@/lib/nursingQualityCalcs";
 import { useMemo } from "react";
 import { FormattedNumberInput } from "@/components/FormattedNumberInput";
 import type { ExploreCalcComponentProps } from "@/lib/exploreDrivers";
@@ -14,8 +15,8 @@ export default function NursingClabsiCalc({ state, updateDocQualityInputs, total
   const { ready, need } = driverScaleReadiness("nursingClabsi", state, totalHoursSaved);
 
   const patientDays = useMemo(() => {
-    return state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
-  }, [state.nursingStaffedBeds, state.nursingOccupancyRate]);
+    return nursingPatientDays(state);
+  }, [state.nursingStaffedBeds, state.nursingOccupancyRate, state.utilizationPercent, state.nursingQualityBedsInScope]);
 
   const lineDays = useMemo(() => {
     return patientDays * (docQualityInputs.nursingClabsiUtilizationRatio / 100);

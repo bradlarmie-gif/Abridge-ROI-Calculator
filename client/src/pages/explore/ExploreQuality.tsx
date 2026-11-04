@@ -1,3 +1,4 @@
+import { nursingPatientDays } from "@/lib/nursingQualityCalcs";
 import { useMemo } from "react";
 import { ArrowRight, Plus, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -130,7 +131,7 @@ export default function ExploreQuality({ state, updateState, totalHoursSaved, pr
   const driverValues = useMemo(() => {
     const result: Record<string, number> = {};
     const dq = state.docQualityInputs;
-    const patientDays = state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365;
+    const patientDays = nursingPatientDays(state);
 
     if (dq.nursingHapiEnabled) {
       const hapisPerYear = (patientDays / 1000) * dq.nursingHapiRate;

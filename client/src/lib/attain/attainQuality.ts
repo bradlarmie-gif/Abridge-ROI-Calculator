@@ -729,6 +729,8 @@ export function exploreStateForReconciliation(baseline: AttainBaseline, values: 
   const chain = computeQualityChain(baseline, values);
   const state = mkState("nursing");
   state.nursingStaffedBeds = chain.scope.bedsInScope;
+  // The Plan already counts only the beds in scope; do not scale by coverage again.
+  state.nursingQualityBedsInScope = true;
   state.nursingOccupancyRate = Math.round(chain.scope.occupancyFraction * 100);
 
   const pctById = new Map(chain.eventInterventions.map((ei) => [ei.id, ei.committedPct]));
