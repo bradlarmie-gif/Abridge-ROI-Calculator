@@ -772,8 +772,6 @@ function DriverShell({ title, on, onToggle, value, children, note, buildsOn }: {
       <div className="flex items-center justify-between gap-4 px-4 sm:px-5 py-3.5">
         <button type="button" onClick={onToggle} className="flex-1 min-w-0 text-left outline-none">
           <span className={`block text-[15.5px] font-semibold ${on ? "text-[#1A1A1A]" : "text-[#443A32]"}`}>{title}</span>
-          {!on && buildsOn && <span className="block text-[12.5px] font-semibold text-[#8A6D3B] mt-0.5">Builds on {buildsOn}. Turning this on turns that on too.</span>}
-          {!on && !buildsOn && note && <span className="block text-[12.5px] text-[#6B6259] mt-0.5 leading-snug line-clamp-1">{note}</span>}
         </button>
         <div className="flex items-center gap-3.5">
           {on && <span className={`font-abridge text-[17px] tabular-nums ${value > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>{fmtShort(value)}</span>}
