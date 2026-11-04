@@ -688,7 +688,9 @@ export const DRIVERS: Record<SettingKey, RoiDriver[]> = {
 };
 
 /** Domain order for the Step 2 section tabs. */
-export const DOMAIN_ORDER: Domain[] = ["Revenue", "Capacity", "Workforce", "Quality"];
+// Capacity leads: time back is the first thing that changes, and the rest of the
+// value is built on it. Shared by the screen and the one-pager PDF.
+export const DOMAIN_ORDER: Domain[] = ["Capacity", "Revenue", "Workforce", "Quality"];
 
 // ─── Defaults helpers (for UI init) ──────────────────────────────────────────
 

@@ -307,6 +307,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
   // ── lift-step domain tabs ──────────────────────────────────────────────────
   const [liftTab, setLiftTab] = useState(0);
+  // Each value group on the drivers step can fold shut. Open by default.
+  const [closedGroups, setClosedGroups] = useState<Record<string, boolean>>({});
   const domains = useMemo(() => DOMAIN_ORDER.filter((dom) => {
     const hasDrivers = DRIVERS[setting].some((dr) => dr.domain === dom);
     const capacityTime = dom === "Capacity" && !isNursing; // reclaimed-hours proof lives here
@@ -422,7 +424,13 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                 const showTime = dom === "Capacity" && !isNursing && meta.timeMetric;
                 return (
                   <section key={dom} className="rounded-[22px] border border-[#E9E0D4] bg-[#F6F1EA]/90 overflow-hidden" data-testid={`lift-group-${dom}`}>
-                    <header className="group flex items-center gap-4 px-4 sm:px-5 py-3.5">
+                    <header
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={!closedGroups[dom]}
+                      onClick={() => setClosedGroups((c) => ({ ...c, [dom]: !c[dom] }))}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setClosedGroups((c) => ({ ...c, [dom]: !c[dom] })); } }}
+                      className="group flex items-center gap-4 px-4 sm:px-5 py-3.5 cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#EA2C00] focus-visible:ring-inset rounded-t-[22px]">
                       <div className="flex-none w-[76px] h-[48px] rounded-[12px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1.5 py-1">{DOMAIN_ART[dom]}</div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#443A32]">{dom}</div>
@@ -433,8 +441,11 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                       <div className={`font-abridge text-[22px] tabular-nums ${groupValue > 0 ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>
                         {groupValue > 0 ? fmtShort(groupValue) : dom === "Capacity" && hoursReclaimed > 0 ? `${fmtInt(hoursReclaimed)} hrs` : "—"}
                       </div>
+                      <span className={`flex-none w-8 h-8 rounded-full border border-[#E2D8CB] bg-white/70 text-[#8A8072] flex items-center justify-center transition-colors group-hover:border-[#EA2C00] group-hover:text-[#EA2C00]`}>
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${closedGroups[dom] ? "-rotate-90" : ""}`} />
+                      </span>
                     </header>
-                    <div className="px-2.5 pb-2.5 space-y-2">
+                    {!closedGroups[dom] && <div className="px-2.5 pb-2.5 space-y-2">
                       {showTime && meta.timeMetric && (
                         <TimeBackBlock table={meta.timeMetric.table} before={timeBefore} after={timeAfter}
                           onBefore={setTimeBefore} onAfter={setTimeAfter} encToday={encToday} hours={hoursReclaimed}
@@ -448,7 +459,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                           hoursReclaimed={hoursReclaimed} providersOnAbridge={onAbridge}
                           value={today.valueById[dr.id] ?? 0} summary={today.summaryById[dr.id] ?? ""} />
                       ))}
-                    </div>
+                    </div>}
                   </section>
                 );
               })}
