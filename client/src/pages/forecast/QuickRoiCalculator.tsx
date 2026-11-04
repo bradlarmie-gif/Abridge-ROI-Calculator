@@ -263,7 +263,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
   const encToday = onAbridge * encPerProvider * (utilNow / 100);
   const hoursReclaimed = isNursing ? 0 : today.totalHoursSaved;
-  const partnerName = partner.trim() || "this partner";
+  const partnerName = partner.trim();
 
   const todayValue = today.total;
   const potentialValue = Math.max(potential.total, todayValue);
@@ -329,7 +329,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                 </Field>
               </FieldCard>
               <FieldCard title="The people">
-                <Field label={`How many ${scopeWord} does this partner have?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
+                <Field label={`How many ${scopeWord} are there in total?`} hint={`the ${settingWord} population, everyone who could use Abridge here`}>
                   <BoxNum value={totalProviders} onChange={setTotalProviders} placeholder="e.g., 90" />
                 </Field>
                 <Field label="How many are on Abridge today?" hint={totalProviders > 0 ? `of ${fmtInt(totalProviders)} ${scopeWord} with a go-live date` : `${scopeWord} with a go-live date`}>
@@ -340,7 +340,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
                 <Field label={`About how many ${meta.encWord} does each ${meta.providerWord.replace(/s$/, "")} handle a year?`}>
                   <BoxNum value={encPerProvider} onChange={setEncPerProvider} placeholder="e.g., 2,500" />
                 </Field>
-                <Field label={`Of their ${meta.encWord}, what share are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
+                <Field label={`What share of ${meta.encWord} are documented with Abridge?`} hint="the documentation utilization % from the impact analysis">
                   <BoxNum value={utilNow} onChange={setUtilNow} suffix="%" placeholder="e.g., 68" />
                 </Field>
               </FieldCard>
@@ -374,7 +374,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
       )}
 
       {step === 1 && (
-        <StepShell title="What changed after they turned Abridge on?" sub="Read the before and after off the impact analysis. It was this, now it's this. Every number here is yours to edit.">
+        <StepShell title="What changed after Abridge went live?" sub="Read the before and after off the impact analysis. It was this, now it's this. Every number here is yours to edit.">
           {/* section tabs — navigate between the domains */}
           <div className="flex items-center gap-7 border-b border-[#E8E2DA] flex-wrap">
             {domains.map((dom, i) => {
@@ -521,7 +521,7 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
             <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700 ease-out" style={{ width: `${utilPct}%` }} />
           </div>
           <div className="mt-3 flex items-center justify-between text-[12.5px]">
-            <span className="font-semibold text-[#443A32]">Their {encWord} documented with Abridge</span>
+            <span className="font-semibold text-[#443A32]">{encWord.charAt(0).toUpperCase() + encWord.slice(1)} documented with Abridge</span>
             {util > 0 && <span className="font-bold text-[#EA2C00]">{Math.round(utilPct)}%</span>}
           </div>
         </div>
@@ -957,7 +957,7 @@ function AnswerStep(p: {
     <div>
       {/* Beat 1 — what it's worth today */}
       <div className={EYEBROW}>The answer</div>
-      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] mt-4">To {p.partnerName}, Abridge is worth</h1>
+      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] mt-4">{p.partnerName ? `To ${p.partnerName}, Abridge is worth` : "Abridge is worth"}</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
         {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your data supports to build the number."}
@@ -965,7 +965,7 @@ function AnswerStep(p: {
 
       {/* Beat 2 — the upside */}
       <div className="mt-14 pt-1">
-        <div className={EYEBROW}>The upside, if they expand</div>
+        <div className={EYEBROW}>The upside, with more of the organization on Abridge</div>
         <div className="mt-4 flex flex-wrap items-baseline gap-x-5 gap-y-1">
           <span className="font-abridge text-[44px] sm:text-[56px] leading-[0.9] text-[#1A1A1A]">{fmtShort(potentialShown)}<span className="text-[20px] text-[#9A8C7A] font-normal"> a year</span></span>
           <span className="font-abridge text-[22px] text-[#EA2C00]">+{fmtShort(p.headroom)} on the table</span>
@@ -987,7 +987,7 @@ function AnswerStep(p: {
         <div className={`mt-9 grid grid-cols-1 ${p.showUtilDial ? "sm:grid-cols-2" : ""} gap-x-10 gap-y-6`}>
           <Slider label="More providers on Abridge" value={p.targetAdoptionPct} min={Math.round(p.adoptionNow)} onChange={p.setTargetAdoptionPct} right={`${fmtInt(Math.round(p.totalProviders * p.targetAdoptionPct / 100))} of ${fmtInt(p.totalProviders)}`} />
           {p.showUtilDial && (
-            <Slider label="Using it on more of their encounters" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
+            <Slider label="Documenting more encounters with Abridge" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
           )}
         </div>
         <p className="mt-6 text-[13.5px] leading-[1.6] text-[#565250] max-w-[560px]">
