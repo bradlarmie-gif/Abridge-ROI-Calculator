@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback, useId } from "react";
 import { sanitizeNumericDraft, parseNumericDraft, groupDraft, caretForDigits } from "@/lib/numberFieldLogic";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
 import { motion, AnimatePresence, animate } from "framer-motion";
@@ -26,6 +26,8 @@ import { recomputeSettingValues } from "@/pages/proforma/ModelAssumptionDrawer";
 import { LensToggle } from "@/pages/explore/editorial/EdValueScreenKit";
 import type { ExploreState } from "@/pages/explore/ExploreFlow";
 import { applyExclusions, useNarrow } from "./editorialShared";
+import { HubTile, HubTileGrid } from "@/pages/hub/hubKit";
+import { DealReadArt, EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
 const T = {
@@ -112,26 +114,28 @@ function Lbl({ children, style }: { children: React.ReactNode; style?: React.CSS
   );
 }
 
+/** Compact version of the deal screen's pill switch, for controls inside a card. */
 function MiniSeg<Opt extends string>({ options, value, onChange }: { options: { key: Opt; label: string }[]; value: Opt; onChange: (k: Opt) => void }) {
+  const id = useId();
   return (
-    <div style={{ display: "inline-flex", border: `1px solid ${T.hair}`, borderRadius: 8, overflow: "hidden" }}>
+    <div className="inline-flex rounded-full bg-[#EBE2D6] p-[3px]">
       {options.map((o) => {
         const on = o.key === value;
         return (
           <button
             key={o.key}
+            type="button"
             onClick={() => onChange(o.key)}
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              padding: "5px 10px",
-              border: "none",
-              cursor: "pointer",
-              background: on ? T.ink : "transparent",
-              color: on ? "#fff" : T.faint,
-            }}
+            className={`relative rounded-full px-3 py-1 text-[11.5px] font-bold transition-colors ${on ? "text-[#1A1A1A]" : "text-[#7A6F63] hover:text-[#1A1A1A]"}`}
           >
-            {o.label}
+            {on && (
+              <motion.span
+                layoutId={`miniseg-${id}`}
+                className="absolute inset-0 rounded-full bg-white shadow-[0_1px_2px_rgba(26,26,26,0.10),0_2px_6px_-2px_rgba(26,26,26,0.12)]"
+                transition={{ type: "spring", stiffness: 500, damping: 38 }}
+              />
+            )}
+            <span className="relative">{o.label}</span>
           </button>
         );
       })}
@@ -430,6 +434,20 @@ function QuadTag({ quadrant, dim }: { quadrant: ExploreQuadrant; dim?: boolean }
 const commaFmt = (n: number) => Math.round(n).toLocaleString();
 const decFmt = (n: number) => (Number.isInteger(n) ? String(n) : String(Number(n.toFixed(3))));
 
+/**
+ * The domain chip sits in a fixed-width column. CAPACITY, REVENUE and WORKFORCE
+ * are different lengths, and without this every row's chevron and name started
+ * at a different x, which read as a ragged list.
+ */
+function TagSlot({ children }: { children: React.ReactNode }) {
+  return <span style={{ width: 92, flex: "none", display: "flex" }}>{children}</span>;
+}
+
+/** Stands in for the expand chevron on rows that cannot expand, keeping names aligned. */
+// The real chevron sits inside the name button (14px + 6px gap = 20px); the row
+// gap already supplies 13px of that, so the spacer is only the remaining 7px.
+const ChevronSpacer = () => <span style={{ width: 7, flex: "none" }} />;
+
 function DriverRow({
   driver,
   isOff,
@@ -457,7 +475,8 @@ function DriverRow({
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 0", borderBottom: `1px solid ${T.soft}` }}>
         <span style={{ width: 34, flex: "none" }} />
-        <QuadTag quadrant={driver.quadrant} />
+        <TagSlot><QuadTag quadrant={driver.quadrant} /></TagSlot>
+        <ChevronSpacer />
         <span style={{ flex: 1, fontWeight: 700, fontSize: 14.5, color: T.label }}>{driver.name}</span>
         <LensToggle counted={retentionLens.counted} onChange={retentionLens.onChange} />
         {showDollar ? (
@@ -476,7 +495,8 @@ function DriverRow({
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 0", borderBottom: `1px solid ${T.soft}`, opacity: 0.85 }}>
         <span style={{ width: 34, flex: "none" }} />
-        <QuadTag quadrant={driver.quadrant} />
+        <TagSlot><QuadTag quadrant={driver.quadrant} /></TagSlot>
+        <ChevronSpacer />
         <span style={{ flex: 1, fontWeight: 700, fontSize: 14.5, color: T.faint }}>{driver.name}</span>
         <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint }}>Tracked</span>
       </div>
@@ -486,7 +506,7 @@ function DriverRow({
   const Row = (
     <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
       <Switch on={!isOff} onClick={onToggleOff} />
-      <QuadTag quadrant={driver.quadrant} dim={isOff} />
+      <TagSlot><QuadTag quadrant={driver.quadrant} dim={isOff} /></TagSlot>
       {/* The row header advertises "expand any driver to see the math", and the
           name has always BEEN the control — but with no chevron, no underline
           and no hover state it was an invisible one, so the hint read as a lie.
@@ -569,6 +589,13 @@ function DriverRow({
 }
 
 /* ─────────────────────────── setting card ─────────────────────────── */
+const SETTING_ART_CARD: Record<string, JSX.Element> = {
+  outpatient: <OutpatientArt />,
+  ed: <EmergencyArt />,
+  inpatient: <InpatientArt />,
+  nursing: <NursingArt />,
+};
+
 const SETTING_ICON: Record<string, typeof Stethoscope> = {
   outpatient: Stethoscope,
   ed: Zap,
@@ -597,7 +624,6 @@ function SettingCard({
   onRemove: () => void;
   onToggleDriverOff: (driverId: string) => void;
 }) {
-  const Icon = SETTING_ICON[setting.careSetting] ?? Stethoscope;
   const narrow = useNarrow();
   // Real, reconciling per-driver formulas (the same math Explore shows), keyed
   // by proforma driver id. Read-only here; clinical inputs are edited in Explore.
@@ -727,10 +753,22 @@ function SettingCard({
   };
 
   return (
-    <div style={{ border: `1px solid ${expanded ? "#D9CFC0" : T.hair}`, borderRadius: 18, background: T.card, marginTop: 16, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", rowGap: 10, gap: 16, padding: "20px 24px" }}>
-        <div style={{ width: 40, height: 40, borderRadius: 11, background: T.tile, display: "flex", alignItems: "center", justifyContent: "center", color: T.label, flex: "none" }}>
-          <Icon size={20} strokeWidth={1.8} />
+    <div
+      className={`mt-4 overflow-hidden rounded-[20px] border bg-[#FDFBF8] transition-all duration-300 ${
+        expanded
+          ? "border-[#DDD2C4] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_12px_32px_-18px_rgba(26,26,26,0.18)]"
+          : "border-[#E9E0D4] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_24px_-16px_rgba(26,26,26,0.10)] hover:-translate-y-0.5 hover:border-[#DDD2C4] hover:shadow-[0_1px_2px_rgba(26,26,26,0.04),0_18px_40px_-22px_rgba(26,26,26,0.24)]"
+      }`}
+    >
+      <div
+        onClick={expanded ? undefined : onToggleExpanded}
+        className={`group ${expanded ? "" : "cursor-pointer"} bg-[#F6F1EA]/80`}
+        style={{ display: "flex", alignItems: "center", flexWrap: "wrap", rowGap: 10, gap: 18, padding: "12px 24px 12px 12px" }}
+      >
+        {/* The same drawing as the setting's tile, so the line in the deal is
+            recognisably the thing you picked. It goes coral on hover like a tile. */}
+        <div className="flex-none w-[112px] h-[68px] rounded-[14px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-2 py-1.5">
+          {SETTING_ART_CARD[setting.careSetting] ?? null}
         </div>
         <div style={{ flex: 1, minWidth: 140 }}>
           <div className="font-abridge" style={{ fontSize: 23, color: T.ink }}>{setting.label}</div>
@@ -752,7 +790,11 @@ function SettingCard({
           </div>
           {expanded && <Lbl style={{ display: "block", marginTop: 2 }}>Value at full scale</Lbl>}
         </div>
-        <button onClick={onToggleExpanded} style={{ background: "none", border: "none", cursor: "pointer", color: T.off, display: "flex" }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleExpanded(); }}
+          aria-label={expanded ? "Collapse" : "Expand"}
+          className="flex-none w-9 h-9 rounded-full border border-[#E2D8CB] bg-white/70 text-[#8A8072] flex items-center justify-center transition-colors group-hover:border-[#EA2C00] group-hover:text-[#EA2C00]"
+        >
           <motion.span animate={{ rotate: expanded ? 0 : -90 }} transition={{ duration: 0.2 }} style={{ display: "flex" }}>
             <ChevronDown size={18} />
           </motion.span>
@@ -770,22 +812,27 @@ function SettingCard({
           >
             <div style={{ padding: "2px 24px 22px" }}>
               {/* ROLLOUT */}
-              <div style={{ borderTop: `1px solid ${T.hair}`, paddingTop: 15, marginTop: 13 }}>
+              <div style={{ borderTop: `1px solid #E6DCCF`, paddingTop: 18, marginTop: 0 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <Lbl>Rollout · how fast it ramps</Lbl>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <span style={{ fontSize: 11, color: T.faint, display: "flex", alignItems: "center", gap: 6 }}>
                       Go-live
-                      <select
-                        value={setting.goLiveMonth}
-                        onChange={(e) => onUpdateSetting({ goLiveMonth: Number(e.target.value) })}
-                        className="font-abridge"
-                        style={{ border: `1px solid ${T.hair}`, borderRadius: 7, padding: "3px 6px", fontSize: 13, color: T.ink, background: "#fff" }}
-                      >
-                        {GOLIVE_OPTIONS.map((m) => (
-                          <option key={m} value={m}>Month {m}</option>
-                        ))}
-                      </select>
+                      {/* Native arrow removed (it sat jammed against the rounded edge);
+                          our own chevron gets real room on the right. */}
+                      <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                        <select
+                          value={setting.goLiveMonth}
+                          onChange={(e) => onUpdateSetting({ goLiveMonth: Number(e.target.value) })}
+                          className="font-abridge appearance-none cursor-pointer hover:border-[#CDBDA8] focus:outline-none focus:ring-2 focus:ring-[#EA2C00]/30"
+                          style={{ border: `1px solid #E2D8CB`, borderRadius: 999, padding: "5px 32px 5px 14px", fontSize: 13, color: T.ink, background: "#fff", lineHeight: "20px" }}
+                        >
+                          {GOLIVE_OPTIONS.map((m) => (
+                            <option key={m} value={m}>Month {m}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} color={T.faint} style={{ position: "absolute", right: 12, pointerEvents: "none" }} />
+                      </span>
                     </span>
                     <MiniSeg options={[{ key: "year", label: "By year" }, { key: "quarter", label: "By quarter" }]} value={rampMode} onChange={setRampMode} />
                   </div>
@@ -866,7 +913,7 @@ function SettingCard({
                     </Pill>
                   ))}
                 </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "flex-end", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                   {pricingModel === "perUnit" ? (
                     perYearPricing ? (
                       <>
@@ -890,12 +937,19 @@ function SettingCard({
                       <NumCell value={setting.platformEncRate || 0} onChange={(n) => onUpdateSetting({ platformEncRate: n })} kLabel="Per encounter" prefix="$" decimals format={(x) => String(x)} />
                     </>
                   )}
-                  <span style={{ paddingBottom: 8, color: T.off }}>→</span>
-                  <div>
-                    <Lbl style={{ marginBottom: 6, display: "block" }}>Investment · yr 1</Lbl>
-                    <span className="font-abridge" style={{ fontSize: 19, color: T.ink }}>
+                  {/* The result reads as the last cell in the row: same height and
+                      label position as the inputs, tan instead of white so it is
+                      clearly the answer rather than another field. */}
+                  <span aria-hidden="true" style={{ color: T.off, fontSize: 16, padding: "0 4px" }}>→</span>
+                  <div
+                    style={{ border: "1px solid #E2D6C6", borderRadius: 9, background: "#F3ECE2", padding: "6px 16px", textAlign: "center", minWidth: 120 }}
+                  >
+                    <span className="font-abridge tabular-nums" style={{ fontSize: 15, color: T.ink, display: "block", lineHeight: "22px" }}>
                       {fmt(solo.year1Investment)}
                       <span style={{ fontSize: 11, color: T.faint }}>/yr</span>
+                    </span>
+                    <span style={{ display: "block", fontSize: 9, color: T.label, textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 2, fontWeight: 700 }}>
+                      Investment · yr 1
                     </span>
                   </div>
                 </div>
@@ -1079,6 +1133,49 @@ const PHASE_PRESETS = [
   { key: "fast", label: "Fast", y1: 50, y2: 85 },
 ];
 
+/**
+ * The deal screen's one segmented control: a tan track with a white pill that
+ * slides to the chosen option. Used for contract term, ramp speed and retention
+ * phasing so the three read as the same kind of choice.
+ */
+function PillSegment<K extends string | number>({
+  id,
+  options,
+  value,
+  onChange,
+}: {
+  id: string;
+  options: { key: K; label: string; testId?: string }[];
+  value: K | "custom";
+  onChange: (k: K) => void;
+}) {
+  return (
+    <div className="inline-flex flex-wrap rounded-full bg-[#EBE2D6] p-1">
+      {options.map((o) => {
+        const on = value === o.key;
+        return (
+          <button
+            key={String(o.key)}
+            type="button"
+            onClick={() => onChange(o.key)}
+            data-testid={o.testId}
+            className={`relative rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition-colors ${on ? "text-[#1A1A1A]" : "text-[#7A6F63] hover:text-[#1A1A1A]"}`}
+          >
+            {on && (
+              <motion.span
+                layoutId={`pill-${id}`}
+                className="absolute inset-0 rounded-full bg-white shadow-[0_1px_2px_rgba(26,26,26,0.10),0_2px_8px_-2px_rgba(26,26,26,0.12)]"
+                transition={{ type: "spring", stiffness: 500, damping: 38 }}
+              />
+            )}
+            <span className="relative">{o.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function AdvancedAssumptions({ config, onUpdateConfig }: { config: ProformaConfig; onUpdateConfig: (u: Partial<ProformaConfig>) => void }) {
   const ramp = config.implementationRampMonths;
   const phasing = config.retentionPhasing;
@@ -1098,41 +1195,48 @@ function AdvancedAssumptions({ config, onUpdateConfig }: { config: ProformaConfi
       nursingRetentionPhasing: { ...DEFAULT_PROFORMA_CONFIG.nursingRetentionPhasing! },
     });
 
-  const seg = (active: boolean): React.CSSProperties => ({
-    fontSize: 11, fontWeight: 700, padding: "6px 12px", border: "none", cursor: "pointer",
-    background: active ? T.ink : "transparent", color: active ? "#fff" : T.faint,
-  });
-  const lbl: React.CSSProperties = { fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, marginBottom: 8 };
-  const wrap: React.CSSProperties = { display: "inline-flex", border: `1px solid ${T.hair}`, borderRadius: 8, overflow: "hidden" };
+  const lbl = "text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]";
+  const help = "mt-2 text-[11.5px] leading-[1.45] text-[#7A6F63]";
 
   return (
-    <div style={{ border: `1px solid ${T.hair}`, borderRadius: 14, background: T.soft, padding: "20px 22px", marginTop: 12, display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: 40 }}>
+    <div className="mt-3 rounded-[20px] border border-[#E9E0D4] bg-[#FBF8F4] px-6 py-5 flex flex-wrap items-start gap-x-12 gap-y-5">
       <div>
-        <div style={lbl}>Ramp speed · time to full adoption</div>
-        <div style={wrap}>
-          {RAMP_PRESETS.map((p) => (
-            <button key={p.months} type="button" onClick={() => onUpdateConfig({ implementationRampMonths: p.months })} style={seg(ramp === p.months)} data-testid={`adv-ramp-${p.months}`}>
-              {p.label} · {p.sub}
-            </button>
-          ))}
+        <div className={lbl}>Ramp speed · time to full adoption</div>
+        <div className="mt-2.5">
+          <PillSegment
+            id="ramp"
+            value={ramp}
+            onChange={(m) => onUpdateConfig({ implementationRampMonths: m })}
+            options={RAMP_PRESETS.map((p) => ({ key: p.months, label: `${p.label} · ${p.sub}`, testId: `adv-ramp-${p.months}` }))}
+          />
         </div>
-        <div style={{ fontSize: 10.5, color: T.off, marginTop: 6, maxWidth: 260, lineHeight: 1.4 }}>How long a setting takes to reach full value after go-live.</div>
+        <div className={`${help} max-w-[300px]`}>How long a setting takes to reach full value after go-live.</div>
       </div>
       <div>
-        <div style={lbl}>Retention phasing · workforce value by year</div>
-        <div style={wrap}>
-          {PHASE_PRESETS.map((p) => (
-            <button key={p.key} type="button" onClick={() => setPhase(p.y1, p.y2)} style={seg(activePhase === p.key)} data-testid={`adv-phase-${p.key}`}>
-              {p.label}
-            </button>
-          ))}
+        <div className={lbl}>Retention phasing · workforce value by year</div>
+        <div className="mt-2.5">
+          <PillSegment
+            id="phase"
+            value={activePhase as (typeof PHASE_PRESETS)[number]["key"] | "custom"}
+            onChange={(k) => {
+              const p = PHASE_PRESETS.find((x) => x.key === k)!;
+              setPhase(p.y1, p.y2);
+            }}
+            options={PHASE_PRESETS.map((p) => ({ key: p.key, label: p.label, testId: `adv-phase-${p.key}` }))}
+          />
         </div>
-        <div style={{ fontSize: 10.5, color: T.off, marginTop: 6, maxWidth: 320, lineHeight: 1.4 }}>
+        <div className={`${help} max-w-[340px]`}>
           Year 1 {phasing.year1Pct}% → Year 2 {phasing.year2Pct}% → Year 3 {phasing.year3Pct}% of retention value realized.
         </div>
       </div>
-      <div style={{ marginLeft: "auto", paddingTop: 2 }}>
-        <button type="button" onClick={reset} disabled={isDefault} style={{ background: "none", border: "none", cursor: isDefault ? "default" : "pointer", fontSize: 11.5, fontWeight: 700, color: isDefault ? T.off : T.coral, padding: 0 }} data-testid="adv-reset">
+      <div className="ml-auto pt-0.5">
+        <button
+          type="button"
+          onClick={reset}
+          disabled={isDefault}
+          data-testid="adv-reset"
+          className={`text-[12px] font-bold ${isDefault ? "text-[#B5AA9B] cursor-default" : "text-[#EA2C00] hover:underline"}`}
+        >
           Reset to defaults
         </button>
       </div>
@@ -1259,46 +1363,66 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
           Each care setting becomes a line in the deal. Set how fast it rolls out, how it's priced, and which drivers count, then the case builds from it.
         </p>
 
-        {/* DEAL-WIDE TERMS */}
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 30, border: `1px solid ${T.hair}`, borderRadius: 14, background: T.card, padding: "15px 22px", marginTop: 20, flexWrap: "wrap" }}>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, marginBottom: 6 }}>Contract term</div>
-            <div style={{ display: "inline-flex", border: `1px solid ${T.hair}`, borderRadius: 8, overflow: "hidden" }}>
-              {TERM_OPTIONS.map((o) => {
-                const on = config.contractTermMonths === o.months;
-                return (
-                  <button key={o.months} onClick={() => onUpdateConfig({ contractTermMonths: o.months })} style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", border: "none", cursor: "pointer", background: on ? T.ink : "transparent", color: on ? "#fff" : T.faint }}>
-                    {o.label}
-                  </button>
-                );
-              })}
+        {/* DEAL-WIDE TERMS. The same tan card as the hub tiles, three controls
+            split by hairlines. Labels are dark (never light tan). */}
+        <div className="mt-6 rounded-[20px] border border-[#E9E0D4] bg-[#F6F1EA]/90 shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_24px_-14px_rgba(26,26,26,0.10)] flex flex-wrap items-stretch">
+          <div className="px-6 py-5 border-r border-[#E6DCCF] max-sm:border-r-0 max-sm:border-b max-sm:w-full">
+            <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">Contract term</div>
+            <div className="mt-2.5">
+              <PillSegment
+                id="term"
+                value={config.contractTermMonths}
+                onChange={(m) => onUpdateConfig({ contractTermMonths: m })}
+                options={TERM_OPTIONS.map((o) => ({ key: o.months, label: o.label }))}
+              />
             </div>
+            <div className="mt-2 text-[11.5px] text-[#7A6F63]">{config.contractTermMonths} months</div>
           </div>
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint, marginBottom: 6 }}>System-wide fee · all settings</div>
-            <NumCell value={config.systemWideFee ?? 0} onChange={(n) => onUpdateConfig({ systemWideFee: n })} prefix="$" suffix="" format={commaFmt} cellStyle={{ minWidth: 110 }} />
+          <div className="px-6 py-5 border-r border-[#E6DCCF] max-sm:border-r-0 max-sm:border-b max-sm:w-full">
+            <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">System-wide fee</div>
+            <div className="mt-2.5">
+              <NumCell
+                value={config.systemWideFee ?? 0}
+                onChange={(n) => onUpdateConfig({ systemWideFee: n })}
+                prefix="$"
+                suffix=""
+                format={commaFmt}
+                cellStyle={{ minWidth: 150, borderRadius: 12, padding: "8px 14px", borderColor: "#E2D8CB", boxShadow: "inset 0 1px 2px rgba(26,26,26,0.04)" }}
+                valueStyle={{ fontSize: 16 }}
+              />
+            </div>
+            <div className="mt-2 text-[11.5px] text-[#7A6F63]">Applies across all settings</div>
           </div>
-          <div style={{ paddingBottom: 8 }}>
+          <div className="px-6 py-5">
+            <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">Assumptions</div>
             <button
               type="button"
               onClick={() => setAdvOpen((v) => !v)}
               aria-expanded={advOpen}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 12, fontWeight: 700, color: T.coral }}
               data-testid="button-advanced-assumptions"
+              className={`group mt-2.5 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[12.5px] font-bold transition-colors ${
+                advOpen ? "border-[#EA2C00] bg-[#FDF1EC] text-[#EA2C00]" : "border-[#E2D8CB] bg-white/70 text-[#1A1A1A] hover:border-[#EA2C00] hover:text-[#EA2C00]"
+              }`}
             >
               Advanced deal assumptions
               <ChevronDown size={14} style={{ transition: "transform .2s", transform: advOpen ? "rotate(180deg)" : "none" }} />
             </button>
-            <div style={{ fontSize: 10.5, color: T.off, marginTop: 3 }}>ramp speed · retention phasing · defaults</div>
+            <div className="mt-2 text-[11.5px] text-[#7A6F63]">Ramp speed · retention phasing · defaults</div>
           </div>
         </div>
 
         {advOpen && <AdvancedAssumptions config={config} onUpdateConfig={onUpdateConfig} />}
 
-        {/* THE READ */}
-        <div style={{ display: "flex", gap: 16, alignItems: "flex-start", border: "1px solid #F0D9CF", borderRadius: 14, background: "#FEF9F7", padding: "16px 22px", marginTop: 14 }}>
-          <Lbl style={{ color: T.coral, whiteSpace: "nowrap", paddingTop: 2 }}>The read</Lbl>
-          <div className="font-abridge" style={{ fontSize: 17, color: T.ink, lineHeight: 1.35, maxWidth: 840 }}>{read}</div>
+        {/* THE READ. A drawn panel beside the sentence: value climbing past cost
+            with payback marked, which goes coral once a real deal is on the page. */}
+        <div className="mt-4 rounded-[20px] border border-[#E9E0D4] bg-white flex items-center gap-5 p-2.5 pr-7 shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_24px_-14px_rgba(26,26,26,0.10)] max-sm:flex-col max-sm:items-start max-sm:pr-2.5">
+          <div className="flex-none w-[150px] h-[92px] rounded-[14px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-2 py-2 max-sm:w-full">
+            <DealReadArt active={yearlyValue > 0} />
+          </div>
+          <div className="max-sm:px-3 max-sm:pb-3">
+            <div className="text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-[#EA2C00]">The read</div>
+            <div className="font-abridge text-[18px] leading-[1.38] text-[#1A1A1A] mt-1 max-w-[820px] text-balance">{read}</div>
+          </div>
         </div>
 
         {/* SETTING CARDS */}
@@ -1318,6 +1442,12 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
 
         {/* ADD SETTING — builds another line in Explore, which lands back here */}
         {onAddSetting && (() => {
+          const SETTING_ART: Record<ProformaSettingSnapshot["careSetting"], JSX.Element> = {
+            outpatient: <OutpatientArt />,
+            ed: <EmergencyArt />,
+            inpatient: <InpatientArt />,
+            nursing: <NursingArt />,
+          };
           const ALL: { k: ProformaSettingSnapshot["careSetting"]; label: string }[] = [
             { k: "outpatient", label: "Outpatient" },
             { k: "ed", label: "Emergency" },
@@ -1330,18 +1460,23 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
           return (
             <>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: T.faint, marginTop: 26 }}>Add a care setting</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
-                {missing.map(({ k, label }) => (
-                  <button key={k} onClick={() => onAddSetting(k)} style={{ border: `1.5px dashed ${T.hair}`, borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", gap: 14, color: T.muted, background: "none", cursor: "pointer", textAlign: "left", width: "100%" }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 9, border: `1.5px dashed ${T.off}`, display: "flex", alignItems: "center", justifyContent: "center", color: T.off, flexShrink: 0 }}>
-                      <Plus size={18} />
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: 15, color: T.ink }}>{label}</div>
-                      <div style={{ fontSize: 12 }}>Build it in Explore, then it lands here</div>
-                    </div>
-                  </button>
-                ))}
+              {/* The same drawn tan tiles as the hubs and both setting pickers, so a
+                  care setting looks the same everywhere it can be chosen. */}
+              <div style={{ marginTop: 16 }}>
+                <HubTileGrid>
+                  {missing.map(({ k, label }, i) => (
+                    <HubTile
+                      key={k}
+                      title={label}
+                      description="Build it in Explore, then it lands here."
+                      art={SETTING_ART[k]}
+                      cta="Add this setting"
+                      testId={`proforma-add-${k}`}
+                      delay={0.05 + i * 0.06}
+                      onClick={() => onAddSetting(k)}
+                    />
+                  ))}
+                </HubTileGrid>
               </div>
             </>
           );

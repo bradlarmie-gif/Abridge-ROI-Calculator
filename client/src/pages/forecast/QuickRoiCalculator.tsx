@@ -18,7 +18,17 @@ import {
   runRoi,
 } from "./roiEngine";
 import { stashAndOpenPdf, PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
-import { HubList, HubRow } from "@/pages/hub/hubKit";
+import { HubTile, HubTileGrid } from "@/pages/hub/hubKit";
+import { EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
+
+// The same drawings the Value Model's setting step uses, so a care setting looks
+// the same wherever you pick it.
+const SETTING_ART: Record<SettingKey, JSX.Element> = {
+  outpatient: <OutpatientArt />,
+  ed: <EmergencyArt />,
+  inpatient: <InpatientArt />,
+  nursing: <NursingArt />,
+};
 
 /**
  * ROI Calculator — a guided, editorial three-step flow that turns an Abridge
@@ -76,7 +86,7 @@ function useCountUp(value: number, ms = 550): number {
   return shown;
 }
 
-const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]";
+const EYEBROW = "text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-[#565250]";
 const STEPS = ["The account", "The lift", "The answer"];
 
 interface Props { onBack: () => void; onHome: () => void; pathLabel?: string; }
@@ -126,7 +136,9 @@ export default function QuickRoiCalculator({ onBack, onHome, pathLabel }: Props)
         stepLabels={["Care setting", "The account", "The lift", "The answer"]}
       />
       <UnifiedHeaderSpacer />
-      <div className="max-w-[760px] mx-auto px-5 sm:px-8">
+      {/* The picker is four tiles across, so it takes the hub's wide column; the
+          wizard keeps its narrow reading measure. */}
+      <div className={`${inPicker ? "max-w-[1200px]" : "max-w-[760px]"} mx-auto px-5 sm:px-8`}>
         {inPicker
           ? <SettingPicker onPick={(s) => go(`${s}:0`)} />
           : <Wizard key={setting} setting={setting} step={step} setStep={(n) => go(`${setting}:${n}`)} onChangeSetting={() => go("picker")} />}
@@ -139,39 +151,32 @@ function SettingPicker({ onPick }: { onPick: (s: SettingKey) => void }) {
   return (
     <div className="pt-12 sm:pt-16 pb-24">
       <div className={EYEBROW}>ROI Calculator · Step 1 of 4</div>
-      <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#4A3F35] mt-4 max-w-[640px]">How much is Abridge worth here?</h1>
-      <p className="mt-5 text-[16px] leading-[1.55] text-[#8C8073] max-w-[520px]">
+      <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#1A1A1A] mt-4 max-w-[640px]">How much is Abridge worth here?</h1>
+      <p className="mt-5 text-[16px] leading-[1.55] text-[#565250] max-w-[520px]">
         Three quick steps, straight from the impact analysis. First, which care setting?
       </p>
       {/*
-        The same row primitive the hubs use, not a lookalike.
-
-        This screen does the same job as a hub list — pick one of four — and the
-        user arrives here one click after one. It was built from different parts,
-        so the two read as different products: this list had hairline dividers
-        (which the hub deliberately dropped: "three static rules turned the list
-        into a table"), a bare arrow instead of the circled chevron, and a
-        nudge-right hover instead of the row wash.
-
-        Sharing HubRow means they cannot drift apart again. What is NOT shared is
-        deliberate: no 01/02/03 rail, because four care settings are peers and
-        numbering them would imply you should start with outpatient; and the
-        page keeps its own sentence-case question rather than a hub's uppercase
-        section title, because it is asking something.
+        The same tile the hubs and the Value Model use, not a lookalike, so the
+        two ways into a care setting cannot drift apart. No 01-04 numbering: the
+        four settings are peers, and numbering them would imply you should start
+        with outpatient. The page keeps its own sentence-case question rather than
+        a hub's uppercase section title, because it is asking something.
       */}
       <div className="mt-10">
-        <HubList wide>
+        <HubTileGrid>
           {(Object.keys(SETTING_META) as SettingKey[]).map((k, i) => (
-            <HubRow
+            <HubTile
               key={k}
               title={SETTING_META[k].label}
               description={SETTING_META[k].blurb}
+              art={SETTING_ART[k]}
+              cta="Size this setting"
               onClick={() => onPick(k)}
               testId={`roi-setting-${k}`}
-              delay={0.08 + i * 0.05}
+              delay={0.08 + i * 0.06}
             />
           ))}
-        </HubList>
+        </HubTileGrid>
       </div>
     </div>
   );
@@ -302,8 +307,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
   return (
     <div className="pt-10 pb-28">
-      <div className="mb-7 text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#A69A88]">
-        {meta.label} · Step {step + 2} of 4 <button onClick={onChangeSetting} className="text-[#B4A896] hover:text-[#EA2C00] transition-colors">· change</button>
+      <div className="mb-7 text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#565250]">
+        {meta.label} · Step {step + 2} of 4 <button onClick={onChangeSetting} className="text-[#8A8580] hover:text-[#EA2C00] transition-colors">· change</button>
       </div>
 
       {step === 0 && (
@@ -396,8 +401,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 function StepShell({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
   return (
     <div>
-      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] max-w-[600px]">{title}</h1>
-      <p className="mt-3 mb-9 text-[15px] leading-[1.55] text-[#8C8073] max-w-[560px]">{sub}</p>
+      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] max-w-[600px]">{title}</h1>
+      <p className="mt-3 mb-9 text-[15px] leading-[1.55] text-[#565250] max-w-[560px]">{sub}</p>
       {children}
     </div>
   );
@@ -558,7 +563,7 @@ function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligib
   const ba = driver.beforeAfter;
   return (
     <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
-      {driver.note && <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px] mb-1">{driver.note}</p>}
+      {driver.note && <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[560px] mb-1">{driver.note}</p>}
       {ba && (
         <div className={driver.note ? "mt-5" : ""}>
           <BeforeAfter label={ba.label} table={ba.table} unit={ba.unit} step={ba.step ?? 0.01}
@@ -596,13 +601,13 @@ function HccDriverCard({ driver, vals, setVal, on, onToggle, value, summary }: {
   const [popIdx, setPopIdx] = useState(0);
   return (
     <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
-      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[540px] mb-1">Risk capture is valued on the panel, once per member per year, never per visit. What is modelled here is recapture on the conditions a member already carries.</p>
+      <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[540px] mb-1">Risk capture is valued on the panel, once per member per year, never per visit. What is modelled here is recapture on the conditions a member already carries.</p>
 
       {pops.length > 0 && (
         <div className="mt-5 flex items-center gap-2 flex-wrap">
           {pops.map((p, i) => (
             <button key={p.label} onClick={() => { setPopIdx(i); setVal("hccPerHcc", p.perHcc); }}
-              className={`text-[12px] font-bold rounded-full px-3.5 py-1.5 transition-colors ${i === popIdx ? "bg-[#1A1A1A] text-white" : "border border-[#E8E2DA] text-[#8C8073] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"}`}>
+              className={`text-[12px] font-bold rounded-full px-3.5 py-1.5 transition-colors ${i === popIdx ? "bg-[#1A1A1A] text-white" : "border border-[#E8E2DA] text-[#565250] hover:border-[#1A1A1A] hover:text-[#1A1A1A]"}`}>
               {p.label}
             </button>
           ))}
@@ -642,7 +647,7 @@ function PatientAccessCard({ driver, vals, setVal, on, onToggle, value, summary,
   const pct = hoursReclaimed > 0 ? Math.round((hoursConsumed / hoursReclaimed) * 100) : 0;
   return (
     <DriverShell title={driver.title} on={on} onToggle={onToggle} value={value}>
-      {driver.note && <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px] mb-1">{driver.note}</p>}
+      {driver.note && <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[560px] mb-1">{driver.note}</p>}
       {driver.fields.map((f) => (
         <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
       ))}
@@ -700,7 +705,7 @@ function DrgFunnelCard({ vals, setVal, on, onToggle, value, discharges }: {
 
   return (
     <DriverShell title="DRG accuracy (CMI)" on={on} onToggle={onToggle} value={value}>
-      <p className="text-[13px] leading-[1.55] text-[#8C8073] max-w-[560px] mb-1">DRG revenue moves through the CDI query funnel. This is what it catches today; Abridge is the delta on the gaps your team flags but loses.</p>
+      <p className="text-[13px] leading-[1.55] text-[#565250] max-w-[560px] mb-1">DRG revenue moves through the CDI query funnel. This is what it catches today; Abridge is the delta on the gaps your team flags but loses.</p>
 
       <div className={`${GRID} mt-6 text-[10px] font-extrabold tracking-[0.1em] uppercase text-[#A69A88]`}>
         <span>What the CDI funnel catches today</span><span className="text-right">Rate</span><span className="text-right">Cases</span>
@@ -710,7 +715,7 @@ function DrgFunnelCard({ vals, setVal, on, onToggle, value, discharges }: {
       <FRow step="Query issued" rateK="ipDrgQueryRate" cases={fmtInt(queried)} />
       <FRow step="Physician responds" rateK="ipDrgResponseRate" cases={fmtInt(responded)} />
       <FRow step="Response changes the DRG" rateK="ipDrgChangeRate" cases={fmtInt(changed)} bold />
-      <div className="flex items-baseline justify-between gap-3 py-[11px] border-t border-[#EFE9E0] text-[13px] text-[#8C8073]">
+      <div className="flex items-baseline justify-between gap-3 py-[11px] border-t border-[#EFE9E0] text-[13px] text-[#565250]">
         <span className="italic flex items-baseline gap-1.5 flex-wrap">Each moves ~<PctEdit value={vals.ipDrgWeightGain} onChange={(v) => setVal("ipDrgWeightGain", v)} suffix="" step={0.05} /> weight, at <PctEdit value={vals.ipDrgBaseRate} onChange={(v) => setVal("ipDrgBaseRate", v)} prefix="$" suffix="" step={250} />/weight</span>
         <span className="whitespace-nowrap">= {fmtShort(cdiRevenue)} <span className="text-[#A69A88]">to CDI</span></span>
       </div>
@@ -759,10 +764,10 @@ function TimeBackBlock({ table, before, after, onBefore, onAfter, encToday, hour
               <span className="text-[13px] text-[#A69A88]">equals</span>
               <span className="font-abridge text-[34px] leading-none text-[#1A1A1A]">{fmtInt(hours)}<span className="text-[15px] text-[#9A8C7A]"> clinician hours a year</span></span>
             </div>
-            <div className="mt-2.5 text-right text-[13px] text-[#8C8073]">
+            <div className="mt-2.5 text-right text-[13px] text-[#565250]">
               about <span className="font-bold text-[#443A32]">{fte.toFixed(1)}</span> full-time clinicians' worth of documentation time, back on the floor
             </div>
-            <p className="mt-5 text-[13px] leading-[1.55] text-[#8C8073]">
+            <p className="mt-5 text-[13px] leading-[1.55] text-[#565250]">
               {dollarized
                 ? "Shown as time given back. The share reinvested into visits is valued below, in Patient access."
                 : "Shown as time given back, never converted to a made-up dollar."}
@@ -825,7 +830,7 @@ function AnswerStep(p: {
     <div>
       {/* Beat 1 — what it's worth today */}
       <div className={EYEBROW}>The answer</div>
-      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#4A3F35] mt-4">To {p.partnerName}, Abridge is worth</h1>
+      <h1 className="font-abridge text-[26px] sm:text-[32px] leading-[1.14] text-[#1A1A1A] mt-4">To {p.partnerName}, Abridge is worth</h1>
       <div className="font-abridge text-[66px] sm:text-[92px] leading-[0.88] text-[#EA2C00] mt-3">{fmtShort(todayShown)}<span className="text-[26px] text-[#9A8C7A] font-normal"> a year</span></div>
       <p className="mt-5 text-[16px] leading-[1.6] text-[#5E534A] max-w-[560px]">
         {makeup ? <>From {makeup}, at today's {Math.round(p.adoptionNow)}% rollout and {Math.round(p.utilNow)}% utilization.</> : "Turn on the drivers your data supports to build the number."}
@@ -846,8 +851,8 @@ function AnswerStep(p: {
             <div className="h-full bg-[#F6B7A6] transition-all duration-500" style={{ width: `${headroomPct}%` }} />
           </div>
           <div className="flex justify-between mt-2.5 text-[12.5px]">
-            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> Made today {fmtShort(p.todayValue)}</span>
-            <span className="flex items-center gap-1.5 text-[#8C8073]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> On the table {fmtShort(p.headroom)}</span>
+            <span className="flex items-center gap-1.5 text-[#565250]"><span className="w-2 h-2 rounded-full bg-[#EA2C00]" /> Made today {fmtShort(p.todayValue)}</span>
+            <span className="flex items-center gap-1.5 text-[#565250]"><span className="w-2 h-2 rounded-full bg-[#F6B7A6]" /> On the table {fmtShort(p.headroom)}</span>
           </div>
         </div>
 
@@ -858,7 +863,7 @@ function AnswerStep(p: {
             <Slider label="Using it on more of their encounters" value={p.targetUtilPct} min={Math.round(p.utilNow)} onChange={p.setTargetUtilPct} right={`${p.targetUtilPct}%`} />
           )}
         </div>
-        <p className="mt-6 text-[13.5px] leading-[1.6] text-[#8C8073] max-w-[560px]">
+        <p className="mt-6 text-[13.5px] leading-[1.6] text-[#565250] max-w-[560px]">
           The measured effect stays exactly where the data put it. Only the volume it runs on grows.
         </p>
       </div>
@@ -868,7 +873,7 @@ function AnswerStep(p: {
         <div className={EYEBROW}>The return</div>
         <div className="mt-5 flex flex-wrap items-end gap-x-12 gap-y-6">
           <div>
-            <div className="text-[12.5px] text-[#8C8073] mb-2">Abridge price</div>
+            <div className="text-[12.5px] text-[#565250] mb-2">Abridge price</div>
             <div className="w-[180px] inline-flex items-baseline gap-1.5 border-b-2 border-[#E0D9CE] focus-within:border-[#EA2C00] transition-colors pb-1">
               <span className="text-[16px] text-[#A69A88]">$</span>
               <FormattedNumberInput value={p.price} onChange={p.setPrice}
@@ -880,11 +885,11 @@ function AnswerStep(p: {
             <>
               <div>
                 <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#EA2C00]">{roi.toFixed(1)}×</div>
-                <div className="text-[12.5px] text-[#8C8073] mt-2">return on the Abridge spend</div>
+                <div className="text-[12.5px] text-[#565250] mt-2">return on the Abridge spend</div>
               </div>
               <div>
                 <div className="font-abridge text-[46px] sm:text-[56px] leading-none text-[#1A1A1A]">{fmtShort(p.todayValue - p.price)}</div>
-                <div className="text-[12.5px] text-[#8C8073] mt-2">net a year, after the price</div>
+                <div className="text-[12.5px] text-[#565250] mt-2">net a year, after the price</div>
               </div>
             </>
           ) : (
@@ -896,9 +901,9 @@ function AnswerStep(p: {
       {/* quiet breakdown of where the value came from */}
       <div className="mt-10 pt-5 border-t border-[#E8E2DA] flex flex-wrap items-baseline gap-x-6 gap-y-1">
         {dollarLevers.map((r) => (
-          <span key={r.title} className="text-[13px] text-[#8C8073]">{r.title} <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtShort(r.value)}</span></span>
+          <span key={r.title} className="text-[13px] text-[#565250]">{r.title} <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtShort(r.value)}</span></span>
         ))}
-        {p.hoursReclaimed > 0 && <span className="text-[13px] text-[#8C8073]">Hours back <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtInt(p.hoursReclaimed)}</span></span>}
+        {p.hoursReclaimed > 0 && <span className="text-[13px] text-[#565250]">Hours back <span className="font-abridge text-[15px] text-[#1A1A1A]">{fmtInt(p.hoursReclaimed)}</span></span>}
       </div>
 
       <div className="mt-10 pt-7 border-t border-[#E8E2DA] flex items-center justify-between gap-4 flex-wrap">

@@ -9,7 +9,7 @@ import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
  * than sitting in the corner. The symbol is ~square (859×868), so a square box
  * scales it without distortion.
  */
-export function BackgroundShape() {
+export function BackgroundShape({ opacity = 0.08 }: { opacity?: number } = {}) {
   return (
     <div
       aria-hidden="true"
@@ -19,8 +19,8 @@ export function BackgroundShape() {
         right: "-9%",
         width: "min(108vh, 1280px)",
         height: "min(108vh, 1280px)",
-        backgroundColor: "#1A1A1A",
-        opacity: 0.0375,
+        backgroundColor: "#A88B6A",
+        opacity,
         zIndex: 0,
         WebkitMaskImage: `url(${abridgeSymbol})`,
         maskImage: `url(${abridgeSymbol})`,

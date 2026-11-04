@@ -1,4 +1,5 @@
-import { HubPage, HubHeader, HubList, HubRow } from "./hubKit";
+import { HubPage, HubHeader, HubTile, HubTileGrid } from "./hubKit";
+import { BuildDealArt, ModelValueArt, OffsetCostArt, SizeRoiArt } from "./hubArt";
 
 interface FinancialHubProps {
   onSelectRoiCalculator: () => void;
@@ -36,41 +37,53 @@ export default function FinancialHub({
       the biggest commitment in front of someone who may only want a number.
   */
   return (
-    <HubPage pageName="The Numbers" onHome={onHome} header={<HubHeader eyebrow="The Numbers" title="Put it in dollars" />}>
-      <HubList>
-        <HubRow
+    <HubPage wide centered pageName="The Numbers" onHome={onHome} header={<HubHeader eyebrow="The Numbers" title="Put it in dollars" />}>
+      <HubTileGrid>
+        <HubTile
+          index={1}
           tagline="The fast read"
           title="Size the ROI"
+          description="A few figures from the impact analysis, turned straight into dollars."
           onClick={onSelectRoiCalculator}
-          index={1}
           testId="financial-card-roi-calculator"
+          cta="Open the tool"
+          art={<SizeRoiArt />}
           delay={0.15}
         />
-        <HubRow
+        <HubTile
+          index={2}
           tagline="The full build"
           title="Model the Value"
+          description="How the value is built, driver by driver, from your own figures before any data pull."
           onClick={onSelectExplore}
-          index={2}
           testId="financial-card-explore"
+          cta="Open the tool"
+          art={<ModelValueArt />}
           delay={0.22}
         />
-        <HubRow
+        <HubTile
+          index={3}
           tagline="The three-year case"
           title="Build the Deal"
+          description="A full deployment: care settings, volumes, pricing, and a proposal to share."
           onClick={onSelectNewDeal}
-          index={3}
           testId="financial-card-new-deal"
+          cta="Open the tool"
+          art={<BuildDealArt />}
           delay={0.29}
         />
-        <HubRow
+        <HubTile
+          index={4}
           tagline="The current stack"
           title="Offset the Cost"
+          description="The tool stack already being paid for, and how much of it Abridge can take on."
           onClick={onSelectAppRationalization}
-          index={4}
           testId="financial-card-app-rationalization"
+          cta="Open the tool"
+          art={<OffsetCostArt />}
           delay={0.36}
         />
-      </HubList>
+      </HubTileGrid>
     </HubPage>
   );
 }
