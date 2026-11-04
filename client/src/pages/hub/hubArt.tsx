@@ -647,3 +647,25 @@ export function ExperienceGoalArt() {
     </Frame>
   );
 }
+
+/* ── Value Model, step 3: time given back ──────────────────────────────── */
+
+/** A clock with the returned time as a coral wedge; `active` once minutes are in. */
+export function TimeBackArt({ active = false, share = 0.25 }: { active?: boolean; share?: number }) {
+  const a = Math.max(0.05, Math.min(0.95, share)) * Math.PI * 2;
+  const r = 34, cx = 100, cy = 60;
+  const x = cx + r * Math.sin(a), y = cy - r * Math.cos(a);
+  const large = a > Math.PI ? 1 : 0;
+  return (
+    <Frame>
+      <circle cx={cx} cy={cy} r="40" className={SOFT} />
+      <path d={`M${cx} ${cy} L${cx} ${cy - r} A${r} ${r} 0 ${large} 1 ${x} ${y} Z`} className={`transition-colors duration-700 ${active ? "fill-[#FBD5C6]" : "fill-[#EFE5D8]"}`} stroke="none" />
+      {[0, 90, 180, 270].map((d) => (
+        <line key={d} x1={cx} y1={cy - 37} x2={cx} y2={cy - 33} className={INK} transform={`rotate(${d} ${cx} ${cy})`} />
+      ))}
+      <line x1={cx} y1={cy} x2={cx} y2={cy - 24} className={INK} strokeWidth={2} />
+      <line x1={cx} y1={cy} x2={x} y2={y} className={`transition-colors duration-700 ${active ? "stroke-[#EA2C00]" : "stroke-[#B39F87]"}`} strokeWidth={2} />
+      <circle cx={cx} cy={cy} r="2.5" className="fill-[#B39F87]" stroke="none" />
+    </Frame>
+  );
+}
