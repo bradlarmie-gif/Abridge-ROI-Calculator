@@ -1,6 +1,16 @@
 import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
+import { CapacityGoalArt, QualityGoalArt, RetentionGoalArt, RevenueGoalArt } from "@/pages/hub/hubArt";
+import { useCountUp } from "@/lib/useCountUp";
+
+// One drawing per value step, from the goal-tile set.
+const STEP_ART: Record<string, ReactNode> = {
+  Capacity: <CapacityGoalArt />,
+  Workforce: <RetentionGoalArt />,
+  Revenue: <RevenueGoalArt />,
+  Quality: <QualityGoalArt />,
+};
 
 /**
  * Shared V2 value-driver layout: a single-column driver ledger on the left
@@ -66,7 +76,6 @@ export interface DriverLedgerProps {
   headerControl?: ReactNode;
 }
 
-const sectCls = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
 
 function Toggle({ on, onClick, label }: { on: boolean; onClick?: () => void; label?: string }) {
   return (
@@ -89,78 +98,74 @@ const fmtMoney = (n: number) => {
   return `$${Math.round(n).toLocaleString()}`;
 };
 
+/**
+ * One driver as a card. Off: the name and the switch, nothing else. On: a white
+ * card that opens to what it is (the mechanism), its inputs, and its dollar.
+ * Tracked rows carry a quiet pill and their proof signals; coming-soon rows sit
+ * muted. Children nest inside their parent card.
+ */
 function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
   const isCounted = row.kind === "counted";
   const isComing = row.kind === "coming-soon";
+  const isTracked = row.kind === "tracked";
   const on = Boolean(row.enabled);
   const expanded = row.expanded ?? true;
-  // A row with children lets the last child's border close the block, so it
-  // omits its own bottom border (otherwise the two stack into a double line).
-  const hasChildren = Boolean(row.children && row.children.length > 0);
+  const open = isCounted && on;
   return (
     <>
     {row.subhead && (
-      <div className="text-[10.5px] font-extrabold tracking-[0.09em] uppercase text-[#8C8073] mt-7 mb-1 first:mt-1">{row.subhead}</div>
+      <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32] pt-3 pb-1 px-1 first:pt-0">{row.subhead}</div>
     )}
-    <div className={`py-6 ${hasChildren ? "" : "border-b border-[#EDE8E1]"} ${depth > 0 ? "pl-6 ml-[3px] border-l-2 border-[#E4DACE]" : ""}`}>
-      <div className="flex justify-between items-start gap-5">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={`font-abridge text-[20px] leading-[1.15] ${isComing || (!on && isCounted) ? "text-[#574C41]" : "text-[#1A1A1A]"}`}>
-              {row.label}
-            </span>
-            {isComing && (
-              <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#7C766F] border border-[#DAD3C8] rounded-[5px] px-[6px] py-[2px]">Coming soon</span>
-            )}
-          </div>
-          <div className={`text-[13px] mt-[6px] leading-[1.5] max-w-[420px] ${isComing ? "text-[#8C8073]" : "text-[#8C8073]"}`}>{row.mechanism}</div>
-        </div>
-        <div className="flex items-center gap-[14px] flex-shrink-0">
-          {isCounted && on && row.amount != null && !row.awaiting && (
-            <span className="font-abridge text-[22px] text-[#EA2C00] whitespace-nowrap">{fmtMoney(row.amount)}<span className="font-sans text-[12px] text-[#8C8073]">/yr</span></span>
+    <div className={`rounded-[16px] border transition-all duration-200 ${depth > 0 ? "mt-2" : ""} ${
+      open
+        ? "bg-white border-[#E9E0D4] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_22px_-16px_rgba(26,26,26,0.16)]"
+        : isComing
+          ? "bg-[#F8F5F0]/70 border-[#EBE3D8]"
+          : "bg-[#FBF8F4]/80 border-[#EBE3D8] hover:border-[#DDD2C4]"
+    }`}>
+      <div className="flex items-center justify-between gap-4 px-4 sm:px-5 py-3.5">
+        <button type="button" onClick={isCounted ? row.onToggle : undefined} className={`flex-1 min-w-0 text-left outline-none ${isCounted ? "cursor-pointer" : "cursor-default"}`}>
+          <span className="flex items-center gap-2 flex-wrap">
+            <span className={`text-[15.5px] font-semibold ${isComing ? "text-[#A79E92]" : open ? "text-[#1A1A1A]" : "text-[#443A32]"}`}>{row.label}</span>
+            {isComing && <span className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-white border border-[#E6DCCE] rounded-full px-2 py-0.5">Coming soon</span>}
+          </span>
+        </button>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {open && row.amount != null && !row.awaiting && (
+            <span className="font-abridge text-[17px] text-[#EA2C00] whitespace-nowrap tabular-nums">{fmtMoney(row.amount)}<span className="font-sans text-[11.5px] text-[#6B6259]">/yr</span></span>
           )}
-          {isCounted && on && row.onToggleExpand && (
-            <button
-              type="button"
-              onClick={row.onToggleExpand}
-              aria-label={expanded ? "Collapse details" : "Expand details"}
-              className="text-[#B0A99E] hover:text-[#EA2C00] transition-colors"
-            >
-              <ChevronDown className={`w-[18px] h-[18px] transition-transform ${expanded ? "" : "-rotate-90"}`} strokeWidth={2} />
+          {open && row.onToggleExpand && (
+            <button type="button" onClick={row.onToggleExpand} aria-label={expanded ? "Collapse details" : "Expand details"}
+              className="w-7 h-7 rounded-full border border-[#E2D8CB] bg-white text-[#8A8072] flex items-center justify-center hover:border-[#EA2C00] hover:text-[#EA2C00] transition-colors">
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "" : "-rotate-90"}`} strokeWidth={2} />
             </button>
           )}
           {isCounted && <Toggle on={on} onClick={row.onToggle} label={row.label} />}
-          {row.kind === "tracked" && (
-            <span className="text-[11px] font-bold uppercase tracking-[0.05em] text-[#7C766F]">Tracked</span>
-          )}
+          {isTracked && <span className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#6B6259] bg-white border border-[#E2D8CB] rounded-full px-2.5 py-1">Tracked</span>}
         </div>
       </div>
 
-      {/* counted + on + expanded: the levers + footed math */}
-      {isCounted && on && expanded && (
-        <div className="mt-5">
+      {open && expanded && (
+        <div className="px-4 sm:px-5 pb-4">
+          <p className="text-[13px] text-[#565250] leading-[1.55] max-w-[560px] mb-4">{row.mechanism}</p>
           {row.awaiting ? (
-            <div className="text-[13px] text-[#B0A99E] italic">Enter {row.awaiting} to see this driver.</div>
+            <div className="text-[13px] text-[#6B6259]">Enter {row.awaiting} to see this driver.</div>
           ) : (
             row.levers
           )}
         </div>
       )}
 
-      {/* tracked: quiet proof signals */}
-      {row.kind === "tracked" && row.signals && row.signals.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
-          {row.signals.map((s) => (
-            <span key={s} className="flex items-center gap-[7px] text-[13px] text-[#6E675C]">
-              <span className="w-[5px] h-[5px] rounded-full bg-[#C9BDAD]" />{s}
-            </span>
+      {isTracked && row.signals && row.signals.length > 0 && (
+        <div className="px-4 sm:px-5 pb-3.5 -mt-1 flex flex-wrap gap-1.5">
+          {row.signals.map((sig) => (
+            <span key={sig} className="text-[12px] text-[#565250] bg-white border border-[#EBE3D8] rounded-full px-2.5 py-0.5">{sig}</span>
           ))}
         </div>
       )}
 
-      {/* nested children */}
       {row.children && row.children.length > 0 && (
-        <div className="mt-3">
+        <div className="px-2.5 pb-2.5">
           {row.children.map((c) => (
             <DriverRow key={c.id} row={c} depth={depth + 1} />
           ))}
@@ -171,110 +176,95 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
   );
 }
 
+/** "$1.2M / yr" → 1200000, so the grand total can count up. */
+function parseMoney(v: string): number | null {
+  const m = v.replace(/,/g, "").match(/\$?(-?[\d.]+)\s*([KM])?/i);
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  if (!isFinite(n)) return null;
+  const k = (m[2] || "").toUpperCase();
+  return k === "M" ? n * 1_000_000 : k === "K" ? n * 1_000 : n;
+}
+
+function GrandTotal({ value, hasValue }: { value: string; hasValue: boolean }) {
+  const target = parseMoney(value);
+  const shown = useCountUp(hasValue && target != null ? target : 0);
+  const unit = value.includes("/") ? value.slice(value.indexOf("/")).trim() : "";
+  const text = hasValue && target != null ? `${fmtMoney(shown)}${unit ? ` ${unit}` : ""}` : value;
+  return <span className="tabular-nums">{text}</span>;
+}
+
 export default function DriverLedger(props: DriverLedgerProps) {
-  const { eyebrow, title, intro, sectionLabel, rows, ledgerGroups, grandLabel, grandValue, grandHasValue = true, grandCaption } = props;
+  const { eyebrow, title, intro, rows, ledgerGroups, grandLabel, grandValue, grandHasValue = true, grandCaption } = props;
   return (
     <EditorialShell>
       <EditorialHeader stepName={props.stepName} stepIndex={props.stepIndex} onBack={props.onBack} onHome={props.onHome} onDataRequest={props.onDataRequest} />
-      <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">{eyebrow}</div>
-        <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[38px] leading-[1.1] text-[#1A1A1A] mt-[10px] max-w-[640px]">{title}</h1>
+        <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[38px] leading-[1.1] text-[#1A1A1A] mt-[10px] max-w-[680px]">{title}</h1>
         <p className="text-[16px] text-[#565250] mt-[12px] max-w-[600px] leading-[1.55]">{intro}</p>
 
         {props.headerControl && <div className="mt-[26px]">{props.headerControl}</div>}
 
-        {/*
-          min-height so Continue does not move between steps.
-
-          The button sits after this grid, so its position was set by whichever
-          column happened to be taller — and both vary by care setting and by how
-          many drivers are on. Measured across the four value screens at the SAME
-          step: Continue landed at y=848 on inpatient, 921 on nursing, 949 on
-          outpatient and 1060 on ED. A seller switching settings live, and a
-          self-serve user stepping forward, had to re-find the primary action on
-          every screen.
-
-          Measured, outpatient/inpatient/nursing/ED put Continue at 999 / 999 /
-          1016 / 1065. The floor brings the spread from 130px to 66px and puts
-          two of the four on exactly the same line.
-
-          It cannot do better than that, and it is worth being clear why: a
-          min-height only lifts pages whose content is SHORTER than the floor.
-          ED's driver list is genuinely the tallest, so it clears any floor and
-          stays the outlier no matter how high this goes — raising it to 700
-          moved all four down 70px and left the spread at exactly 66. Closing
-          the last 66px needs a fixed height (which would clip ED) or a sticky
-          action bar (which changes the feel of the whole flow). That is a design
-          call, so it is flagged rather than taken here.
-
-          The white space this adds costs little: each of these screens already
-          ends with several hundred px of trailing space below the button, so
-          the button moves down inside space that was empty anyway.
-        */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1px_0.8fr] gap-x-[56px] gap-y-10 mt-[46px] lg:min-h-[630px]">
-          {/* LEFT — driver ledger */}
-          <div>
-            <div className={sectCls}>{sectionLabel}</div>
-            <div className="mt-2">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)] gap-6 lg:gap-8 items-start mt-9">
+          {/* LEFT — the drivers, in one tan card headed by this step's drawing */}
+          <section className="rounded-[22px] border border-[#E9E0D4] bg-[#F6F1EA]/90 overflow-hidden">
+            <header className="flex items-center gap-4 px-4 sm:px-5 py-3.5">
+              <div className="flex-none w-[76px] h-[48px] rounded-[12px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1.5 py-1">{STEP_ART[props.stepName] ?? null}</div>
+              <div className="min-w-0">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#443A32]">{props.stepName}</div>
+                <div className="text-[12.5px] text-[#6B6259] mt-0.5">Turn on what applies</div>
+              </div>
+            </header>
+            <div className="px-2.5 pb-2.5 space-y-2">
               {rows.map((r) => (
                 <DriverRow key={r.id} row={r} />
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* vertical hairline */}
-          <div className="hidden lg:block bg-[#E8E2DA]" />
-
-          {/* RIGHT — the ledger that adds up */}
-          <div>
-            <div className={sectCls}>Your model</div>
-            {ledgerGroups.map((g, gi) => (
-              <div key={g.label}>
-                <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#6E675C] mt-[26px] mb-[2px]">{g.label}</div>
-                {g.items.map((it, ii) => {
-                  // Drop the hairline under the very last ledger row so it doesn't
-                  // dangle above the grand-total rule (its border provides the split).
-                  const isFinalRow = gi === ledgerGroups.length - 1 && !g.subtotal && ii === g.items.length - 1;
-                  return (
-                  <div key={it.label} className={`flex justify-between items-baseline py-[11px] ${isFinalRow ? "" : "border-b border-[#EDE8E1]"} text-[14.5px] ${it.tone === "dim" ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
-                    <span>{it.label}</span>
-                    <span className={`font-abridge text-[16px] ${it.tone === "dim" ? "text-[#7C766F] font-sans !text-[14px]" : it.tone === "on" ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>{it.value}</span>
+          {/* RIGHT — the model so far, then Continue directly under it */}
+          <div className="space-y-4">
+            <div className="rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden">
+              <div className="px-6 pt-5 pb-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF] text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">Your model</div>
+              <div className="px-6 pb-6">
+                {ledgerGroups.map((g) => (
+                  <div key={g.label}>
+                    <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32] mt-5 mb-1">{g.label}</div>
+                    {g.items.map((it) => (
+                      <div key={it.label} className="flex justify-between items-baseline gap-3 py-[9px] border-b border-[#EFE8DE] text-[14px]">
+                        <span className={it.tone === "dim" ? "text-[#6B6259]" : "text-[#1A1A1A]"}>{it.label}</span>
+                        <span className={`tabular-nums whitespace-nowrap ${it.tone === "dim" ? "text-[12.5px] text-[#6B6259]" : it.tone === "on" ? "font-abridge text-[16px] text-[#EA2C00]" : "font-abridge text-[16px] text-[#1A1A1A]"}`}>{it.value}</span>
+                      </div>
+                    ))}
+                    {g.subtotal && (
+                      <div className="flex justify-between items-baseline py-[11px] text-[12.5px] font-extrabold uppercase tracking-[0.06em] text-[#1A1A1A]">
+                        <span>{g.subtotal.label}</span>
+                        <span className="font-abridge text-[18px] normal-case tracking-normal">{g.subtotal.value}</span>
+                      </div>
+                    )}
                   </div>
-                  );
-                })}
-                {g.subtotal && (
-                  <div className="flex justify-between items-baseline py-[13px] border-b-2 border-[#E4DACE] text-[14px] font-bold uppercase tracking-[0.04em] text-[#1A1A1A]">
-                    <span>{g.subtotal.label}</span>
-                    <span className="font-abridge text-[19px] normal-case tracking-normal">{g.subtotal.value}</span>
-                  </div>
-                )}
-              </div>
-            ))}
+                ))}
 
-            <div className="mt-[26px] pt-[22px] border-t-2 border-[#1A1A1A]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]">{grandLabel}</div>
-              <div
-                className={`font-abridge text-[52px] leading-[0.9] mt-2 ${
-                  grandHasValue ? "text-[#EA2C00]" : "text-[#C9BDAD]"
-                }`}
-              >
-                {grandValue}
+                <div className="mt-5 rounded-[16px] bg-[#F6F1EA] border border-[#E9E0D4] px-5 py-4">
+                  <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">{grandLabel}</div>
+                  <div className={`font-abridge text-[44px] leading-[0.95] mt-1.5 ${grandHasValue ? "text-[#EA2C00]" : "text-[#C9BDAD]"}`}>
+                    <GrandTotal value={grandValue} hasValue={grandHasValue} />
+                  </div>
+                  {grandCaption && <div className="text-[12.5px] text-[#565250] mt-2 leading-[1.5]">{grandCaption}</div>}
+                </div>
               </div>
-              {grandCaption && <div className="text-[12.5px] text-[#8C8073] mt-[10px] leading-[1.5] max-w-[300px]">{grandCaption}</div>}
             </div>
+            <button
+              type="button"
+              disabled={!props.isValid}
+              onClick={props.onNext}
+              data-testid="driver-continue"
+              className="w-full bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[15px] rounded-full hover:bg-[#d12800] transition-colors shadow-[0_10px_24px_-12px_rgba(234,44,0,0.6)] disabled:opacity-40 disabled:shadow-none"
+            >
+              Continue →
+            </button>
           </div>
-        </div>
-
-        <div className="flex justify-end mt-14">
-          <button
-            type="button"
-            disabled={!props.isValid}
-            onClick={props.onNext}
-            data-testid="driver-continue"
-            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
-          >
-            Continue →
-          </button>
         </div>
       </div>
     </EditorialShell>

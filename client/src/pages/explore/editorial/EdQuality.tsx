@@ -141,7 +141,7 @@ function ProofChainScreen({ state, totalHoursSaved, onNext, onBack, onHome, sett
           })}
         </div>
 
-        <p className="text-[12.5px] text-[#7C766F] leading-[1.5] mt-5 max-w-[640px] italic">
+        <p className="text-[12.5px] text-[#7C766F] leading-[1.5] mt-5 max-w-[640px]">
           No dollar here, on purpose. Abridge doesn&apos;t change your scores; anything financial is counted once, in Revenue.
         </p>
         </div>
@@ -371,7 +371,7 @@ function NursingQualityScreen({
     <DriverLedger
       eyebrow="Value Model · Step 7 of 9 · Quality"
       title="Where does nursing documentation show up in harm and safety?"
-      intro="Harm events are scored on timestamps. Documented in real time at the bedside, the same care that was delivered is the care that counts. Turn on only what you can stand behind; it adds to the ledger as you go."
+      intro="Harm events are scored on timestamps. Documented in real time at the bedside, the same care that was delivered is the care that counts."
       sectionLabel="The drivers · turn on what applies"
       rows={rows}
       ledgerGroups={ledger.groups}

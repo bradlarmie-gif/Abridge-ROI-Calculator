@@ -308,8 +308,8 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
   // Fixed-width, right-aligned underline: every editable figure gets the SAME
   // line length and shares a right edge, so they read as a clean aligned column
   // (not a per-number hug). Number + unit right-align inside the fixed width.
-  const entryWrap = "flex items-baseline justify-end gap-[6px] whitespace-nowrap w-[176px] rounded-[12px] border border-[#E2D8CB] bg-white px-3.5 py-2 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors";
-  const entryInput = "w-full min-w-0 text-right bg-transparent border-0 p-0 text-[19px] font-bold text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#B5AA9B] placeholder:font-normal placeholder:text-[15px]";
+  const entryWrap = "flex items-baseline justify-end gap-[6px] whitespace-nowrap w-[176px] rounded-[12px] border border-[#E2D8CB] bg-white pl-4 pr-5 py-2.5 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors";
+  const entryInput = "w-full min-w-0 text-right bg-transparent border-0 p-0 text-[19px] font-bold text-[#1A1A1A] tabular-nums focus:outline-none placeholder:text-[#B5AA9B] placeholder:font-normal placeholder:not-italic placeholder:text-[15px]";
   const entryUnit = "font-sans text-[13px] text-[#6B6259]";
 
   // shared right-column derived readouts

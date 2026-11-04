@@ -171,7 +171,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           testId={`ed-toggle-${driver.id}`}
           note={
             retentionCounted ? (
-              <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice is valued; retirements, moves, and pay stay out.</>
+              <>Figures from earlier steps carry over; change any box and this reprices live. Only the burnout-tied slice is valued; retirements, moves, and pay stay out.</>
             ) : undefined
           }
         >
@@ -233,7 +233,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                   </span>
                 </div>
               </EquationRow>
-              <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+              <div className="text-[12px] text-[#6B6259] mt-3 leading-[1.45]">
                 Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
               </div>
             </>
@@ -275,7 +275,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
             blocked || !retentionCounted ? undefined : (
-              <>Grey figures carry from Provider Retention above. Change the coral figures to match your locum contracts. This is the coverage spend you stop paying when a provider stays, a separate dollar from the retention value above, so nothing is counted twice.</>
+              <>Figures carry from Provider Retention above. Change the boxes to match your locum contracts. This is the coverage spend you stop paying when a provider stays, a separate dollar from the retention value above, so nothing is counted twice.</>
             )
           }
         >
@@ -285,7 +285,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
               providers it retains.
             </div>
           ) : !retentionCounted ? (
-            <div className="text-[12.5px] text-[#7C766F] leading-[1.5] italic">
+            <div className="text-[12.5px] text-[#6B6259] leading-[1.5]">
               This spend is priced on the providers retention keeps. While Provider Retention is tracked as a signal, the
               savings stay tracked too, so nothing counts twice. Switch Provider Retention to Dollar to put both in the ROI.
             </div>
@@ -353,8 +353,8 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           note={isPosition
-            ? <>Change any coral figure and this reprices live. We value only the positions you can actually cut, held at your current headcount.</>
-            : <>The two figures above are derived from the knobs below. Change any coral figure and this reprices live.</>}
+            ? <>Change any box and this reprices live. We value only the positions you can actually cut, held at your current headcount.</>
+            : <>The two figures above are derived from the knobs below. Change any box and this reprices live.</>}
         >
           <div className="mb-4">
             <ModePicker mode={isPosition ? "position" : "hourly"} onChange={(m) => updateTimeDriverInputs({ scribeBillingMode: m })} />
@@ -448,7 +448,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           testId={`ed-toggle-${driver.id}`}
           note={
             retentionCounted ? (
-              <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Only the burnout-tied slice (40% of departures) is valued.</>
+              <>Figures from earlier steps carry over; change any box and this reprices live. Only the burnout-tied slice (40% of departures) is valued.</>
             ) : undefined
           }
         >
@@ -504,7 +504,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
                   </span>
                 </div>
               </EquationRow>
-              <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+              <div className="text-[12px] text-[#6B6259] mt-3 leading-[1.45]">
                 Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
               </div>
             </>
@@ -546,7 +546,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
           mathLabel={retentionCounted ? "The math" : "What we track"}
           note={
             blocked || !retentionCounted ? undefined : (
-              <>Grey figures carry from RN Retention above. Change the coral figures to match your agency contracts. This is the coverage spend you stop paying when a nurse stays, a separate dollar from the retention value above, so nothing is counted twice.</>
+              <>Figures carry from RN Retention above. Change the boxes to match your agency contracts. This is the coverage spend you stop paying when a nurse stays, a separate dollar from the retention value above, so nothing is counted twice.</>
             )
           }
         >
@@ -556,7 +556,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
               it retains.
             </div>
           ) : !retentionCounted ? (
-            <div className="text-[12.5px] text-[#7C766F] leading-[1.5] italic">
+            <div className="text-[12.5px] text-[#6B6259] leading-[1.5]">
               This spend is priced on the nurses retention keeps. While RN Retention is tracked as a signal, the savings
               stay tracked too, so nothing counts twice. Switch RN Retention to Dollar to put both in the ROI.
             </div>
@@ -637,7 +637,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ) : (
           <>
             <MathCascade steps={retentionRows} />
-            <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+            <div className="text-[12px] text-[#6B6259] mt-3 leading-[1.45]">
               Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
             </div>
           </>
@@ -722,7 +722,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       <DriverLedger
         eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
-        intro="Documentation burden is a leading reason providers leave. Turn on only what you can stand behind; it adds to the ledger as you go."
+        intro="Documentation burden is a leading reason providers leave."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -779,7 +779,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ) : (
           <>
             <MathCascade steps={retentionRows} />
-            <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+            <div className="text-[12px] text-[#6B6259] mt-3 leading-[1.45]">
               Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
             </div>
           </>
@@ -840,7 +840,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       <DriverLedger
         eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
-        intro="Documentation burden is a leading reason nurses burn out and leave the bedside. Turn on only what you can stand behind; it adds to the ledger as you go."
+        intro="Documentation burden is a leading reason nurses burn out and leave the bedside."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -897,7 +897,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ) : (
           <>
             <MathCascade steps={retentionRows} />
-            <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+            <div className="text-[12px] text-[#6B6259] mt-3 leading-[1.45]">
               Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
             </div>
           </>
@@ -1010,7 +1010,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       <DriverLedger
         eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
-        intro="Documentation burden is a leading reason providers burn out and leave. Turn on only what you can stand behind; it adds to the ledger as you go."
+        intro="Documentation burden is a leading reason providers burn out and leave."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -1069,7 +1069,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
         ) : (
           <>
             <MathCascade steps={retentionRows} />
-            <div className="text-[12px] text-[#7C766F] mt-3 leading-[1.45] italic">
+            <div className="text-[12px] text-[#6B6259] mt-3 leading-[1.45]">
               Tracked as the leading signal, not a dollar. Switch to Dollar to put the replacement-cost value in the ROI.
             </div>
           </>
@@ -1179,7 +1179,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       <DriverLedger
         eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
-        intro="Documentation load is a leading reason emergency physicians burn out and lean on locum coverage. Turn on only what you can stand behind; it adds to the ledger as you go."
+        intro="Documentation load is a leading reason emergency physicians burn out and lean on locum coverage."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}

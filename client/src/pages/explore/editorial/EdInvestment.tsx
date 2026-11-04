@@ -37,16 +37,16 @@ export { PROOF_LAYER, QUADRANT_ORDER };
 // Editorial money entry. `md:text-[30px]` defeats the shared Input's default
 // `md:text-sm`, which otherwise shrinks the typed figure on wide screens.
 const MONEY_ENTRY_WRAP =
-  "inline-flex items-baseline gap-[2px] border-b-2 border-[#EA2C00] pb-[2px] mt-[10px] whitespace-nowrap";
+  "mt-2.5 flex items-baseline gap-1.5 w-[200px] rounded-[12px] border border-[#E2D8CB] bg-white pl-4 pr-5 py-2.5 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors";
 const MONEY_ENTRY_INPUT =
-  "min-w-[36px] max-w-[150px] [field-sizing:content] bg-transparent border-0 p-0 shadow-none font-abridge text-[30px] md:text-[30px] text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none";
+  "w-full min-w-0 bg-transparent border-0 p-0 h-auto shadow-none text-[19px] md:text-[19px] font-bold text-[#1A1A1A] tabular-nums text-right focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none placeholder:not-italic placeholder:text-[15px] placeholder:text-[#B5AA9B]";
 
 // Module scope keeps a stable identity across renders — a nested component
 // remounts on every keystroke and drops input focus.
 function MoneyEntry({ value, onChange, step, testId }: { value: number; onChange: (v: number) => void; step?: number; testId: string }) {
   return (
     <span className={MONEY_ENTRY_WRAP}>
-      <span className="font-abridge text-[30px] text-[#1A1A1A] leading-none">$</span>
+      <span className="text-[15px] text-[#6B6259] leading-none">$</span>
       <FormattedNumberInput value={value} onChange={onChange} step={step} className={MONEY_ENTRY_INPUT} data-testid={testId} />
     </span>
   );
@@ -132,11 +132,11 @@ export default function EdInvestment({
   // malformed "$-0.16" when the net went negative.
   const formatPerDollar = (n: number) => (n < 0 ? "−$" : "$") + Math.abs(n).toFixed(2);
 
-  const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
-  const fieldLabel = "text-[11px] font-extrabold tracking-[0.05em] uppercase text-[#8C8073]";
+  const sectLabel = "text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-[#443A32]";
+  const fieldLabel = "text-[14px] font-semibold text-[#1A1A1A]";
   const chip = (active: boolean) =>
-    `text-[12px] font-bold px-[14px] py-[7px] rounded-full transition-colors ${active ? "bg-[#2E2822] text-white" : "bg-[#F2ECE3] text-[#565250]"}`;
-  const carriedFigure = "font-abridge text-[30px] text-[#A79E92] tabular-nums mt-[10px] pb-[2px] border-b-2 border-transparent inline-block";
+    `rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition-all ${active ? "bg-white text-[#1A1A1A] shadow-[0_1px_2px_rgba(26,26,26,0.10),0_2px_6px_-2px_rgba(26,26,26,0.12)]" : "text-[#7A6F63] hover:text-[#1A1A1A]"}`;
+  const carriedFigure = "mt-2.5 w-[200px] rounded-[12px] border border-[#E9E0D4] bg-[#F1ECE5] pl-4 pr-5 py-2.5 text-right text-[19px] font-bold text-[#6B6259] tabular-nums";
 
   const breakdown =
     state.pricingModel === "perProvider"
@@ -150,19 +150,19 @@ export default function EdInvestment({
   return (
     <EditorialShell>
       <EditorialHeader stepName="Investment" stepIndex={8} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-14">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-14">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Model · Step 8 of 9</div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[38px] leading-[1.08] text-[#1A1A1A] mt-[10px]">What it costs, and what&apos;s left.</h1>
         <p className="text-[16px] text-[#565250] mt-[12px] max-w-[600px] leading-[1.55]">
-          Enter your pricing. Everything the prior screens built, minus the cost, is what&apos;s left.
+          Everything the model built, minus the price.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1.06fr] gap-x-[56px] gap-y-10 mt-[46px]">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] gap-6 lg:gap-8 items-start mt-9">
           {/* LEFT — your investment */}
-          <div>
-            <div className={sectLabel}>Your investment</div>
+          <div className="rounded-[20px] border border-[#E9E0D4] bg-[#F6F1EA]/90 px-5 sm:px-6 py-5">
+            <div className={sectLabel}>The price</div>
 
-            <div className="flex flex-wrap gap-[7px] mt-4">
+            <div className="inline-flex flex-wrap rounded-full bg-[#EBE2D6] p-1 mt-3">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -176,7 +176,7 @@ export default function EdInvestment({
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-x-[48px] gap-y-6 mt-7">
+            <div className="flex flex-wrap gap-x-10 gap-y-5 mt-6">
               {state.pricingModel === "perProvider" && (
                 <>
                   <div>
@@ -184,12 +184,12 @@ export default function EdInvestment({
                     {/* Read-only: scale is set in the opportunity setup where it drives BOTH value
                         and investment; editing here would only rescale cost, breaking the ROI. */}
                     <div className={carriedFigure} data-testid="ed-investment-input-providers">{formatNumber(isNursing ? state.nursingStaffedBeds : state.numberOfProviders)}</div>
-                    <div className="text-[11px] text-[#8C8073] mt-[6px]">From your setup, so the value stays in sync</div>
+                    <div className="text-[12px] text-[#6B6259] mt-1.5">From step 2</div>
                   </div>
                   <div>
                     <div className={fieldLabel}>Cost per {isNursing ? "bed" : "provider"} / month</div>
                     <MoneyEntry value={state.costPerProvider} onChange={(v) => updateState({ costPerProvider: v })} testId="ed-investment-input-cost-per-provider" />
-                    <div className="text-[11px] text-[#8C8073] mt-[6px]">your contract rate</div>
+                    <div className="text-[12px] text-[#6B6259] mt-1.5">Contract rate</div>
                   </div>
                 </>
               )}
@@ -197,7 +197,7 @@ export default function EdInvestment({
                 <div>
                   <div className={fieldLabel}>Cost per encounter</div>
                   <MoneyEntry value={state.costPerEncounter} onChange={(v) => updateState({ costPerEncounter: v })} step={0.01} testId="ed-investment-input-cost-per-encounter" />
-                  <div className="text-[11px] text-[#8C8073] mt-[6px]">your contract rate</div>
+                  <div className="text-[12px] text-[#6B6259] mt-1.5">Contract rate</div>
                 </div>
               )}
               {state.pricingModel === "platform" && (
@@ -220,27 +220,26 @@ export default function EdInvestment({
               )}
             </div>
 
-            <div className="mt-9 pt-5 border-t border-[#EDE8E1]">
+            <div className="mt-6 pt-4 border-t border-[#E6DCCF]">
               <div className="flex justify-between items-baseline">
-                <span className="text-[15px] text-[#3A342E]">Annual investment</span>
-                <span className="font-abridge text-[28px] text-[#1A1A1A]">
+                <span className="text-[15px] font-semibold text-[#1A1A1A]">Annual investment</span>
+                <span className="font-abridge text-[26px] text-[#1A1A1A] tabular-nums">
                   {formatCurrency(annualInvestment)}
-                  <span className="text-[13px] text-[#8C8073]"> / yr</span>
+                  <span className="text-[13px] text-[#6B6259]"> / yr</span>
                 </span>
               </div>
-              <div className="text-[12.5px] text-[#8C8073] mt-[9px] leading-[1.5]">{breakdown}</div>
+              <div className="text-[12.5px] text-[#565250] mt-[6px] leading-[1.5]">{breakdown}</div>
             </div>
           </div>
 
-          {/* vertical hairline */}
-          <div className="hidden lg:block bg-[#E8E2DA]" />
-
-          {/* RIGHT — what it returns */}
-          <div>
-            <div className={sectLabel}>What it returns</div>
+          {/* RIGHT — what it returns, Continue directly under it */}
+          <div className="space-y-4">
+          <div className="rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden">
+            <div className="px-6 pt-5 pb-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF] text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">What it returns</div>
+            <div className="p-6">
 
             {totalValue > 0 && (
-              <div className="flex h-[12px] rounded-full overflow-hidden bg-[#F3EEE7] mt-[18px] mb-[22px] gap-[2px]">
+              <div className="flex h-[12px] rounded-full overflow-hidden bg-[#F3EEE7] mb-4 gap-[2px]">
                 {QUADRANT_ORDER.map((q) => {
                   const proofNote = (PROOF_LAYER[state.careSetting ?? ""] ?? {})[q];
                   const v = valueByQuadrant[q] || 0;
@@ -258,13 +257,13 @@ export default function EdInvestment({
               const workforceTracked = q === "Workforce" && (valueByQuadrant[q] || 0) === 0 && state.retentionMode === "tracked";
               const isTracked = !!proofNote || workforceTracked;
               return (
-                <div key={q} className="flex justify-between items-baseline py-[11px] border-b border-[#EDE8E1] text-[15px]">
-                  <span className={`flex items-center gap-[10px] ${isTracked ? "text-[#7C766F]" : "text-[#3A342E]"}`}>
+                <div key={q} className="flex justify-between items-baseline py-[10px] border-b border-[#EFE8DE] text-[14.5px]">
+                  <span className={`flex items-center gap-[10px] ${isTracked ? "text-[#6B6259]" : "text-[#1A1A1A]"}`}>
                     <span className="w-[10px] h-[10px] rounded-[3px] flex-shrink-0" style={{ background: DOMAIN_COLORS[q] }} />
                     {q}
                   </span>
                   {isTracked ? (
-                    <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#8C8073] border border-[#DAD3C8] rounded-full px-[7px] py-[2px]">Tracked</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#6B6259] bg-white border border-[#E2D8CB] rounded-full px-2.5 py-0.5">Tracked</span>
                   ) : (
                     <span className="font-abridge text-[18px] text-[#1A1A1A]">{formatCurrency(valueByQuadrant[q])}</span>
                   )}
@@ -280,42 +279,41 @@ export default function EdInvestment({
               <span className="font-abridge text-[18px] text-[#565250]">{formatCurrency(-annualInvestment)}</span>
             </div>
 
-            <div className="mt-4 pt-5 border-t-2 border-[#1A1A1A]">
-              <div className="text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]">
+            <div className="mt-4 rounded-[16px] bg-[#F6F1EA] border border-[#E9E0D4] px-5 py-4">
+              <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">
                 {annualInvestment > 0 ? "Net annual value" : "Value before cost"}
               </div>
-              <div className={`font-abridge text-[40px] sm:text-[52px] leading-[0.95] mt-[8px] ${annualInvestment > 0 && netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+              <div className={`font-abridge text-[40px] sm:text-[46px] leading-[0.95] mt-1.5 tabular-nums ${annualInvestment > 0 && netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
                 {formatCurrency(netAnnualValue)}
                 <span className="text-[16px] text-[#8C8073]"> / yr</span>
               </div>
               {annualInvestment <= 0 ? (
-                <div className="text-[13px] text-[#8C8073] mt-[12px]">Add your pricing to see the return.</div>
+                <div className="text-[13px] text-[#565250] mt-2">Add the price to see the return.</div>
               ) : netAnnualValue > 0 ? (
-                <div className="mt-[14px] text-[15px] text-[#3A342E]">
+                <div className="mt-2.5 text-[14px] text-[#1A1A1A]">
                   <b className="font-abridge text-[20px] text-[#EA2C00]">{roi.toFixed(1)}×</b>{" "}
                   return · ≈ <b className="font-bold text-[#1A1A1A]">{formatPerDollar(netPerDollar)}</b> net back for every $1 spent
                 </div>
               ) : (
-                <div className="mt-[14px] text-[15px] text-[#565250]">
+                <div className="mt-2.5 text-[14px] text-[#565250]">
                   <b className="font-abridge text-[20px] text-[#565250]">{roi.toFixed(1)}×</b> · the modeled value doesn&apos;t cover the cost at this scope
                 </div>
               )}
             </div>
+            </div>
           </div>
-        </div>
-
-        <div className="flex justify-end mt-14">
           <button
             type="button"
             onClick={onNext}
             data-testid="ed-investment-continue"
-            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-[12px] shadow-[0_2px_6px_rgba(234,44,0,0.15)]"
+            className="w-full bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[15px] rounded-full hover:bg-[#d12800] transition-colors shadow-[0_10px_24px_-12px_rgba(234,44,0,0.6)]"
           >
             See your model →
           </button>
+          </div>
         </div>
 
-        <p className="text-[12px] text-[#8C8073] max-w-[560px] leading-[1.5] mt-10">
+        <p className="text-[12px] text-[#6B6259] max-w-[560px] leading-[1.5] mt-10">
           An estimate built from the figures you entered, not a guarantee of financial results. Actual outcomes vary. You confirm the real numbers as you measure.
         </p>
       </div>

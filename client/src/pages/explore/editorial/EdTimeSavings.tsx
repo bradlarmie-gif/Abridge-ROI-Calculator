@@ -31,7 +31,7 @@ const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[
 // Boxed entry figure, same as the Practice step: white box, coral focus.
 function NumBox({ value, onChange, suffix, testId }: { value: number; onChange: (n: number) => void; suffix: string; step?: number; testId?: string }) {
   return (
-    <span className="flex items-baseline justify-end gap-[6px] whitespace-nowrap w-[150px] rounded-[12px] border border-[#E2D8CB] bg-white px-3.5 py-2 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors">
+    <span className="flex items-baseline justify-end gap-[6px] whitespace-nowrap w-[150px] rounded-[12px] border border-[#E2D8CB] bg-white pl-4 pr-5 py-2.5 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors">
       <NumberField
         value={value}
         onValueChange={onChange}
@@ -253,7 +253,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
               <div className={PANEL_HEAD}>Time given back</div>
               <div className="p-6">
               <div className={`h-[120px] rounded-[16px] border px-4 py-3 transition-colors ${entered ? "border-[#F0CDBF] bg-[#FBEDE6]" : "border-[#E6DCCE] bg-[#EFE7DC]/60"}`}>
-                <TimeBackArt active={entered} share={0.3} />
+                <TimeBackArt active={entered} minutes={ipPerStay} />
               </div>
               {entered ? (
                 <>
@@ -320,7 +320,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
                 <div className="text-[15px] font-semibold text-[#1A1A1A]">Time saved per {noteUnit}</div>
                 <div className="text-[12.5px] text-[#6B6259] mt-1 leading-[1.45] max-w-[340px]">The average minutes Abridge takes off each {noteUnit}.</div>
               </div>
-              <span className="inline-flex items-baseline justify-end gap-[6px] whitespace-nowrap w-[150px] rounded-[12px] border border-[#E2D8CB] bg-white px-3.5 py-2 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors">
+              <span className="inline-flex items-baseline justify-end gap-[6px] whitespace-nowrap w-[150px] rounded-[12px] border border-[#E2D8CB] bg-white pl-4 pr-5 py-2.5 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors">
                 <FormattedNumberInput
                   value={state.minutesSavedPerEncounter}
                   onChange={handleCustomMinutes}
@@ -362,7 +362,7 @@ export default function EdTimeSavings({ state, updateState, onNext, onBack, onHo
             <div className={PANEL_HEAD}>Time given back</div>
             <div className="p-6">
             <div className={`h-[120px] rounded-[16px] border px-4 py-3 transition-colors ${hoursSaved > 0 ? "border-[#F0CDBF] bg-[#FBEDE6]" : "border-[#E6DCCE] bg-[#EFE7DC]/60"}`}>
-              <TimeBackArt active={hoursSaved > 0} share={0.3} />
+              <TimeBackArt active={hoursSaved > 0} minutes={state.minutesSavedPerEncounter} />
             </div>
             {hoursSaved > 0 ? (
               <>

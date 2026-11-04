@@ -141,7 +141,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           note={
-            <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live, then updates the model on the right. The visits are freed from your documentation time saved, reinvested at the rate you set below.</>
+            <>Figures from earlier steps carry over; change any box and this reprices live. The visits are freed from your documentation time saved, reinvested at the rate you set below.</>
           }
         >
           {awaiting ? (
@@ -186,7 +186,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           note={
-            <>Grey figures carry from your earlier steps; change any coral figure and this reprices live. Not every recovered patient completes a billable visit, so we count only the <b className="text-[#B02200] not-italic">{td.edLwbsRealization}%</b> that convert and leave the rest out.</>
+            <>Figures from earlier steps carry over; change any box and this reprices live. Not every recovered patient completes a billable visit, so we count only the <b className="text-[#B02200] not-italic">{td.edLwbsRealization}%</b> that convert and leave the rest out.</>
           }
         >
           {awaiting ? (
@@ -224,7 +224,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           note={
-            <>Grey figures carry from LWBS Recovery above; change any coral figure and this reprices live. Not every recovered patient is admitted, so we count only the <b className="text-[#B02200] not-italic">{td.edAdmissionRealization}%</b> that convert and leave the rest out.</>
+            <>Figures carry from LWBS Recovery above; change any box and this reprices live. Not every recovered patient is admitted, so we count only the <b className="text-[#B02200] not-italic">{td.edAdmissionRealization}%</b> that convert and leave the rest out.</>
           }
         >
           {!td.edLwbsEnabled && (
@@ -263,7 +263,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
           onToggle={() => toggleEnabled(driver)}
           testId={`ed-toggle-${driver.id}`}
           note={
-            <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. This counts documentation-driven overtime only, at your blended OT rate.</>
+            <>Figures from earlier steps carry over; change any box and this reprices live. This counts documentation-driven overtime only, at your blended OT rate.</>
           }
         >
           {awaiting ? (
@@ -406,7 +406,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What is Abridge worth to your unit's capacity?"
-        intro="Charting that used to spill past the shift gets done at the bedside. Turn on only what you can stand behind; it adds to the ledger as you go."
+        intro="Charting that used to spill past the shift gets done at the bedside."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -479,7 +479,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does the freed time become?"
-        intro="Charting that used to happen after the visit gets done in the room, and the time it gives back becomes room on the schedule. Turn on only what you can stand behind; it adds to the ledger as you go."
+        intro="Charting that used to happen after the visit gets done in the room, and the time it gives back becomes room on the schedule."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -574,7 +574,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does faster throughput recover?"
-        intro="Faster documentation moves patients through the department sooner. Some who would have left before being seen stay to be treated, and a share of them need admission. Turn on only what you can stand behind; it adds to the ledger as you go."
+        intro="Faster documentation moves patients through the department sooner. Some who would have left before being seen stay to be treated, and a share of them need admission."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}

@@ -605,7 +605,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     </div>
   );
 }
-const BOX = "inline-flex items-baseline gap-1.5 rounded-[12px] border border-[#E2D8CB] bg-white px-3.5 py-2.5 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors";
+const BOX = "inline-flex items-baseline gap-1.5 rounded-[12px] border border-[#E2D8CB] bg-white pl-4 pr-5 py-2.5 shadow-[inset_0_1px_2px_rgba(26,26,26,0.04)] focus-within:border-[#EA2C00] focus-within:ring-2 focus-within:ring-[#EA2C00]/15 transition-colors";
 function BoxNum({ value, onChange, suffix, placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; placeholder?: string }) {
   return (
     <div className={`${BOX} w-[168px]`}>
@@ -709,7 +709,7 @@ function Footprint({ total, onAbridge, util, encToday, totalEnc, adoption, scope
 const UINPUT_CLASS = "flex-1 min-w-0 h-auto border-0 rounded-none bg-transparent p-0 shadow-none text-right text-[19px] font-bold text-[#1A1A1A] tabular-nums focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:not-italic placeholder:font-normal placeholder:text-[15px] placeholder:text-[#C9BDAD]";
 function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; prefix?: string; step?: number; w?: string; placeholder?: string }) {
   return (
-    <div className={`${w} ${BOX} !py-2 !px-3`}>
+    <div className={`${w} ${BOX} !py-2 !pl-3.5 !pr-4`}>
       {prefix && <span className="text-[14px] text-[#6B6259]">{prefix}</span>}
       <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
@@ -719,7 +719,7 @@ function NumInput({ value, onChange, suffix, prefix, step = 1, w = "w-[168px]", 
 
 function NumInputAccent({ value, onChange, suffix, step = 0.01, w = "w-[96px]", placeholder }: { value: number; onChange: (n: number) => void; suffix?: string; step?: number; w?: string; placeholder?: string }) {
   return (
-    <div className={`${w} ${BOX} !py-2 !px-3 !border-[#F0C4B4] !bg-[#FFF8F5]`}>
+    <div className={`${w} ${BOX} !py-2 !pl-3.5 !pr-4 !border-[#F0C4B4] !bg-[#FFF8F5]`}>
       <FormattedNumberInput value={value} onChange={onChange} step={step} className={UINPUT_CLASS} placeholder={placeholder} />
       {suffix && <span className="text-[14px] text-[#A69A88]">{suffix}</span>}
     </div>

@@ -101,7 +101,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       onToggle={() => updateDq({ wrvuEnabled: !dq.wrvuEnabled, wrvuExpanded: !dq.wrvuEnabled ? true : dq.wrvuExpanded })}
       testId="toggle-wrvu"
       note={
-        <>Grey figures carry from your earlier steps; change any coral figure and this reprices live. Coding education and CDI programs also move this lift, so we attribute only <b className="text-[#B02200] not-italic">{dq.wrvuRealization}%</b> to the note and leave the rest out of the number.</>
+        <>Figures from earlier steps carry over; change any box and this reprices live. Coding education and CDI programs also move this lift, so we attribute only <b className="text-[#B02200] not-italic">{dq.wrvuRealization}%</b> to the note and leave the rest out of the number.</>
       }
     >
       {wrvuAwait ? (
@@ -203,7 +203,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       enabled={dq.hccEnabled}
       onToggle={() => updateDq({ hccEnabled: !dq.hccEnabled, hccExpanded: !dq.hccEnabled ? true : dq.hccExpanded })}
       testId="toggle-hcc"
-      note={<>Enter each plan's lives to see its number. Change any coral figure and this reprices live, then updates the model on the right.</>}
+      note={<>Enter each plan's lives to see its number. Change any box and this reprices live, then updates the model on the right.</>}
     >
       {(
         <div>
@@ -294,7 +294,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       onToggle={() => updateDq({ denialsEnabled: !dq.denialsEnabled, denialsExpanded: !dq.denialsEnabled ? true : dq.denialsExpanded })}
       testId="toggle-denials"
       note={
-        <>Annual claims defaults to your enabled encounters until you enter your own; change any coral figure and this reprices live. Some denied claims would be won back on appeal anyway, so we count only the <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> you expect to keep off the denial list up front and leave the rest out.</>
+        <>Annual claims defaults to your enabled encounters until you enter your own; change any box and this reprices live. Some denied claims would be won back on appeal anyway, so we count only the <b className="text-[#B02200] not-italic">{dq.denialsRealization}%</b> you expect to keep off the denial list up front and leave the rest out.</>
       }
     >
       {denialsAwait ? (
@@ -395,7 +395,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       }
       testId="toggle-obs"
       note={
-        <>Grey figures carry from your earlier steps. Change any coral figure and this reprices live. Based on total admissions, not just the documented share.</>
+        <>Figures from earlier steps carry over; change any box and this reprices live. Based on total admissions, not just the documented share.</>
       }
     >
       {obsAwait ? (
@@ -488,7 +488,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="How does documentation protect what you're already owed?"
-        intro="Turn on the drivers that apply. Each one models against your numbers and adds to the ledger."
+        intro="A note that matches the stay keeps the claim whole."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -734,7 +734,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="How does documentation turn into revenue?"
-        intro="The same complete note earns money differently depending on how you're paid. Turn on the drivers that apply; each models against your numbers and adds to the ledger."
+        intro="The same complete note earns money differently depending on how you're paid."
         sectionLabel="The drivers · turn on what applies"
         headerControl={paymentControl}
         rows={rows}
@@ -824,7 +824,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="How does documentation turn into revenue?"
-        intro="The same complete note supports accurate E/M coding and fewer denied claims. Turn on the drivers that apply; each models against your numbers and adds to the ledger."
+        intro="The same complete note supports accurate E/M coding and fewer denied claims."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}

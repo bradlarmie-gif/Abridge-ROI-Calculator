@@ -18,6 +18,16 @@ import { generateExplorePDF, type ExplorePDFData, type ExplorePDFQuadrantData } 
 import { useToast } from "@/hooks/use-toast";
 import { PDF_HANDOFF_MESSAGE } from "@/lib/pdfHandoff";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
+import { CapacityGoalArt, QualityGoalArt, RetentionGoalArt, RevenueGoalArt } from "@/pages/hub/hubArt";
+import { useCountUp } from "@/lib/useCountUp";
+
+const QUAD_ART: Record<string, JSX.Element> = {
+  Capacity: <CapacityGoalArt />,
+  Workforce: <RetentionGoalArt />,
+  Revenue: <RevenueGoalArt />,
+  Quality: <QualityGoalArt />,
+};
+const CARD = "rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-26px_rgba(26,26,26,0.22)]";
 
 /**
  * Drop-in editorial replacement for ExploreModel.tsx — identical props.
@@ -515,47 +525,48 @@ export default function EdModel({
   };
 
   // Editorial tokens — matches the de-boxed language shipped across the path.
-  const sectLabel = "text-[11px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073]";
-  const sectHead = "text-[11px] font-extrabold tracking-[0.09em] uppercase text-[#443A32]";
+  const sectLabel = "text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-[#EA2C00]";
+  const sectHead = "text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-[#443A32]";
+  const shownNet = useCountUp(netAnnualValue);
 
   return (
     <EditorialShell>
       <EditorialHeader stepName="Your Model" stepIndex={9} onBack={onBack} onHome={onHome} />
-      <div className="max-w-[1080px] mx-auto px-5 sm:px-8 lg:px-12 pt-12 pb-16">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-16">
         <div className="text-[11px] font-extrabold tracking-[1.3px] uppercase text-[#565250]">Value Model · Step 9 of 9</div>
         <h1 className="font-abridge text-[27px] sm:text-[34px] lg:text-[40px] leading-[1.08] text-[#1A1A1A] mt-[10px] max-w-[640px]">Your model, in full.</h1>
         <p className="text-[16.5px] text-[#565250] mt-[14px] max-w-[600px] leading-[1.5]">
-          Everything the prior steps built, assembled from your numbers. Ready to share, or take into a full proforma.
+          Everything the model built, from the numbers entered.
         </p>
 
         {/* HERO — the one number everything built to. Number left, the
             components that make it up right, on the shared spine. */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-[56px] gap-y-8 mt-[44px] items-center">
-          <div>
+        <div className={`${CARD} overflow-hidden mt-9 grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] items-stretch`}>
+          <div className="px-6 sm:px-9 py-8 bg-[linear-gradient(180deg,#F6F1EA_0%,#FFFFFF_100%)]">
             {/* "Net" only once a cost exists; before pricing this is net of nothing, so it reads "value before cost" (matches EdInvestment). */}
             <div className={sectLabel}>{annualInvestment > 0 ? "Net annual value" : "Value before cost"}</div>
             {/* Coral is reserved for a real gain; a loss reads in neutral ink, never celebratory. */}
-            <div className={`font-abridge text-[56px] sm:text-[64px] leading-[0.92] mt-[10px] ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
-              {fmtCurrency(netAnnualValue)}
-              <span className="font-sans text-[19px] text-[#8C8073]"> / yr</span>
+            <div className={`font-abridge text-[56px] sm:text-[80px] leading-[0.92] mt-3 tabular-nums ${netAnnualValue >= 0 ? "text-[#EA2C00]" : "text-[#1A1A1A]"}`}>
+              {fmtCurrency(shownNet)}
+              <span className="font-sans text-[19px] text-[#6B6259]"> / yr</span>
             </div>
             {annualInvestment <= 0 ? (
-              <div className="mt-[14px] text-[13.5px] font-bold text-[#8C8073]">Add your pricing to see the return.</div>
+              <div className="mt-[14px] text-[13.5px] font-semibold text-[#565250]">Add the price on step 8 to see the return.</div>
             ) : netAnnualValue > 0 ? (
               <div className="mt-[14px] text-[14px] text-[#3A342E]">
                 <span className="font-abridge text-[21px] text-[#EA2C00]">{roi.toFixed(1)}×</span>
                 <span className="ml-[9px]">return · <b className="font-semibold">≈{fmtPerDollar(netPerDollar)}</b> net back for every $1 spent</span>
               </div>
             ) : (
-              <div className="mt-[14px] text-[13.5px] text-[#8C8073] leading-[1.5] max-w-[380px]">
-                <span className="font-abridge text-[18px] text-[#8C8073]">{roi.toFixed(1)}×</span> · the modeled value doesn&apos;t cover the cost at this scope.
+              <div className="mt-[14px] text-[13.5px] text-[#565250] leading-[1.5] max-w-[420px]">
+                <span className="font-abridge text-[18px] text-[#1A1A1A]">{roi.toFixed(1)}×</span> · at this scope the modeled value doesn&apos;t cover the cost yet. Add drivers, scale or adoption, or revisit pricing.
               </div>
             )}
           </div>
 
-          <div className="hidden lg:block bg-[#E8E2DA]" />
+          
 
-          <div className="flex flex-col gap-[15px]">
+          <div className="flex flex-col justify-center gap-[15px] px-6 sm:px-8 py-7 border-t lg:border-t-0 lg:border-l border-[#EFE8DE]">
             <div className="flex justify-between items-baseline">
               <span className="text-[14px] text-[#3A342E]">Total annual value</span>
               <span className="font-abridge text-[19px] text-[#1A1A1A] tabular-nums">{fmtCurrency(totalAnnualValue)}</span>
@@ -572,12 +583,11 @@ export default function EdModel({
         </div>
 
         {/* WHERE the value comes from + WHEN it lands */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-[56px] gap-y-12 mt-[56px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
           {/* Where the value comes from */}
-          <div>
+          <div className="rounded-[22px] border border-[#E9E0D4] bg-[#F6F1EA]/90 p-5 sm:p-6">
             <div className={sectHead}>Where the value comes from</div>
-            <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[22px] leading-[1.5]">Across the four areas you modeled.</p>
-            <div className="flex flex-col gap-[17px]">
+                        <div className="flex flex-col gap-2.5 mt-4">
               {QUADRANT_ORDER.map((q) => {
                 const proofNote = proofForSetting[q];
                 const value = valueByQuadrant[q];
@@ -589,23 +599,29 @@ export default function EdModel({
                     ? "The retention signal moves as documentation load falls. Switch Retention to Dollar to book it."
                     : proofNote;
                   return (
-                    <div key={q} className="flex justify-between items-start gap-4">
-                      <span className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
-                        <span className="text-[9px] font-extrabold tracking-[0.06em] uppercase text-[#8C8073] border border-[#DAD3C8] rounded-full px-[7px] py-[2px]">Tracked</span>
-                      </span>
-                      <span className="text-[12.5px] text-[#6E675C] text-right max-w-[240px] leading-[1.45]">{phrase}</span>
+                    <div key={q} className="rounded-[16px] border border-[#EBE3D8] bg-[#FBF8F4]/70 px-3.5 py-3 flex items-start gap-3">
+                      <div className="flex-none w-[56px] h-[36px] rounded-[9px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1 py-0.5">{QUAD_ART[q]}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#443A32]">{q}</span>
+                          <span className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#6B6259] bg-white border border-[#E2D8CB] rounded-full px-2 py-0.5">Tracked</span>
+                        </div>
+                        <div className="text-[12.5px] text-[#565250] mt-1 leading-[1.45]">{phrase}</div>
+                      </div>
                     </div>
                   );
                 }
                 return (
-                  <div key={q}>
-                    <div className="flex justify-between items-baseline mb-[7px]">
-                      <span className="text-[14px] font-bold text-[#1A1A1A]">{q}</span>
-                      <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmtCurrency(value)}</span>
-                    </div>
-                    <div className="h-[8px] bg-[#F2EFEA] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ background: quadFill[q], width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
+                  <div key={q} className="rounded-[16px] border border-[#E9E0D4] bg-white px-3.5 py-3 flex items-center gap-3">
+                    <div className="flex-none w-[56px] h-[36px] rounded-[9px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1 py-0.5">{QUAD_ART[q]}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex justify-between items-baseline mb-1.5">
+                        <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#443A32]">{q}</span>
+                        <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmtCurrency(value)}</span>
+                      </div>
+                      <div className="h-[8px] bg-[#EFE7DC] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700" style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
+                      </div>
                     </div>
                   </div>
                 );
@@ -613,12 +629,12 @@ export default function EdModel({
             </div>
           </div>
 
-          <div className="hidden lg:block bg-[#E8E2DA]" />
+          
 
           {/* When it lands */}
-          <div>
+          <div className={`${CARD} p-5 sm:p-6`}>
             <div className={sectHead}>When it lands</div>
-            <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[16px] leading-[1.55]">
+            <p className="text-[13px] text-[#565250] mt-[8px] mb-[16px] leading-[1.55]">
               {annualInvestment <= 0
                 ? <>The annualized value builds as adoption grows, reaching its full {fmtShort(totalAnnualValue)} / yr run-rate by month 12. Add your investment to see where it clears the cost.</>
                 : runRateCrossover !== null
@@ -682,23 +698,23 @@ export default function EdModel({
         </div>
 
         {/* Model your expansion */}
-        <div className="mt-[56px]">
+        <div className={`${CARD} mt-5 p-5 sm:p-7`}>
           <div className={sectHead}>Model your expansion</div>
-          <p className="text-[13px] text-[#8C8073] mt-[8px] mb-[26px] leading-[1.55] max-w-[560px]">
-            Where this goes as you roll out to more {isNursing ? "beds" : "providers"} and higher adoption. Same math, larger footprint.
+          <p className="text-[13px] text-[#565250] mt-[6px] mb-[22px] leading-[1.55] max-w-[560px]">
+            More {isNursing ? "beds" : "providers"} and higher adoption. Same math, larger footprint.
           </p>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1px_1fr] gap-x-[56px] gap-y-10">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="rounded-[16px] border border-[#E9E0D4] bg-[#F6F1EA]/80 px-5 py-4">
               {/* Today */}
-              <div className="text-[10.5px] font-extrabold tracking-[0.05em] uppercase text-[#8C8073]">Today</div>
+              <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32]">Today</div>
               <div className="mt-[7px] flex items-baseline justify-between gap-4">
-                <span className="text-[14px] text-[#8C7E6E]">{fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"} · {state.utilizationPercent}% adoption</span>
-                <span className="font-abridge text-[18px] text-[#8C7E6E] tabular-nums">{fmtCurrency(netAnnualValue)}<span className="font-sans text-[12px]"> / yr</span></span>
+                <span className="text-[14px] text-[#565250]">{fmtNumber(baselineCount)} {isNursing ? "beds" : "providers"} · {state.utilizationPercent}% adoption</span>
+                <span className="font-abridge text-[18px] text-[#1A1A1A] tabular-nums">{fmtCurrency(netAnnualValue)}<span className="font-sans text-[12px]"> / yr</span></span>
               </div>
 
               {/* connector */}
-              <div className="flex items-center gap-[8px] my-[20px] text-[11px] font-bold tracking-[0.04em] uppercase text-[#B0A99E]">
-                <ArrowDown className="w-[15px] h-[15px] text-[#C4BCB0]" />
+              <div className="flex items-center gap-[8px] my-[16px] text-[11px] font-bold tracking-[0.06em] uppercase text-[#6B6259]">
+                <ArrowDown className="w-[15px] h-[15px] text-[#EA2C00]" />
                 roll out to full scale
               </div>
 
@@ -733,7 +749,7 @@ export default function EdModel({
               </div>
             </div>
 
-            <div className="hidden lg:block bg-[#E8E2DA]" />
+            
 
             <div>
               <div className={sectLabel}>{annualInvestment > 0 ? "Projected net value at that scope" : "Projected value at that scope"}</div>
@@ -784,13 +800,13 @@ export default function EdModel({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 mt-[60px] items-center flex-wrap">
+        <div className="flex gap-3 mt-8 items-center flex-wrap">
           <button
             type="button"
             onClick={() => setShowExportModal(true)}
             disabled={noDriversEnabled}
             data-testid="ed-model-download"
-            className="text-[14px] font-bold rounded-[12px] px-[22px] py-[13px] inline-flex items-center gap-[9px] bg-[#EA2C00] text-white shadow-[0_2px_6px_rgba(234,44,0,0.15)] disabled:opacity-40"
+            className="text-[15px] font-bold rounded-full px-7 py-[15px] inline-flex items-center gap-[9px] bg-[#EA2C00] text-white hover:bg-[#d12800] transition-colors shadow-[0_10px_24px_-12px_rgba(234,44,0,0.6)] disabled:opacity-40 disabled:shadow-none"
           >
             <Download className="w-4 h-4" />
             Download the model
@@ -801,7 +817,7 @@ export default function EdModel({
               onClick={handleAddToProforma}
               disabled={noDriversEnabled}
               data-testid="ed-model-add-proforma"
-              className="text-[14px] font-bold rounded-[12px] px-[22px] py-[13px] inline-flex items-center gap-[9px] bg-white text-[#1A1A1A] border border-[#E7E3DD] disabled:opacity-40"
+              className="text-[15px] font-bold rounded-full px-7 py-[15px] inline-flex items-center gap-[9px] bg-white text-[#1A1A1A] border border-[#E2D8CB] hover:border-[#EA2C00] hover:text-[#EA2C00] transition-colors disabled:opacity-40"
             >
               Take into a full proforma
               <ArrowRight className="w-4 h-4" />
@@ -810,7 +826,7 @@ export default function EdModel({
           <button type="button" onClick={onEdit} data-testid="ed-model-edit" className="text-[13px] text-[#7C766F] underline ml-1">
             Edit model
           </button>
-          <p className="text-[12px] text-[#7C766F] max-w-[360px] leading-[1.5] ml-auto text-right">
+          <p className="text-[12px] text-[#6B6259] max-w-[360px] leading-[1.5] ml-auto text-right">
             An estimate built from the figures you entered, not a guarantee. You confirm the real numbers as you measure.
           </p>
         </div>
