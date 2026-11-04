@@ -344,7 +344,7 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
   return (
     <div className="pt-12 sm:pt-16 pb-28">
       <div className="mb-4 text-[11px] font-extrabold tracking-[0.14em] uppercase text-[#565250]">
-        {meta.label} · Step {step + 2} of 4 <button onClick={onChangeSetting} className="text-[#8A8580] hover:text-[#EA2C00] transition-colors">· change</button>
+        {meta.label} · Step {step + 2} of 4 <button onClick={onChangeSetting} className="normal-case tracking-normal text-[12px] font-bold text-[#8A8580] hover:text-[#EA2C00] transition-colors">· Change setting</button>
       </div>
 
       {step === 0 && (
@@ -409,8 +409,8 @@ function Wizard({ setting, step, setStep, onChangeSetting }: { setting: SettingK
 
       {step === 1 && (
         <div>
-          <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#1A1A1A] max-w-[640px]">What changed after Abridge went live?</h1>
-          <p className="mt-3 text-[15.5px] leading-[1.55] text-[#565250] max-w-[560px]">Turn on what the impact analysis measured. Every number stays editable.</p>
+          <h1 className="font-abridge text-[28px] sm:text-[34px] leading-[1.12] text-[#1A1A1A] max-w-[640px]">Where does the value show up?</h1>
+          <p className="mt-3 text-[15.5px] leading-[1.55] text-[#565250] max-w-[560px]">Turn on what the impact analysis measured.</p>
 
           <div className="mt-9 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)] gap-6 lg:gap-8 items-start">
             {/* LEFT: every driver, grouped by where the value lands. No tabs, so
