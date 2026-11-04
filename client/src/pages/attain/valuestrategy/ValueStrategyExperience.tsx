@@ -474,7 +474,7 @@ function Ledger({ groups, partner }: { groups: LedgerGroup[]; partner: string })
       <div className="rounded-[20px] border border-[#E9E0D4] bg-[#FDFBF8] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_10px_28px_-18px_rgba(26,26,26,0.16)] overflow-hidden lg:sticky lg:top-24">
         <div className="px-5 py-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF]">
           <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#EA2C00]">What we&rsquo;re hearing</div>
-          {partner.trim() && <div className="font-abridge text-[18px] text-[#1A1A1A] mt-0.5 truncate">{partner.trim()}</div>}
+          {partner.trim() && <div className="font-abridge text-[18px] text-[#1A1A1A] mt-0.5 truncate">{cap(partner.trim())}</div>}
         </div>
         <div className="divide-y divide-[#EFE8DE]">
           {groups.map((g) => {
@@ -582,8 +582,10 @@ function Brief({
     <div className="max-w-[1080px] mx-auto px-6 md:px-10 py-8 md:py-12">
       {/* hero — the current/target mirror, then (multi-goal) the one-line read of
           which priority carries the dollars vs. what's tracked as proof. */}
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-[2px] text-[#EA2C00] pt-1">The foundation</p>
+      <div className="flex items-start justify-between gap-4 mb-2">
+        <p className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#EA2C00] pt-1">
+          The foundation{partner.trim() ? ` · ${cap(partner.trim())}` : ""}
+        </p>
         <button
           type="button"
           onClick={downloadWriteup}
@@ -593,14 +595,11 @@ function Brief({
           <Download className="w-4 h-4" /> Download the write-up
         </button>
       </div>
-      <h1 className="font-abridge text-[32px] md:text-[46px] text-[#1A1A1A] leading-[1.05] mb-4">
-        {partner.trim() ? `Where ${partner.trim()} stands today, and where you want to go.` : "Where you are today, and where you want to go."}
-      </h1>
-      <p className="text-[15.5px] text-[#4A4238] leading-relaxed max-w-[620px]">
+      <p className="text-[14.5px] text-[#565250] leading-relaxed max-w-[620px]">
         No numbers yet. This is your current picture and your target, in plain terms. Next we size the gap between them, then build the plan to close it.
       </p>
       {order.length > 1 && rankBits.length > 0 && (
-        <p className="mt-6 text-[16px] text-[#1A1A1A] leading-relaxed max-w-[840px] font-medium">
+        <p className="mt-5 text-[15.5px] text-[#1A1A1A] leading-relaxed max-w-[840px] font-medium">
           {cap(rankBits.join("; "))}.
         </p>
       )}
@@ -655,7 +654,7 @@ function Brief({
       )}
 
       {/* the selected goal read */}
-      <div className="mt-8">
+      <div className="mt-10">
         <GoalBrief setting={setting} settingLabel={settingLabel} goal={active} answers={answers} rank={order.indexOf(active) + 1} total={order.length} />
       </div>
 
@@ -701,14 +700,21 @@ function GoalBrief({
   // The left column carries a third "where you are" row so it balances the right (3 x 3):
   // multi-goal gets the priority rank (where scale's "today it is" used to sit); single-goal
   // gets "already in place" from grounding, since there's no rank to show.
-  const thirdRow: FoundationItem = rank && total && total > 1
-    ? { label: "Priority this year", value: `#${rank} of ${total}` }
-    : (triedFoundationRow(setting, answers) ?? { label: "", value: "" });
-  const current = thirdRow.label ? [...foundation.current, thirdRow] : foundation.current;
+  // Context (where it lives, what's already in place, the rank) is background to
+  // the story, so it rides as small chips under the three cards.
+  const tried = triedFoundationRow(setting, answers);
+  const context: string[] = [];
+  const scopeItem = foundation.current.length > 1 ? foundation.current[0] : null;
+  if (scopeItem) context.push(...(Array.isArray(scopeItem.value) ? scopeItem.value : [scopeItem.value]).map(cap));
+  if (tried) {
+    const vals = Array.isArray(tried.value) ? tried.value : [tried.value];
+    context.push(...vals.map((v) => (v === "Nothing formal yet" ? "Nothing formal in place yet" : `${cap(v)} in place`)));
+  }
+  if (rank && total && total > 1) context.push(`Priority #${rank} of ${total} this year`);
   const notes = goalNotes(setting, goal, answers);
   return (
     <>
-      <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={{ ...foundation, current }} />
+      <FoundationCard settingLabel={settingLabel} goalLabel={goalDisplayLabel(setting, goal)} foundation={foundation} context={context} />
       {notes.length > 0 && (
         <div className="mt-8 pt-6 border-t border-[#EAE4DB] max-w-[880px]">
           <p className="text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-[#443A32] mb-3">In your words · a note for us, not the ROI</p>
@@ -740,61 +746,116 @@ function triedFoundationRow(setting: AttainSetting, answers: DiscoveryAnswers): 
 // The foundation read, de-boxed: no card border, no tinted panel — structure comes
 // from typography, whitespace, and one center hairline. Multi-select fields render as
 // clean stacked lines, not comma run-ons.
-function FoundationCard({ settingLabel, goalLabel, foundation }: { settingLabel: string; goalLabel: string; foundation: FoundationRead }) {
-  // Today and the target as two cards with an arrow between, the same "two
-  // records" shape the Case pages use: tan for where they are, white with a coral
-  // edge for where they want to go.
-  return (
-    <div>
-      <p className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-4">{goalLabel.toLowerCase().startsWith(settingLabel.toLowerCase()) ? goalLabel : `${settingLabel} · ${goalLabel}`}</p>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_44px_1fr] items-stretch gap-y-3">
-        <div className="rounded-[20px] border border-[#E9E0D4] bg-[#F6F1EA]/90 p-6 md:p-7">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-6">Where you are</p>
-          <div className="space-y-6">
-            {foundation.current.map((it) => (
-              <FoundationRow key={it.label} label={it.label} value={it.value} />
-            ))}
-          </div>
-        </div>
-        <div className="hidden lg:flex items-center justify-center">
-          <span className="w-9 h-9 rounded-full bg-white border border-[#E2D8CB] text-[#EA2C00] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(26,26,26,0.12)]">
-            <ArrowRight className="w-4 h-4" />
-          </span>
-        </div>
-        <div className="rounded-[20px] border border-[#E9E0D4] border-l-[3px] border-l-[#EA2C00] bg-white p-6 md:p-7 shadow-[0_1px_2px_rgba(26,26,26,0.04),0_10px_28px_-18px_rgba(26,26,26,0.16)]">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00] mb-6">Where you want to go</p>
-          <div className="space-y-6">
-            {foundation.desired.map((it) => (
-              <FoundationRow key={it.label} label={it.label} value={it.value} signal={it.label === foundation.signalLabel} />
-            ))}
-          </div>
-        </div>
-      </div>
-      {/* the bridge: what happens next */}
-      <div className="mt-4 rounded-[16px] border border-[#E9E0D4] bg-[#FDFBF8] px-5 py-4 flex items-start gap-3">
-        <span className="flex-none text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00] pt-[3px]">Next</span>
-        <p className="text-[14.5px] text-[#3A342E] leading-relaxed">{foundation.bridge}</p>
-      </div>
+const asList = (v: string | string[] | undefined) => (v == null ? [] : Array.isArray(v) ? v : [v]);
+// Items that already contain "and" get a comma before the joining "and", so
+// "a referral and new-patient backlog, and long waits" never reads as one blur.
+const phrase = (xs: string[]) => {
+  if (xs.length <= 1) return xs[0] ?? "";
+  const glue = xs.some((x) => / and /.test(x)) ? ", and " : " and ";
+  return xs.length === 2 ? `${xs[0]}${glue}${xs[1]}` : `${xs.slice(0, -1).join(", ")}, and ${xs[xs.length - 1]}`;
+};
+const lower1 = (t: string) => t.charAt(0).toLowerCase() + t.slice(1);
+
+/**
+ * The foundation as a one-glance story, built only from their answers and the
+ * script's own bridge text: a headline that is their problem and their target,
+ * then today → what has to change → how you'll know, then the context as chips.
+ */
+function FoundationCard({ settingLabel, goalLabel, foundation, context }: { settingLabel: string; goalLabel: string; foundation: FoundationRead; context: string[] }) {
+  const gapItem = foundation.current[foundation.current.length - 1];
+  const gaps = foundation.current.length > 1 || gapItem?.label !== "Concentrated in" ? asList(gapItem?.value) : [];
+  const horizon = foundation.desired.find((d) => d.label === "On what timeframe");
+  const signal = foundation.desired.find((d) => d.label === foundation.signalLabel);
+  const target = foundation.desired.find((d) => d !== horizon && d !== signal);
+  const targets = asList(target?.value);
+  const signals = asList(signal?.value);
+  // The bridge's first sentence is the point; the rest is the detail under it.
+  // Every bridge opens with the same scaffolding sentence ("The gap between these
+  // is what the ROI sizes next..."), which the intro already says. Drop it, and
+  // lead with the first sentence that is specific to this goal.
+  const sentences = foundation.bridge.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const specific = sentences.filter((x) => !/^The gap between these\b/i.test(x));
+  const lead = specific[0] ?? foundation.bridge;
+  const rest = specific.slice(1).join(" ");
+  const crumb = goalLabel.toLowerCase().startsWith(settingLabel.toLowerCase()) ? goalLabel : `${settingLabel} · ${goalLabel}`;
+
+  const Card = ({ n, title, children, accent }: { n: string; title: string; children: React.ReactNode; accent?: boolean }) => (
+    <div className={`h-full rounded-[20px] border p-6 ${accent ? "bg-white border-[#E9E0D4] border-t-[3px] border-t-[#EA2C00] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_10px_28px_-18px_rgba(26,26,26,0.16)]" : "bg-[#F6F1EA]/90 border-[#E9E0D4]"}`}>
+      <p className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#443A32] mb-4">
+        <span className="font-abridge text-[12px] text-[#AE9F8C] mr-2">{n}</span>
+        {title}
+      </p>
+      {children}
     </div>
   );
-}
+  const Arrow = () => (
+    <div className="hidden lg:flex items-center justify-center">
+      <span className="w-8 h-8 rounded-full bg-white border border-[#E2D8CB] text-[#EA2C00] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(26,26,26,0.12)]">
+        <ArrowRight className="w-4 h-4" />
+      </span>
+    </div>
+  );
 
-function FoundationRow({ label, value, signal }: { label: string; value: string | string[]; signal?: boolean }) {
-  // `signal` marks the success signal (a leading metric): a small coral dot beside
-  // each line rather than coloured text, so coral stays for money and actions. A
-  // multi-select value comes as a list: each pick its own line.
-  const items = (Array.isArray(value) ? value : [value]).map((v) => cap(v));
   return (
     <div>
-      <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6B6259] mb-2">{label}</div>
-      <div className="space-y-1.5">
-        {items.map((v, i) => (
-          <div key={i} className="flex items-start gap-2 text-[16px] leading-snug text-[#1A1A1A] font-medium">
-            {signal && <span className="mt-[8px] w-[6px] h-[6px] rounded-full bg-[#EA2C00] flex-none" />}
-            <span>{v}</span>
-          </div>
-        ))}
+      <p className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#6B6259]">{crumb}</p>
+      {gaps.length > 0 ? (
+        <h1 className="font-abridge text-[30px] md:text-[40px] leading-[1.1] text-[#1A1A1A] mt-2 max-w-[960px] text-balance">
+          Today: {phrase(gaps.map(lower1))}.
+        </h1>
+      ) : (
+        <h1 className="font-abridge text-[30px] md:text-[40px] leading-[1.1] text-[#1A1A1A] mt-2">Where you are, and where you want to go.</h1>
+      )}
+      {targets.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2 max-w-[960px]">
+          <p className="text-[18px] md:text-[20px] leading-snug text-[#565250] text-balance">
+            {/* The target's own label ("Where the freed slots go", "The change you
+                want"), so the line always says exactly what was asked. */}
+            <span className="font-semibold text-[#EA2C00]">{target!.label === "The change you want" ? "The goal" : target!.label}:</span>{" "}
+            {phrase(targets.map(lower1))}.
+          </p>
+          {horizon && (
+            <span className="rounded-full bg-[#F6F1EA] border border-[#E2D8CB] px-3 py-1 text-[12.5px] font-semibold text-[#443A32]">
+              {cap(String(horizon.value))}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_36px_1.25fr_36px_1fr] items-stretch gap-y-3">
+        <Card n="01" title="Today">
+          <ul className="space-y-2.5">
+            {gaps.map((g) => (
+              <li key={g} className="text-[16px] font-medium leading-snug text-[#1A1A1A]">{cap(g)}</li>
+            ))}
+          </ul>
+        </Card>
+        <Arrow />
+        <Card n="02" title="What has to change" accent>
+          <p className="text-[17px] font-semibold leading-snug text-[#1A1A1A] text-pretty">{lead}</p>
+          {rest && <p className="mt-3 text-[13.5px] leading-relaxed text-[#565250]">{rest}</p>}
+        </Card>
+        <Arrow />
+        <Card n="03" title="How you'll know">
+          <ul className="space-y-2.5">
+            {signals.map((v) => (
+              <li key={v} className="flex items-start gap-2 text-[16px] font-medium leading-snug text-[#1A1A1A]">
+                <span className="mt-[8px] w-[6px] h-[6px] rounded-full bg-[#EA2C00] flex-none" />
+                <span>{cap(v)}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
       </div>
+
+      {context.length > 0 && (
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#6B6259] mr-1">The context</span>
+          {context.map((c) => (
+            <span key={c} className="rounded-full border border-[#E2D8CB] bg-white px-3 py-1 text-[12.5px] font-semibold text-[#443A32]">{c}</span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
