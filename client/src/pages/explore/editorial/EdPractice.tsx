@@ -315,6 +315,7 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
   // shared right-column derived readouts
   const pct = Math.round(state.utilizationPercent);
   const notYet = Math.max(0, rightTotal - rightEnabled);
+  const nursingDays = isNursing ? Math.round(state.nursingStaffedBeds * (state.nursingOccupancyRate / 100) * 365) : 0;
   const documentedUnit = isNursing ? "shifts" : encounterLabel;
   const perProvider =
     state.numberOfProviders > 0 ? Math.round(annualEncounters / state.numberOfProviders) : 0;
@@ -465,9 +466,10 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
             </Group>
           </div>
 
-          {/* RIGHT: what the value is built on, drawn live */}
-          <div className="lg:self-stretch">
-          <div className="lg:sticky lg:top-24 rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="ed-practice-panel">
+          {/* RIGHT: what the value is built on, drawn live. It sits still beside
+              the inputs (no sliding), and Continue sits directly under it. */}
+          <div className="space-y-4">
+          <div className="rounded-[22px] border border-[#E9E0D4] bg-white shadow-[0_1px_2px_rgba(26,26,26,0.04),0_16px_40px_-24px_rgba(26,26,26,0.24)] overflow-hidden" data-testid="ed-practice-panel">
             <div className="px-6 pt-5 pb-4 bg-[#F6F1EA]/80 border-b border-[#E6DCCF]">
               <div className="text-[10.5px] font-extrabold uppercase tracking-[0.12em] text-[#EA2C00]">What the value is built on</div>
             </div>
@@ -494,8 +496,17 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
                   <span className="text-[#B0A99E]">Not yet · {formatNumber(notYet)}</span>
                 </div>
                 <div className="mt-5 border-t border-[#EFE8DE] pt-4 text-[13px] text-[#565250] leading-[1.55]">
-                  {formatNumber(rightTotal)} × {pct}% = <b className="font-bold text-[#1A1A1A]">{formatNumber(rightEnabled)}</b>. Everything after this builds on the documented {documentedUnit}, not the full book.
+                  {formatNumber(rightTotal)} × {pct}% = <b className="font-bold text-[#1A1A1A]">{formatNumber(rightEnabled)}</b>.{isNursing ? " Time back runs on these shifts." : ` Everything after this builds on the documented ${documentedUnit}, not the full book.`}
                 </div>
+                {isNursing && nursingDays > 0 && (
+                  <div className="mt-5 rounded-[16px] border border-[#E6DCCE] bg-[#F6F1EA]/80 px-4 py-4">
+                    <div className="font-abridge text-[36px] leading-none text-[#1A1A1A] tabular-nums">{formatNumber(Math.round(nursingDays * (pct / 100)))}</div>
+                    <div className="text-[14px] font-semibold text-[#1A1A1A] mt-2">documented patient-days a year</div>
+                    <div className="text-[13px] text-[#565250] mt-1.5 leading-[1.5]">
+                      {formatNumber(state.nursingStaffedBeds)} beds × {state.nursingOccupancyRate}% × 365 = {formatNumber(nursingDays)}, × {pct}%. Quality runs on these.
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <p className="mt-5 text-[14px] text-[#6B6259] leading-relaxed">
@@ -504,21 +515,18 @@ export default function EdPractice({ state, updateState, onNext, onBack, onHome 
             )}
             </div>
           </div>
+            <button
+              type="button"
+              disabled={!isValid}
+              onClick={onNext}
+              data-testid="ed-practice-continue"
+              className="w-full bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[15px] rounded-full hover:bg-[#d12800] transition-colors shadow-[0_10px_24px_-12px_rgba(234,44,0,0.6)] disabled:opacity-40 disabled:shadow-none"
+            >
+              Continue →
+            </button>
           </div>
         </div>
 
-        {/* Continue */}
-        <div className="flex justify-end mt-14">
-          <button
-            type="button"
-            disabled={!isValid}
-            onClick={onNext}
-            data-testid="ed-practice-continue"
-            className="bg-[#EA2C00] text-white text-[15px] font-bold px-7 py-[14px] rounded-full hover:bg-[#d12800] transition-colors shadow-[0_10px_24px_-12px_rgba(234,44,0,0.6)] disabled:opacity-40 disabled:shadow-none"
-          >
-            Continue →
-          </button>
-        </div>
       </div>
     </EditorialShell>
   );
