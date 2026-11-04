@@ -582,57 +582,40 @@ export default function EdModel({
           </div>
         </div>
 
-        {/* WHERE the value comes from + WHEN it lands */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+        {/* WHERE the value comes from + WHEN it lands: one card, the same shape
+            as Model your expansion below (tan inner panel left, the read right). */}
+        <div className={`${CARD} mt-5 p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8`}>
           {/* Where the value comes from */}
-          <div className="rounded-[22px] border border-[#E9E0D4] bg-[#F6F1EA]/90 p-5 sm:p-6">
+          <div className="rounded-[16px] border border-[#E9E0D4] bg-[#F6F1EA]/80 px-5 py-4">
             <div className={sectHead}>Where the value comes from</div>
-                        <div className="flex flex-col gap-2.5 mt-4">
+            <div className="mt-2 divide-y divide-[#E6DCCF]">
               {QUADRANT_ORDER.map((q) => {
                 const proofNote = proofForSetting[q];
                 const value = valueByQuadrant[q];
                 const workforceTracked = q === "Workforce" && value === 0 && state.retentionMode === "tracked";
-                // Tracked domains get a designed chip + a plain signal line, not a
-                // grey italic apology, so a tracked area still reads as premium.
-                if (proofNote || workforceTracked) {
-                  const phrase = workforceTracked
-                    ? "The retention signal moves as documentation load falls. Switch Retention to Dollar to book it."
-                    : proofNote;
-                  return (
-                    <div key={q} className="rounded-[16px] border border-[#EBE3D8] bg-[#FBF8F4]/70 px-3.5 py-3 flex items-start gap-3">
-                      <div className="flex-none w-[56px] h-[36px] rounded-[9px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1 py-0.5">{QUAD_ART[q]}</div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#443A32]">{q}</span>
-                          <span className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#6B6259] bg-white border border-[#E2D8CB] rounded-full px-2 py-0.5">Tracked</span>
-                        </div>
-                        <div className="text-[12.5px] text-[#565250] mt-1 leading-[1.45]">{phrase}</div>
-                      </div>
-                    </div>
-                  );
-                }
+                const tracked = !!proofNote || workforceTracked;
                 return (
-                  <div key={q} className="rounded-[16px] border border-[#E9E0D4] bg-white px-3.5 py-3 flex items-center gap-3">
-                    <div className="flex-none w-[56px] h-[36px] rounded-[9px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1 py-0.5">{QUAD_ART[q]}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex justify-between items-baseline mb-1.5">
-                        <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#443A32]">{q}</span>
-                        <span className="font-abridge text-[16px] text-[#1A1A1A] tabular-nums">{fmtCurrency(value)}</span>
-                      </div>
-                      <div className="h-[8px] bg-[#EFE7DC] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700" style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
-                      </div>
-                    </div>
+                  <div key={q} className="flex items-center gap-3 py-3">
+                    <div className="flex-none w-[48px] h-[32px] rounded-[8px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-1 py-0.5">{QUAD_ART[q]}</div>
+                    <span className="w-[92px] flex-none text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#443A32]">{q}</span>
+                    {tracked ? (
+                      <span className="flex-1 text-right text-[12.5px] text-[#6B6259]">Tracked, not counted</span>
+                    ) : (
+                      <>
+                        <div className="flex-1 h-[8px] bg-[#EFE7DC] rounded-full overflow-hidden">
+                          <div className="h-full rounded-full bg-[#EA2C00] transition-[width] duration-700" style={{ width: `${Math.max(value > 0 ? 4 : 0, (value / quadrantMax) * 100)}%` }} />
+                        </div>
+                        <span className={`w-[84px] text-right font-abridge text-[16px] tabular-nums ${value > 0 ? "text-[#1A1A1A]" : "text-[#C9BDAD]"}`}>{fmtCurrency(value)}</span>
+                      </>
+                    )}
                   </div>
                 );
               })}
             </div>
           </div>
 
-          
-
           {/* When it lands */}
-          <div className={`${CARD} p-5 sm:p-6`}>
+          <div>
             <div className={sectHead}>When it lands</div>
             <p className="text-[13px] text-[#565250] mt-[8px] mb-[16px] leading-[1.55]">
               {annualInvestment <= 0
@@ -690,8 +673,8 @@ export default function EdModel({
                 </div>
               </>
             ) : (
-              <div className="text-[13px] text-[#7C766F] py-10 text-center">
-                Add value drivers in the prior steps to see how the value builds.
+              <div className="rounded-[14px] border border-dashed border-[#E2D8CB] bg-[#FBF8F4] h-[200px] flex items-center justify-center px-6 text-center text-[13px] text-[#6B6259]">
+                Turn on a counted driver and the value line builds here.
               </div>
             )}
           </div>
