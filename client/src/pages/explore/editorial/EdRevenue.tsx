@@ -532,7 +532,7 @@ export default function EdRevenue({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 6 of 9 · Revenue"
         title="Where does nursing documentation show up in revenue?"
-        intro="Nursing documentation supports the revenue cycle rather than driving it directly. The dollars it touches are claimed once, on the physician side, so nothing is counted here. We track the proof instead."
+        intro="Nursing notes support the claim; the dollars count once, on the physician side. Tracked here."
         sectionLabel="The proof · tracked, not counted"
         rows={rows}
         ledgerGroups={ledger.groups}

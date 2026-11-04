@@ -1179,7 +1179,7 @@ export default function EdWorkforce({ state, updateState, totalHoursSaved, onNex
       <DriverLedger
         eyebrow="Value Model · Step 5 of 9 · Workforce"
         title="What is Abridge worth to your workforce?"
-        intro="Documentation load is a leading reason emergency physicians burn out and lean on locum coverage."
+        intro="Documentation load is a leading reason ED physicians burn out."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}

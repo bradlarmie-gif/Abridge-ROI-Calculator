@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { EditorialHeader, EditorialShell } from "./EditorialHeader";
 import { CapacityGoalArt, QualityGoalArt, RetentionGoalArt, RevenueGoalArt } from "@/pages/hub/hubArt";
@@ -109,8 +109,45 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
   const isComing = row.kind === "coming-soon";
   const isTracked = row.kind === "tracked";
   const on = Boolean(row.enabled);
-  const expanded = row.expanded ?? true;
+  // Turning a driver on always opens it, so a switched-on row is never an
+  // empty bar with nothing to read. Held locally: the parent's expand flag and
+  // its enable flag write the same state object, so setting both at once lost one.
+  const [justOn, setJustOn] = useState(false);
+  const expanded = justOn || (row.expanded ?? true);
   const open = isCounted && on;
+  const toggle = () => {
+    setJustOn(!on);
+    row.onToggle?.();
+  };
+  const toggleExpand = () => {
+    if (justOn) { setJustOn(false); if (row.expanded !== false) row.onToggleExpand?.(); return; }
+    row.onToggleExpand?.();
+  };
+
+  // Tracked (and nested tracked) rows: a plain line, the signals as one quiet
+  // sentence. No card, no pill, no chips: they are proof, not controls.
+  if (isTracked) {
+    return (
+      <>
+        {row.subhead && <div className="text-[10.5px] font-extrabold tracking-[0.1em] uppercase text-[#443A32] pt-3 pb-1 px-1">{row.subhead}</div>}
+        <div className={`px-4 sm:px-5 py-3 ${depth > 0 ? "" : "rounded-[16px] bg-[#FBF8F4]/60"}`}>
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="text-[15px] font-semibold text-[#443A32]">{row.label}</span>
+            <span className="text-[12px] text-[#6B6259] flex-none">Tracked</span>
+          </div>
+          {row.signals && row.signals.length > 0 && (
+            <div className="text-[12.5px] text-[#6B6259] mt-1 leading-[1.5]">{row.signals.join(" · ")}</div>
+          )}
+          {row.children && row.children.length > 0 && (
+            <div className="mt-2 border-t border-[#EBE3D8] divide-y divide-[#EBE3D8]">
+              {row.children.map((c) => <DriverRow key={c.id} row={c} depth={depth + 1} />)}
+            </div>
+          )}
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
     {row.subhead && (
@@ -124,24 +161,25 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
           : "bg-[#FBF8F4]/80 border-[#EBE3D8] hover:border-[#DDD2C4]"
     }`}>
       <div className="flex items-center justify-between gap-4 px-4 sm:px-5 py-3.5">
-        <button type="button" onClick={isCounted ? row.onToggle : undefined} className={`flex-1 min-w-0 text-left outline-none ${isCounted ? "cursor-pointer" : "cursor-default"}`}>
+        <button type="button" onClick={isCounted ? toggle : undefined} className={`flex-1 min-w-0 text-left outline-none ${isCounted ? "cursor-pointer" : "cursor-default"}`}>
           <span className="flex items-center gap-2 flex-wrap">
             <span className={`text-[15.5px] font-semibold ${isComing ? "text-[#A79E92]" : open ? "text-[#1A1A1A]" : "text-[#443A32]"}`}>{row.label}</span>
-            {isComing && <span className="text-[9.5px] font-extrabold tracking-[0.06em] uppercase text-[#8A8072] bg-white border border-[#E6DCCE] rounded-full px-2 py-0.5">Coming soon</span>}
+            {isComing && <span className="text-[12px] text-[#A79E92]">· coming soon</span>}
           </span>
         </button>
         <div className="flex items-center gap-3 flex-shrink-0">
-          {open && row.amount != null && !row.awaiting && (
+          {open && !row.awaiting && (row.amount != null && row.amount > 0 ? (
             <span className="font-abridge text-[17px] text-[#EA2C00] whitespace-nowrap tabular-nums">{fmtMoney(row.amount)}<span className="font-sans text-[11.5px] text-[#6B6259]">/yr</span></span>
-          )}
+          ) : (
+            <span className="text-[12px] text-[#6B6259]">Tracked</span>
+          ))}
           {open && row.onToggleExpand && (
-            <button type="button" onClick={row.onToggleExpand} aria-label={expanded ? "Collapse details" : "Expand details"}
+            <button type="button" onClick={toggleExpand} aria-label={expanded ? "Collapse details" : "Expand details"}
               className="w-7 h-7 rounded-full border border-[#E2D8CB] bg-white text-[#8A8072] flex items-center justify-center hover:border-[#EA2C00] hover:text-[#EA2C00] transition-colors">
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expanded ? "" : "-rotate-90"}`} strokeWidth={2} />
             </button>
           )}
-          {isCounted && <Toggle on={on} onClick={row.onToggle} label={row.label} />}
-          {isTracked && <span className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#6B6259] bg-white border border-[#E2D8CB] rounded-full px-2.5 py-1">Tracked</span>}
+          {isCounted && <Toggle on={on} onClick={toggle} label={row.label} />}
         </div>
       </div>
 
@@ -153,14 +191,6 @@ function DriverRow({ row, depth = 0 }: { row: LedgerRow; depth?: number }) {
           ) : (
             row.levers
           )}
-        </div>
-      )}
-
-      {isTracked && row.signals && row.signals.length > 0 && (
-        <div className="px-4 sm:px-5 pb-3.5 -mt-1 flex flex-wrap gap-1.5">
-          {row.signals.map((sig) => (
-            <span key={sig} className="text-[12px] text-[#565250] bg-white border border-[#EBE3D8] rounded-full px-2.5 py-0.5">{sig}</span>
-          ))}
         </div>
       )}
 

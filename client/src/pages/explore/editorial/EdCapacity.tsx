@@ -333,7 +333,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does the freed time become?"
-        intro="Freed documentation time is clinical capacity: room for the existing team to carry more census and consult volume as you grow. We hold it as a metric, not a dollar; we do not put a number on capacity we do not control."
+        intro="Freed time is room for the team to carry more census. Tracked, not counted."
         sectionLabel="The proof · tracked, not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -479,7 +479,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does the freed time become?"
-        intro="Charting that used to happen after the visit gets done in the room, and the time it gives back becomes room on the schedule."
+        intro="Charting done in the room frees room on the schedule."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -574,7 +574,7 @@ export default function EdCapacity({ state, updateState, totalHoursSaved, onNext
       <DriverLedger
         eyebrow="Value Model · Step 4 of 9 · Capacity"
         title="What does faster throughput recover?"
-        intro="Faster documentation moves patients through the department sooner. Some who would have left before being seen stay to be treated, and a share of them need admission."
+        intro="Faster notes move patients through sooner, so fewer leave before being seen."
         sectionLabel="The drivers · turn on what applies"
         rows={rows}
         ledgerGroups={ledger.groups}

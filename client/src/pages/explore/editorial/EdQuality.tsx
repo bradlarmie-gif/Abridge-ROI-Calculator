@@ -371,7 +371,7 @@ function NursingQualityScreen({
     <DriverLedger
       eyebrow="Value Model · Step 7 of 9 · Quality"
       title="Where does nursing documentation show up in harm and safety?"
-      intro="Harm events are scored on timestamps. Documented in real time at the bedside, the same care that was delivered is the care that counts."
+      intro="Documented in real time, the care delivered is the care that counts."
       sectionLabel="The drivers · turn on what applies"
       rows={rows}
       ledgerGroups={ledger.groups}
@@ -420,7 +420,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
-        intro="Better inpatient notes make sure the acuity and care you delivered are reflected in the measures you already report. Abridge does not change the score; it keeps real care from being lost to an incomplete note."
+        intro="A complete note keeps the care delivered in the measures you report. Tracked, not counted."
         sectionLabel="Tracked metrics · not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -481,7 +481,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
-        intro="Quality scores are built from documentation. Capture the visit accurately and the scores reflect the care you delivered. We track these as metrics, not a dollar; anything financial is counted once, in Revenue, through HCC and denials."
+        intro="Quality scores are built from the note. Tracked here; any dollars count once, in Revenue."
         sectionLabel="Tracked metrics · not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
@@ -550,7 +550,7 @@ export default function EdQuality({ state, updateState, totalHoursSaved, onNext,
       <DriverLedger
         eyebrow="Value Model · Step 7 of 9 · Quality"
         title="Where does the quality show up?"
-        intro="Better ED notes make sure the care delivered is reflected in the measures you already report. Abridge does not change the score; it keeps a busy shift's care from being lost to an incomplete note. We track these as metrics, not a dollar; anything financial is counted once, in Revenue."
+        intro="A complete note keeps a busy shift's care in the measures you report. Tracked, not counted."
         sectionLabel="Tracked metrics · not counted"
         rows={rows}
         ledgerGroups={ledger.groups}
