@@ -1,6 +1,6 @@
 import { Page, View, Text, StyleSheet, Image, Font } from "@react-pdf/renderer";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
-import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol-coral.png";
 import abridgeFont from "../../assets/fonts/abridge.otf";
 
 Font.register({

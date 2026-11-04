@@ -1,5 +1,5 @@
 import abridgeLogo from "@assets/abridge-logo-wordmark-red_1769020684647.png";
-import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol-coral.png";
 import AttainPdfPage1, { fmtDollars as fmt$, type PdfData, type PdfMode } from "./AttainPdfPage1";
 import { buildFromSnapshot, type PlanCat } from "./attainPdfData";
 import { loadSnapshot } from "../attainStorage";

@@ -4,7 +4,7 @@ import {
   type MethodologySetting,
 } from "@/lib/methodologyContent";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
-import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol-coral.png";
 import { DOMAIN_COLORS } from "@/lib/domainColors";
 
 // ────────────────────────────────────────────────────────────────

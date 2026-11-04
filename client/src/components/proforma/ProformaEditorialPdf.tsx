@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { DOMAIN_COLORS, DOMAIN_INK } from "@/lib/domainColors";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
-import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol-coral.png";
 
 // ────────────────────────────────────────────────────────────────
 // Editorial "Financial Proforma" print-to-PDF document.

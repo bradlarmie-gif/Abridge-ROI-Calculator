@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
-import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol-coral.png";
 import { buildOutcomePlan, type OutcomePlan, type PlanOwner, type PlanStep } from "@/lib/attain/planBuild";
 import { SETTING_GOAL_MATRIX, goalDisplayLabel, GOAL_CATALOG } from "@/lib/attain/attainGoals";
 import type { AttainSetting } from "@/lib/attain/attainTypes";

@@ -2,7 +2,7 @@ import { Fragment, type CSSProperties, type ReactNode } from "react";
 import type { ExplorePDFData, ExplorePDFQuadrantData } from "./ExplorePDFExport";
 import { PROOF_LAYER } from "@/pages/explore/editorial/EdInvestment";
 import abridgeLogoRed from "@assets/abridge-logo-wordmark-red_1769187440253.png";
-import abridgeSymbol from "@assets/abridge-logo-symbol_1774906992195.png";
+import abridgeSymbol from "@assets/abridge-logo-symbol-coral.png";
 
 // ────────────────────────────────────────────────────────────────
 // Editorial "Value Model" print-to-PDF document.
