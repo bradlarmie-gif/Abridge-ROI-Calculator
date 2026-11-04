@@ -1029,3 +1029,9 @@ input[type="range"]:focus::-moz-range-thumb {
   from { stroke-dashoffset: 90; }
   to { stroke-dashoffset: 0; }
 }
+
+/* Present "signals" step: the EHR signal line redraws itself on hover. */
+@keyframes signal-trace {
+  from { stroke-dashoffset: 110; }
+  to { stroke-dashoffset: 0; }
+}

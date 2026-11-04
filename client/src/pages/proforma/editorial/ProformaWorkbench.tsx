@@ -25,9 +25,9 @@ import { computeSettingDriverFormulas } from "@/lib/presentFormulas";
 import { recomputeSettingValues } from "@/pages/proforma/ModelAssumptionDrawer";
 import { LensToggle } from "@/pages/explore/editorial/EdValueScreenKit";
 import type { ExploreState } from "@/pages/explore/ExploreFlow";
-import { applyExclusions, useNarrow } from "./editorialShared";
+import { applyExclusions, useNarrow, ReadPanel } from "./editorialShared";
 import { HubTile, HubTileGrid } from "@/pages/hub/hubKit";
-import { DealReadArt, EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
+import { EmergencyArt, InpatientArt, NursingArt, OutpatientArt } from "@/pages/hub/hubArt";
 
 /* ─────────────────────────── design tokens ─────────────────────────── */
 const T = {
@@ -1413,16 +1413,9 @@ export default function ProformaWorkbench({ settings, config, onUpdateSetting, o
 
         {advOpen && <AdvancedAssumptions config={config} onUpdateConfig={onUpdateConfig} />}
 
-        {/* THE READ. A drawn panel beside the sentence: value climbing past cost
-            with payback marked, which goes coral once a real deal is on the page. */}
-        <div className="mt-4 rounded-[20px] border border-[#E9E0D4] bg-white flex items-center gap-5 p-2.5 pr-7 shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_24px_-14px_rgba(26,26,26,0.10)] max-sm:flex-col max-sm:items-start max-sm:pr-2.5">
-          <div className="flex-none w-[150px] h-[92px] rounded-[14px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-2 py-2 max-sm:w-full">
-            <DealReadArt active={yearlyValue > 0} />
-          </div>
-          <div className="max-sm:px-3 max-sm:pb-3">
-            <div className="text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-[#EA2C00]">The read</div>
-            <div className="font-abridge text-[18px] leading-[1.38] text-[#1A1A1A] mt-1 max-w-[820px] text-balance">{read}</div>
-          </div>
+        {/* THE READ — shared with The case (editorialShared ReadPanel). */}
+        <div className="mt-4">
+          <ReadPanel active={yearlyValue > 0}>{read}</ReadPanel>
         </div>
 
         {/* SETTING CARDS */}

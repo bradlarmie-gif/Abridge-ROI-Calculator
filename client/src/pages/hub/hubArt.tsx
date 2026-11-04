@@ -445,3 +445,68 @@ export function DealReadArt({ active = false }: { active?: boolean }) {
     </Frame>
   );
 }
+
+/* ── Present: "How we prove it, together" ──────────────────────────────── */
+
+/** The EHR record with a live signal line running out of it. */
+export function SignalsArt() {
+  return (
+    <Frame>
+      <rect x="40" y="26" width="56" height="68" rx="7" className={SOFT} />
+      {[40, 50, 60, 70, 80].map((y, i) => (
+        <line key={y} x1="50" x2={i % 2 ? 76 : 86} y1={y} y2={y} className={INK} />
+      ))}
+      <path
+        d="M96 60 h14 l5 -12 l7 24 l6 -16 l4 4 h28"
+        className="transition-all duration-700 ease-out stroke-[#B39F87] group-hover:stroke-[#EA2C00] [stroke-dasharray:110] group-hover:[animation:signal-trace_1.1s_ease-out]"
+        strokeWidth={1.8}
+      />
+      <circle cx="160" cy="60" r="3.2" className={LIVE_FILL} stroke="none" />
+    </Frame>
+  );
+}
+
+/** A clean baseline, then the lift: the after bar rises on hover. */
+export function BeforeAfterArt() {
+  return (
+    <Frame>
+      <line x1="46" x2="154" y1="92" y2="92" className={INK} />
+      <rect x="66" y="62" width="24" height="30" rx="3" className={SOFT} />
+      <rect
+        x="110"
+        y="40"
+        width="24"
+        height="52"
+        rx="3"
+        className="transition-all duration-500 ease-out origin-bottom fill-[#E4D8C8] stroke-[#CDBDA8] group-hover:fill-[#EA2C00] group-hover:stroke-[#EA2C00] group-hover:[transform:scaleY(1.1)]"
+        style={{ transformBox: "fill-box" }}
+      />
+      <line x1="60" x2="140" y1="62" y2="62" className="stroke-[#CDBDA8]" strokeDasharray="3 3" />
+      <text x="78" y="104" textAnchor="middle" className="fill-[#B39F87]" fontSize="7.5" fontFamily="ui-monospace, monospace">BEFORE</text>
+      <text x="122" y="104" textAnchor="middle" className="fill-[#B39F87]" fontSize="7.5" fontFamily="ui-monospace, monospace">AFTER</text>
+    </Frame>
+  );
+}
+
+/** Four quarters, checking off one by one on hover. */
+export function QuarterlyArt() {
+  return (
+    <Frame>
+      {[0, 1, 2, 3].map((i) => (
+        <g key={i}>
+          <rect x={40 + i * 31} y="38" width="25" height="38" rx="5" className={SOFT} />
+          <text x={52.5 + i * 31} y="50" textAnchor="middle" className="fill-[#B39F87]" fontSize="7.5" fontFamily="ui-monospace, monospace">{`Q${i + 1}`}</text>
+          <circle
+            cx={52.5 + i * 31}
+            cy="64"
+            r="5.5"
+            className="transition-all duration-500 fill-[#FBF8F4] stroke-[#CDBDA8] group-hover:fill-[#EA2C00] group-hover:stroke-[#EA2C00]"
+            style={{ transitionDelay: `${i * 110}ms` }}
+          />
+          <path d={`M${49.8 + i * 31} 64 l2 2 l3.8 -4.2`} stroke="#FFFFFF" />
+        </g>
+      ))}
+      <line x1="40" x2="159" y1="88" y2="88" className="stroke-[#D6C8B6]" />
+    </Frame>
+  );
+}

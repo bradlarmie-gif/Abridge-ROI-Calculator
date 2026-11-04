@@ -7,6 +7,7 @@ import {
   groupByQuarter,
 } from "@/lib/proformaCalculations";
 import type { ProformaSettingSnapshot, ProformaConfig, ProformaCashFlowRow, ExploreQuadrant } from "../proformaTypes";
+import { DealReadArt } from "@/pages/hub/hubArt";
 
 /**
  * Apply per-driver on/off (driver.excluded) to a settings array, zeroing
@@ -129,7 +130,7 @@ export function AnimatedX({ value, className, style }: { value: number; classNam
 /* ─────────────────────────── small styled bits ─────────────────────────── */
 export function Lbl({ children, style }: { children?: React.ReactNode; style?: React.CSSProperties }) {
   return (
-    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: T.faint, ...style }}>
+    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#443A32", ...style }}>
       {children}
     </span>
   );
@@ -175,21 +176,57 @@ export function ChapterNav({ active, onNavigate }: { active: Chapter; onNavigate
 }
 
 /* ─────────────────────────── segmented toggle ─────────────────────────── */
-export function Seg<Opt extends string>({ options, value, onChange }: { options: { key: Opt; label: string }[]; value: Opt; onChange: (k: Opt) => void }) {
+/**
+ * The proforma's segmented control: a tan track with a white pill that slides to
+ * the chosen option. Same look as the Build the Deal switches, so every chapter's
+ * choices read as one kind of control.
+ */
+export function Seg<Opt extends string | number>({ options, value, onChange }: { options: { key: Opt; label: string }[]; value: Opt; onChange: (k: Opt) => void }) {
+  // No framer layoutId here (unlike the Build the Deal switches): a layout
+  // projection node in The case knocked the stacked chart's and the stress
+  // test's animated SVG marks out of position. The pill fades in instead.
   return (
-    <div style={{ display: "inline-flex", border: `1px solid ${T.hair}`, borderRadius: 8, overflow: "hidden" }}>
+    <div className="inline-flex rounded-full bg-[#EBE2D6] p-[3px]">
       {options.map((o) => {
         const on = o.key === value;
         return (
           <button
-            key={o.key}
+            key={String(o.key)}
+            type="button"
             onClick={() => onChange(o.key)}
-            style={{ fontSize: 11, fontWeight: 700, padding: "5px 11px", border: "none", cursor: "pointer", background: on ? T.ink : "transparent", color: on ? "#fff" : T.faint }}
+            className={`rounded-full px-3 py-1 text-[11.5px] font-bold transition-all duration-200 ${
+              on
+                ? "bg-white text-[#1A1A1A] shadow-[0_1px_2px_rgba(26,26,26,0.10),0_2px_6px_-2px_rgba(26,26,26,0.12)]"
+                : "text-[#7A6F63] hover:text-[#1A1A1A]"
+            }`}
           >
             {o.label}
           </button>
         );
       })}
+    </div>
+  );
+}
+
+/** The tan card every proforma panel sits in (chart, table, stress test). */
+export const CARD_CLASS =
+  "rounded-[20px] border border-[#E9E0D4] bg-[#FDFBF8] shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_24px_-14px_rgba(26,26,26,0.10)]";
+
+/**
+ * "The read": the one-paragraph verdict, beside a drawing of value climbing past
+ * cost with payback marked. The drawing goes coral once there is a real payback
+ * to point at. Shared by Build the deal and The case so the two never drift.
+ */
+export function ReadPanel({ active, children }: { active: boolean; children: React.ReactNode }) {
+  return (
+    <div className="rounded-[20px] border border-[#E9E0D4] bg-white flex items-center gap-5 p-2.5 pr-7 shadow-[0_1px_2px_rgba(26,26,26,0.04),0_8px_24px_-14px_rgba(26,26,26,0.10)] max-sm:flex-col max-sm:items-start max-sm:pr-2.5">
+      <div className="flex-none w-[150px] h-[92px] rounded-[14px] border border-[#E6DCCE] bg-[#EFE7DC]/70 px-2 py-2 max-sm:w-full">
+        <DealReadArt active={active} />
+      </div>
+      <div className="max-sm:px-3 max-sm:pb-3">
+        <div className="text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-[#EA2C00]">The read</div>
+        <div className="font-abridge text-[18px] leading-[1.38] text-[#1A1A1A] mt-1 max-w-[860px] text-balance">{children}</div>
+      </div>
     </div>
   );
 }
@@ -481,23 +518,10 @@ export function StressTest({ termValue, termInvestment, termNet }: { termValue: 
   const baseX = xFor(termNet);
 
   return (
-    <div style={{ border: `1px solid ${T.hair}`, borderRadius: 18, background: T.card, padding: "24px 28px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+    <div className={CARD_CLASS} style={{ padding: "24px 28px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 12, flexWrap: "wrap" }}>
         <Lbl>Stress test · how the term net holds</Lbl>
-        <div style={{ display: "inline-flex", gap: 6 }}>
-          {[15, 20, 25, 30].map((v) => {
-            const on = v === pct;
-            return (
-              <button
-                key={v}
-                onClick={() => setPct(v)}
-                style={{ fontSize: 11, fontWeight: 700, padding: "5px 11px", borderRadius: 999, cursor: "pointer", color: on ? T.coral : T.faint, background: on ? "#FEF6F3" : "#F5F0EA", border: `1px solid ${on ? T.coral : T.hair}` }}
-              >
-                ±{v}%
-              </button>
-            );
-          })}
-        </div>
+        <Seg options={[15, 20, 25, 30].map((v) => ({ key: v, label: `±${v}%` }))} value={pct} onChange={setPct} />
       </div>
       <p style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.5, marginBottom: 16, maxWidth: 640 }}>
         Flex realization by ±{pct}% and watch the term net swing. The low end is where adoption runs behind plan; the high end is where it runs ahead.

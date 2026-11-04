@@ -12,6 +12,8 @@ import {
   AnimatedX,
   StackedBuildChart,
   StressTest,
+  ReadPanel,
+  CARD_CLASS,
   computeCaseModel,
   useNarrow,
   type Chapter,
@@ -68,7 +70,11 @@ function SettingMatrixRow({
     <>
       <FRow grid={grid} style={{ borderBottom: `1px solid ${lastRow ? T.hair : T.soft}`, cursor: "pointer" }}>
         <span style={{ fontSize: 13.5, color: T.label, fontWeight: 700, display: "flex", alignItems: "center", gap: 9 }} onClick={onToggle}>
-          <motion.span animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }} style={{ color: T.off, fontSize: 10, width: 10, display: "inline-block" }}>▸</motion.span>
+          <span
+            className={`flex-none w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${expanded ? "border-[#EA2C00] text-[#EA2C00]" : "border-[#E2D8CB] text-[#8A8072] bg-white/70 hover:border-[#EA2C00] hover:text-[#EA2C00]"}`}
+          >
+            <motion.svg animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }} width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 2 L6.5 5 L3.5 8" /></motion.svg>
+          </span>
           <span style={{ width: 10, height: 10, borderRadius: 3, background: meta.color, flex: "none" }} />
           {meta.label}
         </span>
@@ -82,7 +88,7 @@ function SettingMatrixRow({
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} style={{ overflow: "hidden", background: "#FBF8F4", borderBottom: `1px solid ${T.soft}` }}>
             {shares.map((d) => (
               <div key={d.id} style={{ display: "grid", gridTemplateColumns: grid, padding: "9px 26px", alignItems: "baseline" }}>
-                <span style={{ fontSize: 12.5, color: T.muted, paddingLeft: 29 }}>{d.name}</span>
+                <span style={{ fontSize: 12.5, color: T.muted, paddingLeft: 52 }}>{d.name}</span>
                 {yearValues.map((v, i) => (
                   <span key={i} className="font-abridge" style={{ textAlign: "right", fontSize: 13.5, color: T.faint }}>{fmt(v * d.share)}</span>
                 ))}
@@ -169,7 +175,7 @@ export default function ProformaCaseView({ settings, config, onNavigate, onHome 
 
         {/* HERO: stacked build + verdict */}
         <div style={{ display: "grid", gridTemplateColumns: narrow ? "1fr" : "1.6fr 1fr", gap: narrow ? 24 : 34, marginTop: 26, alignItems: "center" }}>
-          <div style={{ border: `1px solid ${T.hair}`, borderRadius: 20, background: T.card, padding: "24px 26px" }}>
+          <div className={CARD_CLASS} style={{ padding: "24px 26px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
               <Lbl>Value by care setting, building over the term</Lbl>
               <Seg options={[{ key: "year", label: "By year" }, { key: "quarter", label: "By quarter" }]} value={mode} onChange={setMode} />
@@ -193,7 +199,7 @@ export default function ProformaCaseView({ settings, config, onNavigate, onHome 
           <Lbl>{termYears}-year financial summary</Lbl>
           <span style={{ fontSize: 11, color: T.off }}>Expand a setting to see its value drivers</span>
         </div>
-        <div style={{ border: `1px solid ${T.hair}`, borderRadius: 18, background: T.card, overflowX: "auto", marginTop: 12 }}>
+        <div className={CARD_CLASS} style={{ overflowX: "auto", marginTop: 12 }}>
           <div style={{ minWidth: 380 + years.length * 96 }}>
           <FRow grid={grid} style={{ borderBottom: `1px solid ${T.hair}`, background: "#FBF7F1" }}>
             <Lbl />
@@ -262,15 +268,14 @@ export default function ProformaCaseView({ settings, config, onNavigate, onHome 
         </div>
 
         {/* THE READ */}
-        <div style={{ display: "flex", gap: 16, alignItems: "flex-start", border: "1px solid #F0D9CF", borderRadius: 14, background: "#FEF9F7", padding: "16px 22px", marginTop: 32 }}>
-          <Lbl style={{ color: T.coral, whiteSpace: "nowrap", paddingTop: 2 }}>The read</Lbl>
-          <div className="font-abridge" style={{ fontSize: 17, color: T.ink, lineHeight: 1.35, maxWidth: 860 }}>
+        <div style={{ marginTop: 32 }}>
+          <ReadPanel active={payback != null}>
             {payback != null ? (
               <>Year one is the investment year while the team ramps; on clinical value alone, payback lands in <span style={{ color: T.coral }}>month {payback}</span>{stacked ? ` once ${stacked.label} is online` : ""}. From there the settings compound to <span style={{ color: T.coral }}>{fmt(termNet)} net</span> over the term.{displacementBeat ? <> Counting the <span style={{ color: T.coral }}>{fmt(termDisplaced)}</span> in legacy spend Abridge displaces, real break-even comes sooner, in <span style={{ color: T.coral }}>month {paybackWithDisplacement}</span>.</> : null}</>
             ) : (
               <>The case has not yet cleared its cost inside the term. Tune the ramp, pricing, or drivers in Build the deal, then the settings compound toward a <span style={{ color: T.coral }}>{fmt(runRate)}</span> run-rate.</>
             )}
-          </div>
+          </ReadPanel>
         </div>
 
         {/* NAV */}
