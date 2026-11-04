@@ -818,11 +818,46 @@ function DriverCard({ driver, vals, setVal, on, onToggle, value, summary, eligib
             placeholderBefore={String(ba.beforeDef)} placeholderAfter={String(ba.afterDef)} />
         </div>
       )}
-      {driver.fields.map((f) => (
-        <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
-      ))}
+      {driver.fields.map((f) =>
+        f.k === "cf" ? (
+          <ConversionField key={f.k} medicare={f.def} value={vals.cf} basis={vals.cfBasis ?? 0}
+            onChange={(v, basis) => { setVal("cf", v); setVal("cfBasis", basis); }} />
+        ) : (
+          <FieldRow key={f.k} field={f} value={vals[f.k]} onChange={(v) => setVal(f.k, v)} />
+        ),
+      )}
       <WorkedMath summary={workStr} value={value} />
     </DriverShell>
+  );
+}
+
+/**
+ * Paid per wRVU, with its basis named. Medicare 2026 fills the published
+ * conversion factor; Blended rate clears the box for the organization's own
+ * number (never a guessed commercial rate). Typing a different number while on
+ * Medicare flips the basis to Blended, so the label always matches the number.
+ * cfBasis rides in the driver values (0 = Medicare, 1 = blended); the engine
+ * ignores it.
+ */
+function ConversionField({ medicare, value, basis, onChange }: { medicare: number; value: number; basis: number; onChange: (v: number, basis: number) => void }) {
+  const isMedicare = basis === 0;
+  const chip = (on: boolean) =>
+    `text-[12px] font-bold rounded-full px-3.5 py-1.5 border transition-colors ${on ? "border-[#EA2C00] bg-[#FDF1EC] text-[#EA2C00]" : "border-[#E2D8CB] bg-white text-[#565250] hover:border-[#EA2C00] hover:text-[#EA2C00]"}`;
+  return (
+    <div className="mt-5">
+      <div className="flex items-center justify-between gap-6">
+        <div className="min-w-0">
+          <div className="text-[14px] font-medium text-[#1A1A1A]">Paid per wRVU</div>
+          <div className="text-[12px] text-[#6B6259] mt-0.5">{isMedicare ? "Medicare 2026 conversion factor" : "Blended rate across payers"}</div>
+        </div>
+        <NumInput value={value} onChange={(v) => onChange(v, isMedicare && Math.abs(v - medicare) > 0.001 ? 1 : basis)}
+          prefix="$" step={0.1} w="w-[120px]" placeholder={isMedicare ? undefined : "from finance"} />
+      </div>
+      <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+        <button type="button" onClick={() => onChange(medicare, 0)} className={chip(isMedicare)}>Medicare 2026 · ${medicare.toFixed(2)}</button>
+        <button type="button" onClick={() => onChange(isMedicare ? 0 : value, 1)} className={chip(!isMedicare)}>Blended rate</button>
+      </div>
+    </div>
   );
 }
 
